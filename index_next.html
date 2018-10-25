@@ -9,274 +9,280 @@
   <script async custom-element="amp-lightbox-gallery" src="https://cdn.ampproject.org/v0/amp-lightbox-gallery-0.1.js"></script>
   <script async custom-element="amp-accordion" src="https://cdn.ampproject.org/v0/amp-accordion-0.1.js"></script>
   <script async custom-element="amp-font" src="https://cdn.ampproject.org/v0/amp-font-0.1.js"></script>
-<script>
-  let root = document.documentElement;
+  <script async custom-element="amp-fx-collection" src="https://cdn.ampproject.org/v0/amp-fx-collection-0.1.js"></script>
+  <script type="text/javascript">
+    let root = document.documentElement;
 
-root.addEventListener("mousemove", e => {
-  root.style.setProperty('--mouse-y', e.pageY + "px");
-});</script>
+    root.addEventListener("mousemove", e => {
+      root.style.setProperty('--mouse-y', e.pageY + "px");
+    });</script>
 
-  <link rel="canonical" href="https://yadarola.com.ar">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Playfair+Display">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
-  <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+    <link rel="canonical" href="https://yadarola.com.ar">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Playfair+Display">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans">
+    <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 
-  <style amp-custom>
-  body {
-    font-feature-settings: "kern", "liga", "dlig", "hlig", "cswh";
-    font-synthesis: weight style;
-    font-kerning: auto;
-    font-language-override: normal;
-    font-size: calc(16px + 20 * ((100vw - 320px) / 680));
-    font-family: 'Roboto', serif;
-}
-h1,
-h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2em;
-    font-weight: normal;
-}
-    h2::before {
+    <style amp-custom>
+    body {
+      font-feature-settings: "kern" 1, "liga" 1, "dlig" 1, "hlig" , "cswh" 1;
+      font-synthesis: weight style;
+      font-kerning: auto;
+      font-language-override: normal;
+      font-size: calc(16px + 20 * ((100vw - 320px) / 680));
+      font-family: 'Work Sans', sans-serif;
+    }
+    .project-header {
+      font-family: 'Playfair Display', serif;
+      font-size: 2em;
+      font-weight: normal;
+    }
+    .project-header::before {
       top: var(--mouse-y);
       left:0;
-      font-family: 'Roboto', serif;
+      font-family: 'Work Sans', sans-serif;
       content: attr(data-summary);
       font-size: .25em;
       opacity: 0;
       position: absolute;
     }
-    h2:hover::before {
-    opacity:1;
+    .project:hover .project-header::before {
+      opacity:1;
     }
-h2::after {
-    content: attr(data-role);
-    font-family: 'Roboto', serif;
-    color: #d7d7d7;
-    font-size: .75em;
-    font-weight: 900;
-    display: inline-block;
-    margin-left: .5em;
-}
-h2:first-letter {
-    font-feature-settings: "kern", "swsh";
-}
-p {
+    .project:hover .project-name {
+      box-shadow: inset 0 -1px 0 currentColor;
+    }
+    .project-header::after {
+      content: attr(data-role);
+      font-family: 'Roboto', serif;
+      color: #d7d7d7;
+      font-size: .5em;
+      font-weight: 700;
+      display: inline-block;
+      margin-left: .5em;
+    }
+    .project-header:first-letter {
+      font-feature-settings: "kern" 1, "swsh" 1;
+    }
+    .project-name {
+      display: inline-block;
+    }
+    p {
 
-}
-.i-amphtml-accordion-header {
-    background-color: unset;
-    padding-left: 2em;
-    border: unset;
-}
+    }
+    .i-amphtml-accordion-header {
+      background-color: unset;
+      padding-left: 2em;
+      border: unset;
+    }
     amp-accordion>section>* {
-    position: initial!important;
+      position: initial!important;
     }
-amp-img {
-    background-color: #d7d7d7;
-}
-</style>
+    amp-img {
+      background-color: #d7d7d7;
+    }
+  </style>
 
-<style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
+  <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
 </head>
 
 <body>
 
- <amp-accordion animate>
-    <section>
-      <h2 data-role="UX Designer" data-summary="summary">LaVoz.com.ar</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="la-voz-com-ar"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="Product Designer" data-summary="summary">Vlic</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="vlic"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="UX Designer" data-summary="summary">Welo</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="welo"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="Visual Designer" data-summary="summary">Infoxel</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="infoxel"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="UX Designer" data-summary="summary">Thor</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="thor"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="UX Designer" data-summary="summary">Vision</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="vision"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="Front-End Developer" data-summary="summary">PeerAssist</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="peerassist"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="UX Designer" data-summary="summary">Hawker</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="hawker"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="UI Designer" data-summary="summary">ASSIA</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="assia"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="UI Designer" data-summary="summary">Enersys</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="enersys"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="UI Designer" data-summary="summary">Cuffia</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="cuffia"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="Team Leader" data-summary="summary">Agilent</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="agilent"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="SEO Analyst" data-summary="summary">ManPower</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="manpower"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="Product Designer" data-summary="summary">Easy Go</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="easy-go"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2 data-role="UI Designer" data-summary="summary">Holcim</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="holcim"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
+ <amp-accordion animate expand-single-section>
+  <section class="project">
+    <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2017"><span class="project-name">LaVoz.com.ar</span></h2>
+    <amp-carousel height="300"
+    layout="fixed-height"
+    type="carousel">
+    <amp-img 
+    lightbox="la-voz-com-ar"
+    src=""
+    width="400"
+    height="300"
+    alt=""></amp-img>
+  </amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="Product Designer" data-summary="summary" data-date="2016"><span class="project-name">Vlic</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="vlic"
+  src="vlic.png"
+  width="400"
+  height="300"
+  alt="Vlic"></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2016"><span class="project-name">Welo</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="welo"
+  src="welo.png"
+  width="400"
+  height="300"
+  alt="Welo"></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="Visual Designer" data-summary="summary" data-date="2015"><span class="project-name">Infoxel</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="infoxel"
+  src="infoxel.png"
+  width="400"
+  height="300"
+  alt="Infoxel"></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2015"><span class="project-name">Thor</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="thor"
+  src="thor.png"
+  width="400"
+  height="300"
+  alt="Thor"></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2015"><span class="project-name">Vision</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="vision"
+  src="vision.png"
+  width="400"
+  height="300"
+  alt="Vision"></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="Front-End Developer" data-summary="summary" data-date="2015"><span class="project-name">PeerAssist</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="peerassist"
+  src=""
+  width="400"
+  height="300"
+  alt=""></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2014"><span class="project-name">Hawker</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="hawker"
+  src=""
+  width="400"
+  height="300"
+  alt=""></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="UI Designer" data-summary="summary" data-date="2014"><span class="project-name">ASSIA</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="assia"
+  src=""
+  width="400"
+  height="300"
+  alt=""></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="UI Designer" data-summary="summary" data-date="2015"><span class="project-name">Enersys</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="enersys"
+  src=""
+  width="400"
+  height="300"
+  alt=""></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="UI Designer" data-summary="summary" data-date="2014"><span class="project-name">Cuffia</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="cuffia"
+  src=""
+  width="400"
+  height="300"
+  alt=""></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="Team Leader" data-summary="summary" data-date="2009"><span class="project-name">Agilent</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="agilent"
+  src=""
+  width="400"
+  height="300"
+  alt=""></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="SEO Analyst" data-summary="summary" data-date="2009"><span class="project-name">ManPower</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="manpower"
+  src=""
+  width="400"
+  height="300"
+  alt=""></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="Product Designer" data-summary="summary" data-date="2005"><span class="project-name">Easy Go</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="easy-go"
+  src=""
+  width="400"
+  height="300"
+  alt=""></amp-img>
+</amp-carousel>
+</section>
+<section class="project">
+  <h2 class="project-header" data-role="UI Designer" data-summary="summary" data-date="2004"><span class="project-name">Holcim</span></h2>
+  <amp-carousel height="300"
+  layout="fixed-height"
+  type="carousel">
+  <amp-img 
+  lightbox="holcim"
+  src=""
+  width="400"
+  height="300"
+  alt=""></amp-img>
+</amp-carousel>
+</section>
 </amp-accordion>
 <footer>
   <p>&copy;2018</p>
