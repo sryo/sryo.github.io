@@ -13,6 +13,7 @@
 
   <link rel="canonical" href="https://yadarola.com.ar">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Playfair+Display">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
   <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 
   <style amp-custom>
@@ -22,6 +23,7 @@
     font-kerning: auto;
     font-language-override: normal;
     font-size: calc(16px + 20 * ((100vw - 320px) / 680));
+    font-family: 'Roboto', serif;
 }
 h1,
 h2 {
@@ -31,6 +33,12 @@ h2 {
 }
 h2::after {
     content: attr(data-role);
+    font-family: 'Roboto', serif;
+    color: #d7d7d7;
+    font-size: .75em;
+    font-weight: 900;
+    display: inline-block;
+    margin-left: .5em;
 }
 h2:first-letter {
     font-feature-settings: "kern", "swsh";
@@ -40,7 +48,7 @@ p {
 }
 .i-amphtml-accordion-header {
     background-color: unset;
-    padding-left: 10em;
+    padding-left: 2em;
     border: unset;
 }
 amp-img {
