@@ -5,14 +5,10 @@
   <title>Mateo Yadarola — Product Designer</title>
 
   <script async src="https://cdn.ampproject.org/v0.js"></script>
-  <script async custom-element="amp-fit-text" src="https://cdn.ampproject.org/v0/amp-fit-text-0.1.js"></script>
   <script async custom-element="amp-carousel" src="https://cdn.ampproject.org/v0/amp-carousel-0.1.js"></script>
   <script async custom-element="amp-lightbox-gallery" src="https://cdn.ampproject.org/v0/amp-lightbox-gallery-0.1.js"></script>
   <script async custom-element="amp-accordion" src="https://cdn.ampproject.org/v0/amp-accordion-0.1.js"></script>
   <script async custom-element="amp-font" src="https://cdn.ampproject.org/v0/amp-font-0.1.js"></script>
-  <script async custom-template="amp-mustache" src="https://cdn.ampproject.org/v0/amp-mustache-0.2.js"></script>
-  <script async custom-element="amp-list" src="https://cdn.ampproject.org/v0/amp-list-0.1.js"></script>
-
 
 
   <link rel="canonical" href="https://yadarola.com.ar">
@@ -25,14 +21,16 @@
     font-synthesis: weight style;
     font-kerning: auto;
     font-language-override: normal;
+    font-size: calc(16px + 20 * ((100vw - 320px) / 680));
 }
 h1,
 h2 {
     font-family: 'Playfair Display', serif;
-    font-size: 10rem;
+    font-size: 2em;
+    font-weight: normal;
 }
-h1 {
-
+h2::after {
+    content: attr(data-role);
 }
 h2:first-letter {
     font-feature-settings: "kern", "swsh";
@@ -42,8 +40,11 @@ p {
 }
 .i-amphtml-accordion-header {
     background-color: unset;
-    padding-left: 5rem;
+    padding-left: 10em;
     border: unset;
+}
+amp-img {
+    background-color: #fafafa;
 }
 </style>
 
@@ -54,7 +55,7 @@ p {
 
  <amp-accordion animate>
     <section>
-      <h2>La Voz del Interior</h2>
+      <h2 data-role="UX Designer">La Voz del Interior</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -67,7 +68,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2>Vlic</h2>
+      <h2 data-role="Product Designer">Vlic</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -80,7 +81,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2>Welo</h2>
+      <h2 data-role="UX Designer">Welo</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -93,7 +94,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2>Infoxel</h2>
+      <h2 data-role="Visual Designer">Infoxel</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -106,7 +107,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2>Thor</h2>
+      <h2 data-role="UX Designer">Thor</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -119,7 +120,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2>Vision</h2>
+      <h2 data-role="UX Designer">Vision</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -132,7 +133,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2></h2>
+      <h2 data-role="Front-End Developer">PeerAssist</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -145,7 +146,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2>PeerAssist</h2>
+      <h2 data-role="UX Designer">Hawker</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -158,7 +159,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2>Hawker</h2>
+      <h2 data-role="UI Designer">ASSIA</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -171,7 +172,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2>ASSIA</h2>
+      <h2 data-role="UI Designer">Enersys</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -184,7 +185,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2>Enersys</h2>
+      <h2 data-role="UI Designer">Cuffia</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -197,7 +198,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2>Cuffia</h2>
+      <h2 data-role="Team Leader">Agilent</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -210,7 +211,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2>Agilent</h2>
+      <h2 data-role="SEO Analyst">ManPower</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -223,7 +224,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2>ManPower</h2>
+      <h2 data-role="Product Designer">Easy Go</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
@@ -236,33 +237,7 @@ p {
       </amp-carousel>
   </section>
     <section>
-      <h2></h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="section"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2>Easy Go</h2>
-          <amp-carousel height="300"
-          layout="fixed-height"
-          type="carousel">
-          <amp-img 
-          lightbox="section"
-          src=""
-          width="400"
-          height="300"
-          alt=""></amp-img>
-      </amp-carousel>
-  </section>
-    <section>
-      <h2>Holcim</h2>
+      <h2 data-role="UI Designer">Holcim</h2>
           <amp-carousel height="300"
           layout="fixed-height"
           type="carousel">
