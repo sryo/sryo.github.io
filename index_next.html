@@ -63,17 +63,18 @@
       position: absolute;
       width: var(--gap)
     }
-    .project:hover .project-header::before {
+    .project:hover .project-header::before,
+    .project[expanded] .project-header::before{
       opacity:1;
     }
-    .project:not(:hover) .project-name {
+    .project:not(:hover):not([expanded]) .project-name {
       color: #d7d7d7;
     }
     .project-header::after {
       content: attr(data-role);
       font-family: 'Roboto', serif;
       color: #d7d7d7;
-      font-size: .5em;
+      font-size: .375em;
       font-weight: 700;
       display: inline-block;
       margin-left: .5em;
@@ -92,12 +93,14 @@
       transition: width .5s cubic-bezier(0.215, 0.61, 0.355, 1);
       content: '';
     }
-    .project:hover .project-name {
+    .project:hover .project-name,
+    .project[expanded] .project-name {
       transition: color .1s cubic-bezier(0.215, 0.61, 0.355, 1);
     }
-    .project:hover .project-name::before {
+    .project:hover .project-name::before,
+    .project[expanded] .project-name::before {
       width: 100%;
-      background: black;
+      background: currentColor;
     }
     .project-name {
       position: relative;
