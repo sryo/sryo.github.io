@@ -24,11 +24,12 @@
 
     <style amp-custom>
     body {
-      font-synthesis: weight style;
+      font-family: 'Work Sans', sans-serif;
       font-kerning: auto;
       font-language-override: normal;
       font-size: calc(16px + 20 * ((100vw - 320px) / 680));
-      font-family: 'Work Sans', sans-serif;
+      font-synthesis: weight style;
+
     }
     :root {
       --gap: calc(20px + (200 - 20) * ((100vw - 320px) / (1200 - 320)));
@@ -37,60 +38,63 @@
       padding-left: var(--gap);
       padding-right: var(--gap);
     }
-    .project-name {
-      font-feature-settings: "kern" 1, "liga" 1, "dlig" 1, "hlig" , "cswh" 1;
-    }
     .projects {
       position: unset;
     }
     .project-header {
+      background-color: unset;
+      border: unset;
       font-family: 'Playfair Display', serif;
       font-size: 2em;
       font-weight: normal;
-      white-space: nowrap;
-      background-color: unset;
-      border: unset;
       outline: 0;
+      white-space: nowrap;
+    }
+    .project-header:first-letter {
+      font-feature-settings: "kern" 1, "swsh" 1;
     }
     .project-header::before {
-      top: var(--mouse-y);
-      left:0;
-      font-family: 'Work Sans', sans-serif;
       content: attr(data-summary);
+      font-family: 'Work Sans', sans-serif;
       font-size: .25em;
+      left:0;
       opacity: 0;
       position: absolute;
+      top: var(--mouse-y);
       width: var(--gap)
     }
     .project:hover .project-header::before,
     .project[expanded] .project-header::before{
       opacity:1;
     }
+    .project-header::after {
+      color: #d7d7d7;
+      content: attr(data-role);
+      display: inline-block;
+      font-family: 'Roboto', serif;
+      font-size: .375em;
+      font-weight: 700;
+      margin-left: .5em;
+    }
+    .project-name {
+      display: inline-block;
+      font-feature-settings: "kern" 1, "liga" 1, "dlig" 1, "hlig" , "cswh" 1;
+      position: relative;
+      transition: color 1.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
     .project:not(:hover):not([expanded]):not(:focus-within) .project-name {
       color: #d7d7d7;
     }
-    .project-header::after {
-      content: attr(data-role);
-      font-family: 'Roboto', serif;
-      color: #d7d7d7;
-      font-size: .375em;
-      font-weight: 700;
-      display: inline-block;
-      margin-left: .5em;
-    }
-    .project-header:first-letter {
-      font-feature-settings: "kern" 1, "swsh" 1;
-    }
     .project .project-name::before {
-      display: block;
-      position: absolute;
+      background: #d7d7d7;
       bottom: 0;
+      content: '';
+      display: block;
       height: 1px;
       left: 0;
-      width: 0;
-      background: #d7d7d7;
+      position: absolute;
       transition: width .5s cubic-bezier(0.215, 0.61, 0.355, 1);
-      content: '';
+      width: 0;
     }
     .project:hover .project-name,
     .project[expanded] .project-name {
@@ -99,17 +103,11 @@
     .project:hover .project-name::before,
     .project[expanded] .project-name::before,
     .project-header:focus .project-name::before {
-      width: 100%;
       background: currentColor;
-    }
-    .project-name {
-      position: relative;
-      display: inline-block;
-      transition: color 1.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+      width: 100%;
     }
     .bio {
       font-size: calc(16px + 20 * ((100vw - 320px) / 680));
-
     }
     p {
 
