@@ -30,13 +30,28 @@
       font-size: calc(16px + 20 * ((100vw - 320px) / 680));
       font-family: 'Work Sans', sans-serif;
     }
+    :root {
+      --gap: calc(20px + (200 - 20) * ((100vw - 320px) / (1200 - 320)));
+    }
+    .bio, .project-header {
+      margin-left: var(--gap);
+      margin-right: var(--gap);
+    }
+    .gallery {
+      padding-left: var(--gap);
+      padding-right: var(--gap);
+    }
     .project-name {
       font-feature-settings: "kern" 1, "liga" 1, "dlig" 1, "hlig" , "cswh" 1;
+    }
+    .projects {
+      position: unset;
     }
     .project-header {
       font-family: 'Playfair Display', serif;
       font-size: 2em;
       font-weight: normal;
+      white-space: nowrap;
     }
     .project-header::before {
       top: var(--mouse-y);
@@ -46,6 +61,7 @@
       font-size: .25em;
       opacity: 0;
       position: absolute;
+      width: var(--gap)
     }
     .project:hover .project-header::before {
       opacity:1;
@@ -73,7 +89,7 @@
       left: 0;
       width: 0;
       background: #d7d7d7;
-      transition: all .5s cubic-bezier(0.215, 0.61, 0.355, 1);
+      transition: width .5s cubic-bezier(0.215, 0.61, 0.355, 1);
       content: '';
     }
     .project:hover .project-name {
@@ -86,7 +102,7 @@
     .project-name {
       position: relative;
       display: inline-block;
-      transition: all 1s cubic-bezier(0.215, 0.61, 0.355, 1);
+      transition: color 1.5s cubic-bezier(0.215, 0.61, 0.355, 1);
     }
     .bio {
       font-size: calc(16px + 20 * ((100vw - 320px) / 680));
@@ -97,7 +113,6 @@
     }
     .i-amphtml-accordion-header {
       background-color: unset;
-      padding-left: 2em;
       border: unset;
     }
     amp-accordion>section>* {
@@ -113,10 +128,11 @@
 
 <body>
 <h1 class="bio">Hi, I'm Mateo, a UX designer based in Córdoba, Argentina. I use human-centered design to create beautiful user experiences. Currently at La Voz del Interior.</h1>
- <amp-accordion animate expand-single-section>
+ <amp-accordion animate expand-single-section class="projects">
   <section class="project">
     <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2017"><span class="project-name">LaVoz.com.ar</span></h2>
     <amp-carousel height="300"
+    class="gallery"
     layout="fixed-height"
     type="carousel">
     <amp-img 
@@ -130,6 +146,7 @@
 <section class="project">
   <h2 class="project-header" data-role="Product Designer" data-summary="summary" data-date="2016"><span class="project-name">Vlic</span></h2>
   <amp-carousel height="300"
+    class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -143,6 +160,7 @@
 <section class="project">
   <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2016"><span class="project-name">Welo</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -156,6 +174,7 @@
 <section class="project">
   <h2 class="project-header" data-role="Visual Designer" data-summary="summary" data-date="2015"><span class="project-name">Infoxel</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -169,6 +188,7 @@
 <section class="project">
   <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2015"><span class="project-name">Thor</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -182,6 +202,7 @@
 <section class="project">
   <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2015"><span class="project-name">Vision</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -195,6 +216,7 @@
 <section class="project">
   <h2 class="project-header" data-role="Front-End Developer" data-summary="summary" data-date="2015"><span class="project-name">PeerAssist</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -208,6 +230,7 @@
 <section class="project">
   <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2014"><span class="project-name">Hawker</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -221,6 +244,7 @@
 <section class="project">
   <h2 class="project-header" data-role="UI Designer" data-summary="summary" data-date="2014"><span class="project-name">ASSIA</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -234,6 +258,7 @@
 <section class="project">
   <h2 class="project-header" data-role="UI Designer" data-summary="summary" data-date="2015"><span class="project-name">Enersys</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -247,6 +272,7 @@
 <section class="project">
   <h2 class="project-header" data-role="UI Designer" data-summary="summary" data-date="2014"><span class="project-name">Cuffia</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -260,6 +286,7 @@
 <section class="project">
   <h2 class="project-header" data-role="Team Leader" data-summary="summary" data-date="2009"><span class="project-name">Agilent</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -273,6 +300,7 @@
 <section class="project">
   <h2 class="project-header" data-role="SEO Analyst" data-summary="summary" data-date="2009"><span class="project-name">ManPower</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -286,6 +314,7 @@
 <section class="project">
   <h2 class="project-header" data-role="Product Designer" data-summary="summary" data-date="2005"><span class="project-name">Easy Go</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
@@ -299,6 +328,7 @@
 <section class="project">
   <h2 class="project-header" data-role="UI Designer" data-summary="summary" data-date="2004"><span class="project-name">Holcim</span></h2>
   <amp-carousel height="300"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
