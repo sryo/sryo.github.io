@@ -33,11 +33,7 @@
     :root {
       --gap: calc(20px + (200 - 20) * ((100vw - 320px) / (1200 - 320)));
     }
-    .bio, .project-header {
-      margin-left: var(--gap);
-      margin-right: var(--gap);
-    }
-    .gallery {
+    .bio, .project-header, .gallery {
       padding-left: var(--gap);
       padding-right: var(--gap);
     }
@@ -52,6 +48,9 @@
       font-size: 2em;
       font-weight: normal;
       white-space: nowrap;
+      background-color: unset;
+      border: unset;
+      outline: 0;
     }
     .project-header::before {
       top: var(--mouse-y);
@@ -67,7 +66,7 @@
     .project[expanded] .project-header::before{
       opacity:1;
     }
-    .project:not(:hover):not([expanded]) .project-name {
+    .project:not(:hover):not([expanded]):not(:focus-within) .project-name {
       color: #d7d7d7;
     }
     .project-header::after {
@@ -98,7 +97,8 @@
       transition: color .1s cubic-bezier(0.215, 0.61, 0.355, 1);
     }
     .project:hover .project-name::before,
-    .project[expanded] .project-name::before {
+    .project[expanded] .project-name::before,
+    .project-header:focus .project-name::before {
       width: 100%;
       background: currentColor;
     }
@@ -113,10 +113,6 @@
     }
     p {
 
-    }
-    .i-amphtml-accordion-header {
-      background-color: unset;
-      border: unset;
     }
     amp-accordion>section>* {
       position: initial!important;
