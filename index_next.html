@@ -24,12 +24,14 @@
 
     <style amp-custom>
     body {
-      font-feature-settings: "kern" 1, "liga" 1, "dlig" 1, "hlig" , "cswh" 1;
       font-synthesis: weight style;
       font-kerning: auto;
       font-language-override: normal;
       font-size: calc(16px + 20 * ((100vw - 320px) / 680));
       font-family: 'Work Sans', sans-serif;
+    }
+    .project-name {
+      font-feature-settings: "kern" 1, "liga" 1, "dlig" 1, "hlig" , "cswh" 1;
     }
     .project-header {
       font-family: 'Playfair Display', serif;
@@ -51,10 +53,6 @@
     .project:not(:hover) .project-name {
       color: #d7d7d7;
     }
-    .project:hover .project-name {
-      box-shadow: inset 0 -1px 0 currentColor;
-      transition: all .1s ease;
-    }
     .project-header::after {
       content: attr(data-role);
       font-family: 'Roboto', serif;
@@ -67,10 +65,32 @@
     .project-header:first-letter {
       font-feature-settings: "kern" 1, "swsh" 1;
     }
+    .project .project-name::before {
+      display: block;
+      position: absolute;
+      bottom: 0;
+      height: 1px;
+      left: 0;
+      width: 0;
+      background: #d7d7d7;
+      transition: all .5s cubic-bezier(0.215, 0.61, 0.355, 1);
+      content: '';
+    }
+    .project:hover .project-name {
+      transition: color .1s cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
+    .project:hover .project-name::before {
+      width: 100%;
+      background: black;
+    }
     .project-name {
+      position: relative;
       display: inline-block;
       transition: all 1s cubic-bezier(0.215, 0.61, 0.355, 1);
-      box-shadow: inset 0 0 0 #d7d7d7;
+    }
+    .bio {
+      font-size: calc(16px + 20 * ((100vw - 320px) / 680));
+
     }
     p {
 
@@ -92,7 +112,7 @@
 </head>
 
 <body>
-
+<h1 class="bio">Hi, I'm Mateo, a UX designer based in Córdoba, Argentina. I use human-centered design to create beautiful user experiences. Currently at La Voz del Interior.</h1>
  <amp-accordion animate expand-single-section>
   <section class="project">
     <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2017"><span class="project-name">LaVoz.com.ar</span></h2>
