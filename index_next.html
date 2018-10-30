@@ -14,7 +14,10 @@
     let root = document.documentElement;
 
     root.addEventListener("mousemove", e => {
-      root.style.setProperty('--mouse-y', e.pageY + "px");
+      root.style.setProperty('--global-y', e.pageY + "px");
+      root.style.setProperty('--global-x', e.pageX + "px");
+      root.style.setProperty('--local-y', e.clientY / innerHeight + "px");
+      root.style.setProperty('--local-x', e.clientX / innerWidth + "px");
     });</script>
 
     <link rel="canonical" href="https://yadarola.com.ar">
@@ -33,10 +36,60 @@
     }
     :root {
       --gap: calc(20px + (200 - 20) * ((100vw - 320px) / (1200 - 320)));
+      --button: 2em;
     }
-    .bio, .project-header, .gallery {
+    .bio, .project-header {
       padding-left: var(--gap);
       padding-right: var(--gap);
+    }
+    .gallery {
+      margin: 0 0 2em 0;
+      position: relative !important;
+    }
+    .amp-carousel-button-prev {
+      bottom: 0;
+      left: 0;
+      right: unset;
+      top: 0;
+      background-image: unset;
+    }
+    .amp-carousel-button-prev:hover::before {
+      content:'Previous';
+    }
+    .amp-carousel-button-next {
+      bottom: 0;
+      left: unset;
+      right: 0;
+      top: 0;
+      background-image: unset;
+    }
+    .amp-carousel-button-next:hover::before {
+      content:'Next';
+    }
+    .amp-carousel-button {
+      width: 50%;
+      height: unset;
+      border-radius: unset;
+      transform: unset;
+      -webkit-transform: unset;
+      background-color: unset;
+      cursor: none;
+    }
+    .amp-carousel-button:hover::before {
+      left: calc(var(--local-x) * 300);
+      position: absolute;
+      top: calc(var(--local-y) * 400);
+      display: inline-block;
+    }
+    amp-carousel .amp-carousel-button.amp-disabled {
+      opacity: 1;
+      visibility: visible;
+    }
+    .gallery .slide:first-of-type {
+      margin-left: var(--gap);
+    }
+    .gallery .slide:last-of-type {
+      margin-right: var(--gap);
     }
     .projects {
       position: unset;
@@ -60,7 +113,7 @@
       left:0;
       opacity: 0;
       position: absolute;
-      top: var(--mouse-y);
+      top: var(--global-y);
       width: var(--gap)
     }
     .project:hover .project-header::before,
@@ -71,7 +124,7 @@
       color: #d7d7d7;
       content: attr(data-role);
       display: inline-block;
-      font-family: 'Roboto', serif;
+      font-family: 'Work Sans', serif;
       font-size: .375em;
       font-weight: 700;
       margin-left: .5em;
@@ -81,13 +134,15 @@
       font-feature-settings: "kern" 1, "liga" 1, "dlig" 1, "hlig" , "cswh" 1;
       position: relative;
       transition: color 1.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+      line-height: 1.5em;
+      text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
     }
     .project:not(:hover):not([expanded]):not(:focus-within) .project-name {
       color: #d7d7d7;
     }
     .project .project-name::before {
       background: #d7d7d7;
-      bottom: 0;
+      bottom: .225em;
       content: '';
       display: block;
       height: 1px;
@@ -95,6 +150,7 @@
       position: absolute;
       transition: width .5s cubic-bezier(0.215, 0.61, 0.355, 1);
       width: 0;
+      z-index: -1;
     }
     .project:hover .project-name,
     .project[expanded] .project-name {
@@ -126,35 +182,37 @@
 <body>
 <h1 class="bio">Hi, I'm Mateo, a UX designer based in Córdoba, Argentina. I use human-centered design to create beautiful user experiences. Currently at La Voz del Interior.</h1>
  <amp-accordion animate expand-single-section class="projects">
-  <section class="project">
-    <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2017"><span class="project-name">LaVoz.com.ar</span></h2>
+  <section class="project" id="laVoz">
+    <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2017"><span class="project-name">La Voz</span></h2>
     <amp-carousel height="300"
     class="gallery"
     layout="fixed-height"
     type="carousel">
     <amp-img 
-    lightbox="la-voz-com-ar"
+    lightbox="laVoz"
+    class="slide"
     src=""
     width="400"
     height="300"
-    alt=""></amp-img>
+    alt="La Voz"></amp-img>
   </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="vlic">
   <h2 class="project-header" data-role="Product Designer" data-summary="summary" data-date="2016"><span class="project-name">Vlic</span></h2>
   <amp-carousel height="300"
-    class="gallery"
+  class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
   lightbox="vlic"
+  class="slide"
   src="vlic.png"
   width="400"
   height="300"
   alt="Vlic"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="welo">
   <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2016"><span class="project-name">Welo</span></h2>
   <amp-carousel height="300"
   class="gallery"
@@ -162,13 +220,14 @@
   type="carousel">
   <amp-img 
   lightbox="welo"
+  class="slide"
   src="welo.png"
   width="400"
   height="300"
   alt="Welo"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="infoxel">
   <h2 class="project-header" data-role="Visual Designer" data-summary="summary" data-date="2015"><span class="project-name">Infoxel</span></h2>
   <amp-carousel height="300"
   class="gallery"
@@ -176,13 +235,14 @@
   type="carousel">
   <amp-img 
   lightbox="infoxel"
+  class="slide"
   src="infoxel.png"
   width="400"
   height="300"
   alt="Infoxel"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="thor">
   <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2015"><span class="project-name">Thor</span></h2>
   <amp-carousel height="300"
   class="gallery"
@@ -190,13 +250,14 @@
   type="carousel">
   <amp-img 
   lightbox="thor"
+  class="slide"
   src="thor.png"
   width="400"
   height="300"
   alt="Thor"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="vision">
   <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2015"><span class="project-name">Vision</span></h2>
   <amp-carousel height="300"
   class="gallery"
@@ -204,27 +265,29 @@
   type="carousel">
   <amp-img 
   lightbox="vision"
+  class="slide"
   src="vision.png"
   width="400"
   height="300"
   alt="Vision"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="peerAssist">
   <h2 class="project-header" data-role="Front-End Developer" data-summary="summary" data-date="2015"><span class="project-name">PeerAssist</span></h2>
   <amp-carousel height="300"
   class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
-  lightbox="peerassist"
+  lightbox="peerAssist"
+  class="slide"
   src=""
   width="400"
   height="300"
-  alt=""></amp-img>
+  alt="PeerAssist"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="hawker">
   <h2 class="project-header" data-role="UX Designer" data-summary="summary" data-date="2014"><span class="project-name">Hawker</span></h2>
   <amp-carousel height="300"
   class="gallery"
@@ -232,13 +295,14 @@
   type="carousel">
   <amp-img 
   lightbox="hawker"
+  class="slide"
   src=""
   width="400"
   height="300"
-  alt=""></amp-img>
+  alt="Hawker"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="assia">
   <h2 class="project-header" data-role="UI Designer" data-summary="summary" data-date="2014"><span class="project-name">ASSIA</span></h2>
   <amp-carousel height="300"
   class="gallery"
@@ -246,13 +310,14 @@
   type="carousel">
   <amp-img 
   lightbox="assia"
+  class="slide"
   src=""
   width="400"
   height="300"
-  alt=""></amp-img>
+  alt="ASSIA"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="enersys">
   <h2 class="project-header" data-role="UI Designer" data-summary="summary" data-date="2015"><span class="project-name">Enersys</span></h2>
   <amp-carousel height="300"
   class="gallery"
@@ -260,13 +325,14 @@
   type="carousel">
   <amp-img 
   lightbox="enersys"
+  class="slide"
   src=""
   width="400"
   height="300"
-  alt=""></amp-img>
+  alt="Enersys"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="cuffia">
   <h2 class="project-header" data-role="UI Designer" data-summary="summary" data-date="2014"><span class="project-name">Cuffia</span></h2>
   <amp-carousel height="300"
   class="gallery"
@@ -274,13 +340,14 @@
   type="carousel">
   <amp-img 
   lightbox="cuffia"
+  class="slide"
   src=""
   width="400"
   height="300"
-  alt=""></amp-img>
+  alt="Cuffia"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="agilent">
   <h2 class="project-header" data-role="Team Leader" data-summary="summary" data-date="2009"><span class="project-name">Agilent</span></h2>
   <amp-carousel height="300"
   class="gallery"
@@ -288,41 +355,44 @@
   type="carousel">
   <amp-img 
   lightbox="agilent"
+  class="slide"
   src=""
   width="400"
   height="300"
-  alt=""></amp-img>
+  alt="Agilent"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="manPower">
   <h2 class="project-header" data-role="SEO Analyst" data-summary="summary" data-date="2009"><span class="project-name">ManPower</span></h2>
   <amp-carousel height="300"
   class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
-  lightbox="manpower"
+  lightbox="manPower"
+  class="slide"
   src=""
   width="400"
   height="300"
-  alt=""></amp-img>
+  alt="ManPower"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="easyGo">
   <h2 class="project-header" data-role="Product Designer" data-summary="summary" data-date="2005"><span class="project-name">Easy Go</span></h2>
   <amp-carousel height="300"
   class="gallery"
   layout="fixed-height"
   type="carousel">
   <amp-img 
-  lightbox="easy-go"
+  lightbox="easyGo"
+  class="slide"
   src=""
   width="400"
   height="300"
-  alt=""></amp-img>
+  alt="Easy Go"></amp-img>
 </amp-carousel>
 </section>
-<section class="project">
+<section class="project" id="holcim">
   <h2 class="project-header" data-role="UI Designer" data-summary="summary" data-date="2004"><span class="project-name">Holcim</span></h2>
   <amp-carousel height="300"
   class="gallery"
@@ -330,10 +400,11 @@
   type="carousel">
   <amp-img 
   lightbox="holcim"
+  class="slide"
   src=""
   width="400"
   height="300"
-  alt=""></amp-img>
+  alt="Holcim"></amp-img>
 </amp-carousel>
 </section>
 </amp-accordion>
