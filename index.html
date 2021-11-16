@@ -64,14 +64,16 @@
         a {
             padding: 20px;
             color: black;
+            text-decoration: none;
+            background-image: url(/wave.svg);
+            background-position: 0 calc(100%);
+            background-size: auto 0.4em;
+            background-repeat: repeat-x;
+            transition: all 400ms cubic-bezier(.47,1.64,.41,.8);
         }
 
         a:hover {
-            text-decoration: none;
-            background-image: url(/wave.svg);
-            background-position: 0 calc(100% - .1rem);
-            background-size: auto 30px;
-            background-repeat: repeat-x;
+            background-position: 0 calc(100% - 0.35rem);
         }
     </style>
 </head>
