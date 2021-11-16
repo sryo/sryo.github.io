@@ -1,310 +1,92 @@
-
 <!DOCTYPE html>
 <html ⚡ lang="en">
+
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1,user-scalable=0;">
-    <link href="https://fonts.googleapis.com/css?family=Raleway:400,600,900" rel="stylesheet">
-    <title>Mateo Yadarola — Product Designer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="https://yadarola.com.ar">
+    <title>Mateo Yadarola — UX</title>
     <style>
         * {
-            box-sizing: border-box;
-            margin: 0;
+            font: 24px "Open Sans";
             padding: 0;
-            -webkit-margin-before: 0;
-            -webkit-margin-after: 0;
-
-        }
-        :after {
-            font-family: inherit;
-        };
-        audio,
-        canvas,
-        iframe,
-        img,
-        svg,
-        video {
-            vertical-align: middle;
+            margin: 0;
         }
 
-        html {
-            font-size: calc( 1em + 2vmin );
-            line-height: 1.4;
-            text-rendering: geometricPrecision;
-            font-family: Raleway,sans-serif;
+        .about-wrapper {
+            position: relative;
+            background-color: white;
+            margin-bottom: 150px;
+            height: 100vh;
+            color: black;
         }
-        a {
-            text-decoration: none;
-            color: inherit;
+
+        .info {
+            font-size: 24px;
+            color: black;
+            margin-top: 10px;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;
         }
-        .navigation {
-            position: absolute;
-            top: 0;
+
+        .title {
+            font-size: 72px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+
+        section {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 100px;
+        }
+
+        li {
+            list-style: none;
+            padding-top: 10px;
+        }
+
+        footer {
+            bottom: 0;
             left: 0;
             right: 0;
-            text-align: right;
-            padding: .5rem;
-            justify-content: flex-end;
-            font-size: .8rem;
-            font-weight: 600;
-            -webkit-font-smoothing: subpixel-antialiased;
-        }
-        .navitems>a {
-            margin:1rem 1rem;
-            color: white;
-            position: relative;
-
-        }
-        .navitems>a:visited {color:white;}
-        .navitems>a>span {
-            mix-blend-mode: exclusion;
-
-        }
-
-        .navitems>a::after {
-            display: block;
-            content: attr(class);
-            position: absolute;
-            top: -2px;
-            left: 0;
-            z-index: -1;
-            text-rendering: geometricPrecision;
-            font-family: Raleway,sans-serif;
-        }
-
-        .container,
-        .header {
-            height: 100vh;
-        }
-        .crop {
-            width:100%;
-            overflow:hidden;
-        }
-        .container {
-            perspective: 1px;
-            overflow: scroll;
-        }
-
-        .header {
-            transform: matrix3d( 1, 0, 0, 0,
-             0, 1, 0, 0,
-             0, 0, 1, 0,
-             0, 0, 0, -1 ) translateZ(-2px);
-            z-index:1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-
-        h1 {
-            font-size: 1.6rem;
-            white-space: pre;
-            font-weight: normal;
-        }
-
-        section.portfolio {
-            text-align: center;
-            width: 100%;
-            overflow:hidden;
-            align-items: center;
-            justify-content: right;
+            height: 150px;
             z-index: 1;
-            position: relative;
+            position: fixed;
+            text-align: center;
         }
 
-        section.portfolio .item {
-            height:80vh;
-            width:92vw;
-            margin:2rem;
-            display:block;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight:900;
-            overflow: hidden;
+        .ul {
+            z-index: 1;
+            font-size: 24px;
+            color: black;
+            padding-top: 20px;
         }
 
-        section.portfolio .item:hover .description {
-            opacity: 1;
+        a {
+            padding: 20px;
+            color: black;
         }
-        section.portfolio .item:hover .thumbnail {
-            opacity: .1;
-        }
-        section.portfolio .item .description {
-            position: absolute;
-            opacity: 0;
-
-        }
-
-        section.portfolio .item .thumbnail {
-            width: 140vw;
-            margin-left: -10vw;
-            height: 110vh;
-            background-size: contain;
-            transition: opacity .3s ease;
-            background-position: center;
-            position: absolute;
-
-
-        }
-
-        section.portfolio .item:nth-child(odd) .thumbnail {
-            transform: rotate(20deg);
-        }
-
-        section.portfolio .item:nth-child(even) .thumbnail {
-            transform: rotate(-20deg);
-        }
-        .vision {
-
-            background-color: #4CAF50;
-        } 
-        .vision .thumbnail{
-            background-image: url(vision.png);
-
-        }
-
-        .vlic {
-
-            background-color: #DC7642;
-        } 
-        .vlic .thumbnail{
-            background-image: url(vlic.png);
-
-        }
-        .thor {
-
-            background-color: #2F80ED;
-        } 
-        .thor .thumbnail{
-            background-image: url(thor.png);
-
-        }
-        .golftime {
-
-            background-color: #157363;
-        } 
-        .golftime .thumbnail{
-            background-image: url(golftime.png);
-            height: 250vw !important;
-
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            transform-origin: bottom;
-        }
-
-        section.companies,
-        section.contact,
-        section.footer{
-            width:92vw;
-            margin:2rem;
-        }
-
-        section.companies a,
-        section.contact a {
-            font-weight: 900;
-            white-space: nowrap;
-        }
-
-        section.companies a {
-            pointer-events: none;
-        }
-
-
-        .mouse{
-          position: absolute;
-          bottom: 3rem;
-          width: 1rem;
-          margin-left: auto;
-          margin-right: auto;
-      }
-      .mouse-icon{
-         width: 1rem;
-         height: 2rem;
-         border: 2px solid black;
-         border-radius: 10rem;
-         cursor: pointer;
-         position: relative;
-         text-align: center;
-     }
-     .mouse-wheel{
-      height: 5px;
-      margin: 5px auto 0;
-      display: block;
-      width: 5px;
-      background-color: black;
-      border-radius: 50%;
-      animation: 2s ease infinite wheel-up-down;
-  }
-  @keyframes wheel-up-down {
-    0% {
-        margin-top: 5px;
-        opacity: 0;
-    }
-    30% {
-        opacity: 1;
-    }
-    100% {
-        margin-top: 1rem;
-        opacity: 0;
-    }
-}
-</style>
+    </style>
 </head>
-<body class="crop">
 
-    <div class="container">
-        <section class="header">
+<body>
+    <section>
 
-            <h1>Mateo Yadarola is a Product Designer
-<!--         -->based in Argentina.</h1>
-
-                <div class="mouse">
-
-                    <div class="mouse-icon">
-                      <span class="mouse-wheel"></span>
-                  </div>
-
-              </div>
-          </section>
-
-          <section id="portfolio" class="portfolio">
-          <h2>Featured projects</h2>
-            <article class="item vision"><p class="description">TV channel monitoring app</p><div class="thumbnail"></div></article>
-            <article class="item vlic"><p class="description">News reader app</p><div class="thumbnail"></div></article>
-            <article class="item thor"><p class="description">Human computing app</p><div class="thumbnail"></div></article>
-            <article class="item golftime"><p class="description">Golftime</p><div class="thumbnail"></div></article>
+        <div class ="about-wrapper">
+          <p class='info'>Hola, soy Mateo Yadarola, un Diseñador UX con una tendencia a hacer muchas preguntas. Me emociona poner sobre la mesa hasta las peores ideas y empujar pixeles con un propósito.<p>
+          </div> <!-- end of about wrapper -->
         </section>
-        <section id="companies" class="companies">
-            <h2>Companies</h2>
-            <p>Over the past 15 years, I’ve worked on projects for a number of companies such as <a href="#">Taller Technologies</a> / <a href="#">Welo</a> / <a href="#">Infoxel Media Labs</a> / <a href="#">PeerAssist</a> / <a href="#">ASSIA Inc.</a> / <a href="#">Hawker</a> / <a href="#">Enersys</a> / <a href="#">Trint</a> /<a href="#">Agilent Technologies</a> / <a href="#">ManPower Group</a> / <a href="#">Talent Trust</a> / <a href="#">COINED e.V.</a></p>
-        </section>
-        <section id="contact" class="contact">
-            <h2>Contact</h2>
-            <p>Would you like to work together? Don't hesitate to <a href="https://www.linkedin.com/in/myadarola/">contact me</a>.</p>
-        </section>
-        <section class="footer">
-            <p>&copy;2017</p>
-            <p>&nbsp;</p>
-        </section>
-
-
-
-
-    </div>
-    <div class="navigation">
-        <div class="navitems">
-            <a href="#portfolio" class="portfolio"><span>portfolio</span></a>
-            <a href="#companies" class="companies"><span>companies</span></a>
-            <a href="#contact" class="contact"><span>contact</span></a>
-        </div>
-    </div>
-
+        <footer>
+            <ul>
+            <li><a class='link' href="#">LinkedIn</a><li>
+            <li><a class='link' href="#">Email</a><li>
+            </ul>
+    
+            </footer>
 </body>
+
 </html>
