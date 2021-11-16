@@ -37,7 +37,6 @@
         section {
             position: relative;
             z-index: 2;
-            margin-bottom: 100px;
         }
 
         li {
@@ -65,15 +64,21 @@
             padding: 20px;
             color: black;
             text-decoration: none;
+        }
+        a::after {
+            display: block;
+            content: '';
             background-image: url(/wave.svg);
-            background-position: 0 calc(100%);
+            background-position: 0 calc(100% + 1rem);
             background-size: auto 0.4em;
             background-repeat: repeat-x;
-            transition: all 400ms cubic-bezier(.47,1.64,.41,.8);
+            transition: all .3s cubic-bezier(.47,1.64,.41,.8);
+            opacity: 0;
         }
 
-        a:hover {
+        a:hover::after{
             background-position: 0 calc(100% - 0.35rem);
+            opacity: 1;
         }
     </style>
 </head>
