@@ -5,7 +5,7 @@
 
         <style type="text/css">
         .st0 {
-            animation: shift 3s linear infinite;
+            animation: shift 1s linear infinite;
         }
         @keyframes shift {
             from {
