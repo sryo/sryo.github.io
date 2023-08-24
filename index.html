@@ -1,111 +1,164 @@
 <!DOCTYPE html>
-<html ⚡ lang="es">
+<html>
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="canonical" href="https://yadarola.com.ar">
-    <title>Mateo Yadarola — UX</title>
+    <title>Mateo Yadarola- UX</title>
+    <meta name="viewport" content="width=device-width">
     <style>
-        * {
-            font-size: calc(1.2rem + 2vw);
-            padding: 0;
-            margin: 0;
+        @charset "UTF-8";
+
+        body {
+            width: 100%;
+            height: 100%;
+            -webkit-text-size-adjust: 100%;
+            zoom: 1;
             font-family: -apple-system, system-ui, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, Helvetica Neue, Arial;
+            line-height: 20px;
+            cursor: default;
+            -webkit-touch-callout: none;
+            user-select: none;
+            overflow: hidden;
         }
 
-        .about-wrapper {
-            position: relative;
-            margin-bottom: calc((1.2rem + 2vw + 40px) * 4);
-            height: 100vh;
-            color: black;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-
-        }
-
-        .info {
-            color: black;
-            margin-top: 10px;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 20px;
-        }
-
-
-        section {
-            position: relative;
-            z-index: 2;
-        }
-
-        li {
-            list-style: none;
-            padding-top: 10px;
-        }
-
-        footer {
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 1;
-            position: fixed;
-            text-align: center;
-            margin-bottom: 1em;
-        }
-
-        .ul {
-            z-index: 1;
-            font-size: 24px;
-            color: black;
-            padding-top: 20px;
-        }
-
-        a {
-            padding: 20px;
-            color: black;
+        a,
+        a:hover {
+            color: inherit;
             text-decoration: none;
+            border-bottom: 0.25vw solid inherit;
             position: relative;
         }
-        a::after {
-            display: block;
+
+        a:after {
             content: '';
-            background-image: url(/wave.svg);
-            background-position: 0 calc(100% + 1rem);
-            background-size: auto .25em;
-            background-repeat: repeat-x;
-            transition: all .3s cubic-bezier(.47,1.64,.41,.8);
-            opacity: 0;
             position: absolute;
-            left: 0;
-            right: 0;
-            top: 0;
-            bottom: 0;
+            bottom: 0.3em;
+            padding-left: 0.2em;
         }
 
-        a:hover::after{
-            background-position: 0 calc(100% - 6px);
-            opacity: 1;
+        .icon {
+            position: absolute;
+            transform-origin: top left;
+            white-space: nowrap;
+            color: transparent;
+        }
+
+        .bio {
+            font-weight: 600;
+            font-size: 80px;
+            line-height: 72px;
+            position: fixed;
+            top: 50%;
+            left: 0;
+            font-size: 100px;
+            line-height: 90px;
+            font-size: 5.5vw;
+            line-height: 1em;
+            width: 70vw;
+            z-index: 1;
+            transform: translateY(-50%);
+            padding: 5vw;
+            box-sizing: border-box;
+        }
+
+        @media screen and (max-width: 700px) {
+
+            .bio {
+                font-size: 10vw;
+                line-height: 10.8vw;
+                width: 80vw;
+            }
+
         }
     </style>
+
 </head>
 
 <body>
-    <section>
+    <div class="bio">
+        Hola, soy <a href="https://www.linkedin.com/in/myadarola/" class="link">Mateo Yadarola</a>, un Diseñador UX con
+        una tendencia a hacer muchas preguntas. Me motiva poner sobre la mesa hasta las peores ideas y empujar pixeles
+        con un propósito.
+    </div>
 
-        <div class="about-wrapper">
-            <p class='info'>Hola, soy <a href="https://www.linkedin.com/in/myadarola/" class"link">Mateo Yadarola</a>, un Diseñador UX con una tendencia a hacer muchas preguntas. Me
-                motiva poner sobre la mesa hasta las peores ideas y empujar pixeles con un propósito.
-            <p>
-        </div> <!-- end of about wrapper -->
-    </section>
-    <footer>
-        <ul>
-            <li><a class='link' href="https://www.linkedin.com/in/myadarola/">LinkedIn</a>
-            <li><a class='link' href="https://read.cv/sryo">CV</a>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themes = [
+                ['🎨', '📱', '🌟', '🥦', '👽'],
+                ['✏️', '💻', '🦈', '🪐', '🍺', '☕', '👾'],
+                ['🖌️', '🧠', '🌱', '🥰', '🚲'],
+                ['📐', '🛰️', '🐶', '😎', '🏡'],
+                ['🖋️', '🤖', '🦅', '🦄', '🎉', '🍆']
+            ];
 
-        </ul>
+            const schemes = [
+                ['#FF5733', '#33C2FF'],
+                ['#33FF57', '#FF5733'],
+                ['#57FF33', '#3357FF'],
+                ['#FF33C2', '#33FF57'],
+                ['#33C2FF', '#FF5733'],
+                ['#E54B4B', '#47D7AC'],
+                ['#6B47E5', '#E5475E'],
+                ['#E5475E', '#6B47E5'],
+                ['#47D7AC', '#E54B4B'],
+                ['#FFAD33', '#33ADFF']
+            ];
 
-    </footer>
+            const emojis = themes[Math.floor(Math.random() * themes.length)];
+            const scheme = schemes[Math.floor(Math.random() * schemes.length)];
+
+            document.body.style.backgroundColor = scheme[0];
+            document.querySelector('.bio').style.color = scheme[0];
+
+            const icons = document.querySelectorAll('.icon');
+
+            let moved = 0, count = 0;
+
+            function handleEvent(e) {
+                let x, y;
+                if (e.type === 'mousemove') {
+                    x = e.pageX;
+                    y = e.pageY;
+                } else if (e.type === 'touchmove' || e.type === 'touchstart') {
+                    const touch = e.touches[0] || e.changedTouches[0];
+                    x = touch.pageX;
+                    y = touch.pageY;
+                }
+
+                if (++moved >= 5) {
+                    create(x, y, emojis);
+                    moved = 0;
+                }
+                e.preventDefault();
+            }
+
+            document.addEventListener('mousemove', handleEvent);
+            document.addEventListener('touchmove', handleEvent);
+            document.addEventListener('touchstart', handleEvent);
+
+
+            const create = (x, y, emojis) => {
+                const text = emojis[random(0, emojis.length - 1)];
+                const symbol = document.createElement('div');
+                symbol.className = 'icon';
+                symbol.style.left = `${x}px`;
+                symbol.style.top = `${y}px`;
+                symbol.style.fontSize = `${random(50, 200)}px`;
+                symbol.style.transform = `rotate(${random(0, 360)}deg) translate(-50%, -50%) translateZ(0)`;
+                symbol.style.textShadow = `0 0 ${scheme[1]}`;
+                symbol.innerHTML = text;
+                document.body.appendChild(symbol);
+
+                if (count++ > 2000) {
+                    document.querySelector('.icon').remove();
+                }
+            };
+
+            const random = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+        });
+    </script>
 </body>
 
 </html>
