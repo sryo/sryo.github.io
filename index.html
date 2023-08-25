@@ -37,7 +37,7 @@
             color: transparent;
         }
 
-        .bio {
+        header.bio {
             font-weight: 600;
             position: fixed;
             font-size: calc(80px + (40 - 80) * ((100vw - 1600px) / (300 - 1600)));
@@ -48,24 +48,54 @@
             box-sizing: border-box;
         }
 
-        .links {
+        header.bio h1 {
+            font-size: 1em;
+            margin: 0;
+            line-height: 1em;
+        }
+
+        header.bio p {
+            font-size: 1em;
+            margin: 0;
+            line-height: 1em;
+        }
+
+        header.bio .links {
             margin-top: 1em;
             font-size: .5em;
+        }
+
+        header.bio .links ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        header.bio .links ul li {
+            display: inline;
+            margin-right: 0.5em;
+        }
+
+        header.bio .links ul li:not(:last-child):after {
+            content: "|";
+            margin-left: 0.5em;
         }
     </style>
 
 </head>
 
 <body>
-    <div class="bio">
-        Hola, soy <a href="https://www.linkedin.com/in/myadarola/">Mateo Yadarola</a>, un Diseñador UX con
-        una tendencia a hacer muchas preguntas. Me motiva poner sobre la mesa hasta las peores ideas y empujar pixeles
-        con un propósito.
-        <div class="links">
-            <a href="https://read.cv/sryo">Read.cv</a> |
-            <a href="https://github.com/sryo">GitHub</a>
-        </div>
-    </div>
+    <header class="bio">
+        <h1>Hola, soy <a href="https://www.linkedin.com/in/myadarola/" aria-label="Perfil de LinkedIn de Mateo Yadarola">Mateo Yadarola</a></h1>
+        <p>un Diseñador UX con una tendencia a hacer muchas preguntas. Me motiva poner sobre la mesa hasta las peores ideas y empujar pixeles
+            con un propósito.</p>
+        <nav class="links">
+            <ul>
+                <li><a href="https://read.cv/sryo" aria-label="Mi CV en Read.cv">Read.cv</a></li>
+                <li><a href="https://github.com/sryo" aria-label="Mi perfil de GitHub">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -127,6 +157,7 @@
                 const text = emojis[random(0, emojis.length - 1)];
                 const symbol = document.createElement('div');
                 symbol.className = 'icon';
+                symbol.setAttribute('aria-hidden', 'true');
                 symbol.style.left = `${x}px`;
                 symbol.style.top = `${y}px`;
                 symbol.style.fontSize = `${random(50, 200)}px`;
