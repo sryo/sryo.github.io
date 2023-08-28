@@ -4,21 +4,21 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="description" content="Mateo Yadarola: Diseñador UX. Portfolio y contacto.">
     <link rel="canonical" href="https://yadarola.com.ar">
     <title>Mateo Yadarola &mdash; UX</title>
     <meta name="viewport" content="width=device-width">
     <style>
         :root { --scheme-1: #00dbeb, #FF5733; --scheme-2: #ffa71a, #3357FF; --scheme-3: #f5009b, #57FF33; --scheme-4: #a323d1, #33FF57; --scheme-5: #4e00de, #FFAD33; --scheme-6: #00FA9A, #FF4500; --scheme-7: #1E90FF, #FFD700; --scheme-8: #FF69B4, #48D1CC; --scheme-9: #4833FF, #FF9A33; --scheme-10: #6B47E5, #E5475E; --scheme: var(--scheme-1); --scheme-bg: var(--scheme, 1);  --scheme-shadow: var(--scheme, 2); }
         body { width: 100%; height: 100%; -webkit-text-size-adjust: 100%; font-family: -apple-system, system-ui, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, Helvetica Neue, Arial; cursor: default; overflow: hidden; background-color: var(--scheme-bg); }
-        a, a:hover { color: inherit; text-decoration: none; position: relative; }
-        .icon { position: absolute; transform-origin: top left; white-space: nowrap; color: transparent; text-shadow: 0 0 var(--scheme-shadow); }
-    
+        a, a:hover { color: inherit; text-decoration-thickness: 0.12em; position: relative; }
         header.bio { font-weight: 600; position: fixed; font-size: clamp(40px, 5vw, 80px); line-height: 1em; width: clamp(390px, 80vw, 1200px); z-index: 1; padding: 5vw; box-sizing: border-box; color: var(--scheme-bg);}
             header.bio h1, header.bio p { font-size: 1em; margin: 0; line-height: 1em; display: inline; }
             header.bio .links { margin-top: 1em; font-size: .5em; }
                 header.bio .links ul { list-style: none; padding: 0; margin: 0; }
                 header.bio .links ul li { display: inline; margin-right: 0.5em; }
                 header.bio .links ul li:not(:last-child)::after { content: "|"; margin-left: 0.5em; }
+        .icon { position: absolute; transform-origin: top left; white-space: nowrap; color: transparent; text-shadow: 0 0 var(--scheme-shadow); }
     </style>    
 </head>
 
@@ -34,15 +34,31 @@
     </header>
 
     <script async>
+        function updateFavicon(emoji, color) {
+            const faviconData = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='${color}'><rect width='100' height='100' fill='${color}'/><text y='.9em' font-size='90'>${emoji}</text></svg>`;
+            const link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+                const newLink = document.createElement('link');
+                newLink.rel = 'icon';
+                newLink.href = 'data:image/svg+xml,' + encodeURIComponent(faviconData);
+                document.head.appendChild(newLink);
+            } else {
+                link.href = 'data:image/svg+xml,' + encodeURIComponent(faviconData);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            const schemes = [ '--scheme-1', '--scheme-2', '--scheme-3', '--scheme-4', '--scheme-5', '--scheme-6', '--scheme-7', '--scheme-8', '--scheme-9', '--scheme-10' ];
+            const schemes = ['--scheme-1', '--scheme-2', '--scheme-3', '--scheme-4', '--scheme-5', '--scheme-6', '--scheme-7', '--scheme-8', '--scheme-9', '--scheme-10'];
             const selectedScheme = schemes[Math.floor(Math.random() * schemes.length)];
             const [bgColor, shadowColor] = getComputedStyle(document.documentElement)
                 .getPropertyValue(selectedScheme)
                 .split(', ');
 
-        document.documentElement.style.setProperty('--scheme-bg', bgColor.trim());
-        document.documentElement.style.setProperty('--scheme-shadow', shadowColor.trim());
+            document.documentElement.style.setProperty('--scheme-bg', bgColor.trim());
+            document.documentElement.style.setProperty('--scheme-shadow', shadowColor.trim());
+
+            const themeColorMeta = document.querySelector("meta[name='theme-color']");
+            themeColorMeta.content = bgColor.trim();
 
             const themes = [
                 ['🎨', '📱', '🌟', '🥦', '👽'],
@@ -98,6 +114,8 @@
             };
 
             const random = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+            const chosenEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            updateFavicon(chosenEmoji, bgColor.trim());
         });
     </script>
 </body>
