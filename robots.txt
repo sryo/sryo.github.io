@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://yadarola.com.ar/sitemap.txt
