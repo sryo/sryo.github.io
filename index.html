@@ -14,9 +14,9 @@
 		:root { --scheme-1: #00dbeb, #FF5733; --scheme-2: #ffa71a, #3357FF; --scheme-3: #f5009b, #57FF33; --scheme-4: #a323d1, #33FF57; --scheme-5: #4e00de, #FFAD33; --scheme-6: #00FA9A, #FF4500; --scheme-7: #1E90FF, #FFD700; --scheme-8: #FF69B4, #48D1CC; --scheme-9: #4833FF, #FF9A33; --scheme-10: #6B47E5, #E5475E; --scheme: var(--scheme-1); --scheme-bg: var(--scheme, 1);  --scheme-shadow: var(--scheme, 2); }
 		body { width: 100%; height: 100%; -webkit-text-size-adjust: 100%; font-family: -apple-system, system-ui, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, Helvetica Neue, Arial; cursor: default; overflow: hidden; background-color: var(--scheme-bg); }
 		a, a:hover { color: inherit; text-decoration-thickness: 0.12em; position: relative; }
-		header.bio { font-weight: 600; position: fixed; font-size: clamp(40px, 5vw, 80px); line-height: 1em; width: clamp(390px, 80vw, 1200px); z-index: 1; padding: 5vw; box-sizing: border-box; color: var(--scheme-bg);}
-			header.bio h1, header.bio p { font-size: 1em; margin: 0; line-height: 1em; display: inline-block; }
-			header.bio .links, header.bio .other { margin-top: 1em; font-size: .35em; }
+		header.bio { font-weight: 600; position: fixed; font-size: clamp(40px, 5vw, 80px); line-height: 1em; width: clamp(390px, 80vw, 1200px); z-index: 1; padding: 5vw; box-sizing: border-box; color: var(--scheme-bg); }
+			header.bio h1, header.bio p:not(.other) { font-size: 1em; margin: 0; line-height: 1em; display: contents; text-wrap: pretty; }
+			header.bio .links, header.bio .other { margin-top: 1em; font-size: .35em; line-height: 1em; }
 				header.bio .links ul { list-style: none; padding: 0; margin: 0; }
 				header.bio .links ul li { display: inline; margin-right: 0.5em; }
 				header.bio .links ul li:not(:last-child)::after { content: "|"; margin-left: 0.5em; }
