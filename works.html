@@ -62,11 +62,11 @@
 			text-align: center;
 			outline: 0;
 			z-index: -11;
-			transition: all .5s ease-in-out;
+			transition: all .5s cubic-bezier(.25,1.5,.75,.98);
 		}
 
 		.item>img {
-			transition: all 400ms cubic-bezier(.47, 1.64, .41, .8);
+			transition: all 400ms cubic-bezier(.5,1.75,.5,.75);
 			animation: appear .25s;
 			animation-delay: calc(var(--stagger, 0) * 0.2s);
 			animation-fill-mode: forwards;
