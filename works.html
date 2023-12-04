@@ -51,22 +51,16 @@
 		}
 
 		.item {
-			cursor: pointer;
-			display: flex;
 			align-items: center;
 			justify-content: center;
 			font-size: 36px;
 			width: 100px;
 			height: 100px;
 			position: absolute;
-			background: inherit;
 			animation: float 3s ease-in-out infinite;
 			animation-delay: calc(var(--stagger, 0) * 0.2s);
 			text-align: center;
-			appearance: none;
-			border: 0;
 			outline: 0;
-			background: transparent;
 			z-index: -11;
 			transition: all .5s ease-in-out;
 		}
@@ -116,10 +110,18 @@
 			background: transparent;
 			color: inherit;
 			animation: fadeIn .125s ease-in;
-			max-width: 920px;
+			max-width: 780px;
 			margin: auto;
 			height: 100vh;
 			overflow: scroll;
+		}
+		h2,h3 {
+			max-width: 500px;
+			text-wrap: pretty;
+			text-align: center;
+			margin-left: auto;
+			margin-right: auto;
+			font-weight: normal;
 		}
 
 		.gallery>img {
@@ -141,10 +143,6 @@
 			position: absolute;
 			top: 0;
 			width: 100%;
-		}
-
-		.gallery>* {
-			max-width: 100%;
 		}
 
 		.gallery::after {
@@ -345,13 +343,24 @@
 	</div>
 	<svg id="lineContainer"></svg>
 	<script async>
-		document.querySelectorAll('.close').forEach(button => {
-			button.addEventListener('click', () => document.querySelectorAll('input[type="radio"]').forEach(radioButton => radioButton.checked = false));
+		const closeButtons = document.querySelectorAll('.close');
+		const radioButtons = document.querySelectorAll('input[type="radio"]');
+
+		const clearCheckedRadioButtons = () => {
+			radioButtons.forEach(radioButton => {
+			radioButton.checked = false;
+			});
+		};
+
+		closeButtons.forEach(button => {
+			button.addEventListener('click', function () {
+				clearCheckedRadioButtons();
+			});
 		});
 
-		document.addEventListener('keydown', event => {
-			if (event.key === 'Escape') {
-				document.querySelectorAll('input[type="radio"]').forEach(radioButton => radioButton.checked = false);
+		document.addEventListener('keydown', function (event) {
+			if (event.key === 'Escape' || event.keyCode === 27) {
+				clearCheckedRadioButtons();
 			}
 		});
 	
@@ -368,33 +377,41 @@
 		const svg = document.getElementById('lineContainer');
 
 		items.forEach((item, index) => {
-			item.style.setProperty('--stagger', index);
+		item.style.setProperty('--stagger', index);
 
-			let overlapping;
-			do {
-				overlapping = false;
-				const maxWidthPercent = 100 - (item.clientWidth / window.innerWidth * 100);
-				const maxHeightPercent = 100 - (item.clientHeight / window.innerHeight * 100);
+		const maxAttempts = 50;
+		let attempts = 0;
 
-				const xPercent = Math.random() * maxWidthPercent;
-				const yPercent = Math.random() * maxHeightPercent;
+		while (attempts < maxAttempts) {
+			const xPercent = Math.random() * (100 - item.clientWidth / window.innerWidth * 100);
+			const yPercent = Math.random() * (100 - item.clientHeight / window.innerHeight * 100);
 
-				item.style.left = `${xPercent}%`;
-				item.style.top = `${yPercent}%`;
+			item.style.left = `${xPercent}%`;
+			item.style.top = `${yPercent}%`;
 
-				const rect1 = item.getBoundingClientRect();
-				items.forEach(otherItem => {
-					if (otherItem === item) return;
-					const rect2 = otherItem.getBoundingClientRect();
-					if (rect1.left < rect2.right &&
-						rect1.right > rect2.left &&
-						rect1.top < rect2.bottom &&
-						rect1.bottom > rect2.top) {
-						overlapping = true;
-					}
-				});
-			} while (overlapping);
-		});
+			const rect1 = item.getBoundingClientRect();
+			let overlapping = false;
+
+			for (const otherItem of items) {
+				if (otherItem === item) continue;
+				const rect2 = otherItem.getBoundingClientRect();
+
+				if (rect1.left < rect2.right &&
+					rect1.right > rect2.left &&
+					rect1.top < rect2.bottom &&
+					rect1.bottom > rect2.top) {
+					overlapping = true;
+					break;
+				}
+			}
+
+			if (!overlapping) {
+				break;
+			}
+
+			attempts++;
+		}
+	});
 
 		let lastHoveredItem = null;
 
