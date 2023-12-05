@@ -63,6 +63,7 @@
 			outline: 0;
 			z-index: -11;
 			transition: all .5s cubic-bezier(.25,1.5,.75,.98);
+			cursor: zoom-in;
 		}
 
 		.item>img {
@@ -81,6 +82,19 @@
 			z-index: 10;
 			left: calc(50% - 50px) !important;
 			top: 1em !important;
+			animation: none;
+			cursor: zoom-out;
+		}
+
+		.item:has(:checked)::before {
+			content: 'Back';
+			display: block;
+			left: -100px;
+			position: absolute;
+			top: calc(50% - 0.5em);
+			text-decoration: underline;
+			font-size: x-large;
+			animation: appearBack .5s ease;
 		}
 
 		.item::after {
@@ -164,20 +178,6 @@
 			animation: fadeIn .25s ease-in;
 		}
 
-		.close {
-			background: transparent;
-			border: 0;
-			font-size: 1em;
-			appearance: none;
-			padding: 0;
-			color: inherit;
-			cursor: pointer;
-			text-decoration: underline;
-			z-index: 100;
-			translate: 0 -2em;
-			position: fixed;
-		}
-
 		svg {
 			position: absolute;
 			top: 0;
@@ -213,6 +213,15 @@
 			}
 		}
 
+		@keyframes appearBack {
+			from {
+				transform: scale(0);
+			}
+			to {
+				transform: scale(1);
+			}
+		}
+
 		@keyframes fadeIn {
 			from {
 				opacity: 0;
@@ -231,7 +240,6 @@
 		<img src="/about.svg" loading=lazy alt="🙋">
 	</label>
 	<div class="gallery">
-		<p><button class="close">Close</button></p>
 		<h2>About Me</h2>
 		<p>Hi, I'm Mateo Yadarola, a Product Designer who values the journey as much as the destination. My design journey spans over two decades, with more than ten years in leadership roles. What keeps me going? The unyielding joy of transforming intricate problems into elegant, user-centric solutions.</p>
 		<p>I'm currently at Continental Finance, where I'm shaping a mobile home banking app catering to users with poor credit scores. Beyond my 9-to-5, I'm an experimenter, a creator of side projects that aim to enhance the digital experience. Check out my GitHub; it's my digital playground where tools like ChronoMouse and MenuMaestro come to life.</p>			
@@ -272,7 +280,6 @@
 		<img src="/cfc.svg" loading=lazy alt="👾">
 	</label>
 	<div class="gallery">
-		<p><button popovertarget="gallery1" popovertargetaction="hide" class="close">Close</button></p>
 		<h2>A Gamified Banking Experience</h2>
 		<p><strong>Client:</strong> Continental Finance - Finance and insurance</p>
 		<p><strong>Overview:</strong> Qualifying for a credit card is not easy when you have a poor credit score or none at all. Around 48 million Americans are deemed to have bad credit. How can we help our users grow their credit line while also teaching them why that’s important?</p>
@@ -286,7 +293,6 @@
 		<img src="/bancon.svg" loading=lazy alt="">
 	</label>
 	<div class="gallery">
-		<p><button class="close">Close</button></p>
 		<h2>Banking Made Simple: The Public Bank E-wallet</h2>
 		<p><strong>Client:</strong> Bancor - Finance and insurance</p>
 		<p><strong>Overview:</strong> According to Veritran in Argentina, 7 out of 10 users choose to do their digital transactions through a virtual wallet instead of their bank home banking app, and 3 out of 10 still go to a physical branch for operations that they consider to be of greater importance, such as the transfer of large amounts, the request for loans, or the subscription of time deposits. How can we transform an antiquated industry through User-Centered Design and drive the future of finance forward, providing an experience that is easily navigated by each of the bank's key audiences and meets each of their unique needs?</p>
@@ -299,7 +305,6 @@
 		<img src="/bancor.svg" loading=lazy alt="💸">
 	</label>
 	<div class="gallery">
-		<p><button class="close">Close</button></p>
 		<h2>Where's my Card: Real-time Delivery Tracking</h2>
 		<p><strong>Client:</strong> Bancor - Finance and insurance</p>
 		<p><strong>Overview:</strong> The COVID-19 pandemic has hit the demand for traditional postal services hard. How can we reduce user anxiety while a country-wide quarantine extends card shipping delays?</p>
@@ -311,7 +316,6 @@
 		<img src="/hometown.svg" loading=lazy alt="🧱">
 	</label>
 	<div class="gallery">
-		<p><button class="close">Close</button></p>
 		<h2>Home Services on Demand: An Uber-like Model</h2>
 		<p><strong>Client:</strong> HometownLocal - Construction</p>
 		<p><strong>Overview:</strong> How can we pivot a Demolition and Construction rental web directory into an online communication, scheduling, booking, and billing for our home service partners?</p>
@@ -325,7 +329,6 @@
 		<img src="/veng.svg" loading=lazy alt="📷">
 	</label>
 	<div class="gallery">
-		<p><button class="close">Close</button></p>
 		<h2>A New Perspective: E-commerce for Satellite Imagery</h2>
 		<p><strong>Client:</strong> VENG - Aerospace and Defense</p>
 		<p><strong>Overview:</strong> SAOCOM is a constellation of two high-resolution satellites that are capable of observing Earth's surface around the clock, regardless of weather conditions. What would an e-commerce of its catalog and future satellite images look like?</p>
@@ -339,7 +342,6 @@
 		<img src="/omsnic.svg" loading=lazy alt="☔">
 	</label>
 	<div class="gallery">
-		<p><button class="close">Close</button></p>
 		<h2>Protecting Your Business: Improving Liability Insurance Applications</h2>
 		<p><strong>Client:</strong> OMSNIC - Finance and insurance</p>
 		<p><strong>Overview:</strong> How do we turn 112 different forms into one to create a fast and compelling onboarding flow for Oral & Maxillofacial Surgeons?</p>
@@ -349,7 +351,6 @@
 	</div>
 	<svg id="lineContainer"></svg>
 	<script async>
-		const closeButtons = document.querySelectorAll('.close');
 		const checkboxButtons = document.querySelectorAll('input[type="checkbox"]');
 
 		const clearCheckedCheckboxButtons = () => {
@@ -357,12 +358,6 @@
 			checkboxButton.checked = false;
 		});
 		};
-
-		closeButtons.forEach(button => {
-		button.addEventListener('click', function () {
-			clearCheckedCheckboxButtons();
-		});
-		});
 
 		document.addEventListener('keydown', function (event) {
 		if (event.key === 'Escape' || event.keyCode === 27) {
