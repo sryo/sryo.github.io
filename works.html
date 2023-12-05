@@ -33,11 +33,11 @@
 			overflow: hidden;
 		}
 
-		label:has(input[type="radio"]:checked) + .gallery {
+		label:has(input[type="checkbox"]:checked) + .gallery {
 			display: block;
 		}
 
-		input[type="radio"],
+		input[type="checkbox"],
 		.gallery {
 			display: none;
 		}
@@ -81,7 +81,6 @@
 			z-index: 10;
 			left: calc(50% - 50px) !important;
 			top: 1em !important;
-			pointer-events: none;
 		}
 
 		.item::after {
@@ -100,6 +99,13 @@
 
 		.item:hover::after {
 			display: block;
+		}
+
+		.item:has(input[type="checkbox"]:checked):hover::after {
+			display: none;
+		}
+		.item:has(input[type="checkbox"]:checked):hover>img {
+			transform: scale(1);
 		}
 
 		.gallery {
@@ -221,7 +227,7 @@
 
 <body>
 	<label class="item" title="Mateo Yadarola">
-		<input type="radio" name="menu">
+		<input type="checkbox" name="menu">
 		<img src="/about.svg" loading=lazy alt="🙋">
 	</label>
 	<div class="gallery">
@@ -262,7 +268,7 @@
 		<p>As the team leader for Bancor's digital banking project, I enjoyed shaping our team culture and creating effective work methodologies. I developed several crucial guides to facilitate high-quality digital services. The "<a href="https://paper.dropbox.com/doc/Mapa-para-el-trabajo-en-celulas-de-diseno-de-servicios--B8677ogIMpRps35~13RXNCtEAg-E4ksYMIbfziVfFh6OclLL" target="_blank">Map for Service Design Cells</a>" provided a thorough framework for digital service success, covering empathy, problem-solving, governance, improvement, security, and data-driven decisions. The "<a	href="https://paper.dropbox.com/doc/Guia-de-diseno-de-experiencias-digitales-para-no-disenadores--B85z2HRzyTsK2waD2tzT7WAgAg-aU8DHRJ5HIFOVZwdzBPNZ" target="_blank">Digital Experience Design Guide for Non-Designers</a>" helped build consistent user interfaces by clarifying design elements, offering UX writing tips, and navigating flows. I also made an <a href="https://paper.dropbox.com/doc/Te-banco-Guia-para-anfitriones-de-Banca-digital--B84igP4lu9Rw3Wp__JajUKa3Ag-4Igni3zHe2z8ZDPhwNOak" target="_blank">onboarding guide</a> for smoother transitions for new team members. These guides were not just instruction manuals; they represented our shared values and sought to foster an inclusive environment that encouraged collaboration and continuous learning. As we continue to refine our digital banking services, I look forward to the lasting impact of these efforts.</p>
 	</div>
 	<label class="item" title="A Gamified Banking Experience">
-		<input type="radio" name="menu">
+		<input type="checkbox" name="menu">
 		<img src="/cfc.svg" loading=lazy alt="👾">
 	</label>
 	<div class="gallery">
@@ -276,7 +282,7 @@
 	</div>
 
 	<label class="item" title="Banking Made Simple: The Public Bank E-wallet">
-		<input type="radio" name="menu">
+		<input type="checkbox" name="menu">
 		<img src="/bancon.svg" loading=lazy alt="">
 	</label>
 	<div class="gallery">
@@ -289,7 +295,7 @@
 	</div>
 
 	<label class="item" title="Where's my Card: Real-time Delivery Tracking">
-		<input type="radio" name="menu">
+		<input type="checkbox" name="menu">
 		<img src="/bancor.svg" loading=lazy alt="💸">
 	</label>
 	<div class="gallery">
@@ -301,7 +307,7 @@
 	</div>
 
 	<label class="item" title="Home Services on Demand: An Uber-like Model">
-		<input type="radio" name="menu">
+		<input type="checkbox" name="menu">
 		<img src="/hometown.svg" loading=lazy alt="🧱">
 	</label>
 	<div class="gallery">
@@ -315,7 +321,7 @@
 	</div>
 
 	<label class="item" title="A New Perspective: E-commerce for Satellite Imagery">
-		<input type="radio" name="menu">
+		<input type="checkbox" name="menu">
 		<img src="/veng.svg" loading=lazy alt="📷">
 	</label>
 	<div class="gallery">
@@ -329,7 +335,7 @@
 	</div>
 
 	<label class="item" title="Protecting Your Business: Improving Liability Insurance Applications">
-		<input type="radio" name="menu">
+		<input type="checkbox" name="menu">
 		<img src="/omsnic.svg" loading=lazy alt="☔">
 	</label>
 	<div class="gallery">
@@ -344,24 +350,24 @@
 	<svg id="lineContainer"></svg>
 	<script async>
 		const closeButtons = document.querySelectorAll('.close');
-		const radioButtons = document.querySelectorAll('input[type="radio"]');
+		const checkboxButtons = document.querySelectorAll('input[type="checkbox"]');
 
-		const clearCheckedRadioButtons = () => {
-			radioButtons.forEach(radioButton => {
-			radioButton.checked = false;
-			});
+		const clearCheckedCheckboxButtons = () => {
+		checkboxButtons.forEach(checkboxButton => {
+			checkboxButton.checked = false;
+		});
 		};
 
 		closeButtons.forEach(button => {
-			button.addEventListener('click', function () {
-				clearCheckedRadioButtons();
-			});
+		button.addEventListener('click', function () {
+			clearCheckedCheckboxButtons();
+		});
 		});
 
 		document.addEventListener('keydown', function (event) {
-			if (event.key === 'Escape' || event.keyCode === 27) {
-				clearCheckedRadioButtons();
-			}
+		if (event.key === 'Escape' || event.keyCode === 27) {
+			clearCheckedCheckboxButtons();
+		}
 		});
 	
 		const lineColors = ["#E7A545", "#FFC0CB", "#E94136", "#7E3972", "#1E88E5", "#414DA1", "#007A44"];
