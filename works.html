@@ -28,12 +28,12 @@
 			color: var(--body-color);
 			font-family: sans-serif;
 			position: fixed;
-			width: 100vw;
-			height: 100vh;
+			width: 150vw;
+			height: 150vh;
 			overflow: hidden;
 		}
 
-		label:has(input[type="checkbox"]:checked) + .gallery {
+		.item:has(input[type="checkbox"]:checked) + .gallery {
 			display: block;
 		}
 
@@ -54,8 +54,8 @@
 			align-items: center;
 			justify-content: center;
 			font-size: 36px;
-			width: 100px;
-			height: 100px;
+			width: 150px;
+			height: 150px;
 			position: absolute;
 			animation: float 3s ease-in-out infinite;
 			animation-delay: calc(var(--stagger, 0) * 0.2s);
@@ -73,11 +73,13 @@
 			animation-fill-mode: forwards;
 			scale: 0;
 			opacity: 0;
+			width: 80%;
 		}
 
 		.item:hover>img {
 			transform: scale(1.5);
 		}
+
 		.item:has(:checked) {
 			z-index: 10;
 			left: calc(50% - 50px) !important;
@@ -188,7 +190,7 @@
 		}
 
 		line {
-			stroke-width: 100;
+			stroke-width: 75;
 			stroke-dasharray: 1, 1;
 		}
 
@@ -235,7 +237,7 @@
 </head>
 
 <body>
-	<label class="item" title="Mateo Yadarola">
+	<label class="item" id="about" title="Mateo Yadarola">
 		<input type="checkbox" name="menu">
 		<img src="/about.svg" loading=lazy alt="🙋">
 	</label>
@@ -350,6 +352,25 @@
 		<p><strong>Learn more:</strong> <a href="https://quickquote.fortressins.com/">Project Link</a></p>
 	</div>
 
+	<label class="item" title="News in a Nutshell: A Media Clipping App">
+		<input type="checkbox" name="menu">
+		<img src="/vlic.svg" loading=lazy alt="🔔">
+	</label>
+	<div class="gallery">
+		<h2>News in a Nutshell: The Media Clipping App</h2>
+		<p><strong>Client:</strong> Infoxel - Media, Printing, and Publishing</p>
+		<p><strong>Overview:</strong> As politicians, journalists, and brand managers, staying on top of how your brand is being represented in the media can be a daunting task. With the constant flow of news and information, it can be difficult to keep track of every mention of your brand in TV, radio, and newspapers.</p>
+		<p>To address this challenge, we decided to develop Vlic, a mobile app that would allow our users to quickly and easily see how their brand was being represented in the media as soon as news happened. With a team of skilled engineers, we set out to build a new media clipping product that would provide targeted information consumption and reduce the reliance on third-party applications. Thanks to our media clipping app, politicians, journalists, and brand managers are now able to stay on top of how their brand is being represented in the media, and make informed decisions about their public image.</p>
+		<p><strong>Key Features:</strong></p>
+		<ul>
+			<li>Real-time notifications: Immediate notifications whenever the brand is mentioned in the media.</li>
+			<li>Customizable feeds: Users can customize feeds to see news related to their specific brand.</li>
+			<li>Easy sharing: Quick and easy sharing of news stories related to the brand with colleagues and followers.</li>
+		</ul>
+		<p><strong>Project Link:</strong> <a href="https://appadvice.com/app/vlic/1176938054">Vlic on AppAdvice</a></p>
+	</div>
+	
+<!--
 	<label class="item" title="In Progress">
 		<input type="checkbox" name="menu">
 		<img src="/ey.svg" loading=lazy alt="📚">
@@ -392,16 +413,6 @@
 
 	<label class="item" title="In Progress">
 		<input type="checkbox" name="menu">
-		<img src="/vlic.svg" loading=lazy alt="🔔">
-	</label>
-	<div class="gallery">
-		<h2>In Progress</h2>
-		<p><strong>Client:</strong> </p>
-		<p><strong>Overview:</strong> </p>
-	</div>
-
-	<label class="item" title="In Progress">
-		<input type="checkbox" name="menu">
 		<img src="/web.svg" loading=lazy alt="🧭">
 	</label>
 	<div class="gallery">
@@ -409,7 +420,7 @@
 		<p><strong>Client:</strong> </p>
 		<p><strong>Overview:</strong> </p>
 	</div>
-
+-->
 	<svg id="lineContainer"></svg>
 	<script async>
 		const checkboxButtons = document.querySelectorAll('input[type="checkbox"]');
@@ -441,7 +452,7 @@
 		items.forEach((item, index) => {
 		item.style.setProperty('--stagger', index);
 
-		const maxAttempts = 50;
+		const maxAttempts = 100;
 		let attempts = 0;
 
 		while (attempts < maxAttempts) {
@@ -475,7 +486,7 @@
 		}
 	});
 
-		let lastHoveredItem = null;
+		let lastHoveredItem = document.getElementById('about');
 
 		items.forEach(item => {
 			item.addEventListener('mouseenter', (e) => {
