@@ -37,7 +37,12 @@
 			display: block;
 		}
 
-		input[type="checkbox"],
+		input[type="checkbox"] {
+			position: absolute !important;
+			overflow: hidden !important;
+			clip: rect(0,0,0,0) !important;
+		}
+
 		.gallery {
 			display: none;
 		}
@@ -76,13 +81,14 @@
 			width: 80%;
 		}
 
-		.item:hover>img {
+		.item:hover>img,
+		.item:focus-within>img {
 			transform: scale(1.5);
 		}
 
 		.item:has(:checked) {
 			z-index: 10;
-			left: calc(50% - 50px) !important;
+			left: calc(50% - 75px) !important;
 			top: 1em !important;
 			animation: none;
 			cursor: zoom-out;
@@ -113,14 +119,17 @@
 			color: var(--body-color);
 		}
 
-		.item:hover::after {
+		.item:hover::after,
+		.item:focus-within::after {
 			display: block;
 		}
 
-		.item:has(input[type="checkbox"]:checked):hover::after {
+		.item:has(input[type="checkbox"]:checked):hover::after,
+		.item:has(input[type="checkbox"]:checked):focus-within::after {
 			display: none;
 		}
-		.item:has(input[type="checkbox"]:checked):hover>img {
+		.item:has(input[type="checkbox"]:checked):hover>img,
+		.item:has(input[type="checkbox"]:checked):focus-within>img {
 			transform: scale(1);
 		}
 
@@ -238,10 +247,10 @@
 
 <body>
 	<label class="item" id="about" title="Mateo Yadarola">
-		<input type="checkbox" name="menu">
+		<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog">
 		<img src="/about.svg" loading=lazy alt="🙋">
 	</label>
-	<div class="gallery">
+	<div class="gallery" role="dialog">
 		<h2>About Me</h2>
 		<p>Hi, I'm Mateo Yadarola, a Product Designer who values the journey as much as the destination. My design journey spans over two decades, with more than ten years in leadership roles. What keeps me going? The unyielding joy of transforming intricate problems into elegant, user-centric solutions.</p>
 		<p>I'm currently at Continental Finance, where I'm shaping a mobile home banking app catering to users with poor credit scores. Beyond my 9-to-5, I'm an experimenter, a creator of side projects that aim to enhance the digital experience. Check out my GitHub; it's my digital playground where tools like ChronoMouse and MenuMaestro come to life.</p>			
@@ -268,7 +277,7 @@
 		<p>In July 2023, I brought a personal idea to life by building <a href="https://github.com/sryo/ChronoMouse" target="_blank">ChronoMouse</a>, a tool to keep track of time right beside the cursor. This project was more than just a coding exercise; it was a realization of a concept that came from recognizing a need in my own workflow. Learning to program in Swift allowed me to take control of the entire process, from the initial idea to the finished product, reinforcing the power of integrating design and development skills.</p>
 		<h3>What if my touchpad could do more than just point and click?</h3>
 		<div class="video-responsive">
-			<iframe width="560" height="315" loading="lazy" src="https://www.youtube.com/embed/PQBv28n0zno?si=2F75WTutySao2zXC" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+			<iframe width="560" height="315" loading="lazy"src="https://www.youtube.com/embed/PQBv28n0zno?si=2F75WTutySao2zXC" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 		</div>
 		<p>This month, I've been tinkering with my digital workspace. I started wondering: what if my touchpad worked as a keyboard? From this thought, <a href="https://github.com/sryo/Spoons/blob/main/TrackpadWizard.lua" target="_blank">TrackpadWizard</a> was born. It's still a work in progress, but I'm happy with what I've accomplished so far. In addition, I created <a href="https://github.com/sryo/Spoons/blob/main/HyperlinkHijacker.lua" target="_blank">HyperlinkHijacker</a>, a no-fuss tool to control your hyperlink destinations. Click a link, and you get a list of browsers/profiles to choose from.</p>
 		<img src="/hyperlinkhijacker.png" loading=lazy>
@@ -277,11 +286,11 @@
 		<h3>What if guides became more than just manuals?</h3>
 		<p>As the team leader for Bancor's digital banking project, I enjoyed shaping our team culture and creating effective work methodologies. I developed several crucial guides to facilitate high-quality digital services. The "<a href="https://paper.dropbox.com/doc/Mapa-para-el-trabajo-en-celulas-de-diseno-de-servicios--B8677ogIMpRps35~13RXNCtEAg-E4ksYMIbfziVfFh6OclLL" target="_blank">Map for Service Design Cells</a>" provided a thorough framework for digital service success, covering empathy, problem-solving, governance, improvement, security, and data-driven decisions. The "<a	href="https://paper.dropbox.com/doc/Guia-de-diseno-de-experiencias-digitales-para-no-disenadores--B85z2HRzyTsK2waD2tzT7WAgAg-aU8DHRJ5HIFOVZwdzBPNZ" target="_blank">Digital Experience Design Guide for Non-Designers</a>" helped build consistent user interfaces by clarifying design elements, offering UX writing tips, and navigating flows. I also made an <a href="https://paper.dropbox.com/doc/Te-banco-Guia-para-anfitriones-de-Banca-digital--B84igP4lu9Rw3Wp__JajUKa3Ag-4Igni3zHe2z8ZDPhwNOak" target="_blank">onboarding guide</a> for smoother transitions for new team members. These guides were not just instruction manuals; they represented our shared values and sought to foster an inclusive environment that encouraged collaboration and continuous learning. As we continue to refine our digital banking services, I look forward to the lasting impact of these efforts.</p>
 	</div>
-	<label class="item" title="A Gamified Banking Experience">
+	<label class="item" title="A Gamified Banking Experience" role="button" tabindex="0" aria-haspopup="dialog">
 		<input type="checkbox" name="menu">
 		<img src="/cfc.svg" loading=lazy alt="👾">
 	</label>
-	<div class="gallery">
+	<div class="gallery" role="dialog">
 		<h2>A Gamified Banking Experience</h2>
 		<p><strong>Client:</strong> Continental Finance - Finance and insurance</p>
 		<p><strong>Overview:</strong> Qualifying for a credit card is not easy when you have a poor credit score or none at all. Around 48 million Americans are deemed to have bad credit. How can we help our users grow their credit line while also teaching them why that’s important?</p>
@@ -291,10 +300,10 @@
 	</div>
 
 	<label class="item" title="Banking Made Simple: The Public Bank E-wallet">
-		<input type="checkbox" name="menu">
+		<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog">
 		<img src="/bancon.svg" loading=lazy alt="">
 	</label>
-	<div class="gallery">
+	<div class="gallery" role="dialog">
 		<h2>Banking Made Simple: The Public Bank E-wallet</h2>
 		<p><strong>Client:</strong> Bancor - Finance and insurance</p>
 		<p><strong>Overview:</strong> According to Veritran in Argentina, 7 out of 10 users choose to do their digital transactions through a virtual wallet instead of their bank home banking app, and 3 out of 10 still go to a physical branch for operations that they consider to be of greater importance, such as the transfer of large amounts, the request for loans, or the subscription of time deposits. How can we transform an antiquated industry through User-Centered Design and drive the future of finance forward, providing an experience that is easily navigated by each of the bank's key audiences and meets each of their unique needs?</p>
@@ -303,10 +312,10 @@
 	</div>
 
 	<label class="item" title="Where's my Card: Real-time Delivery Tracking">
-		<input type="checkbox" name="menu">
+		<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog">
 		<img src="/bancor.svg" loading=lazy alt="💸">
 	</label>
-	<div class="gallery">
+	<div class="gallery" role="dialog">
 		<h2>Where's my Card: Real-time Delivery Tracking</h2>
 		<p><strong>Client:</strong> Bancor - Finance and insurance</p>
 		<p><strong>Overview:</strong> The COVID-19 pandemic has hit the demand for traditional postal services hard. How can we reduce user anxiety while a country-wide quarantine extends card shipping delays?</p>
@@ -314,10 +323,10 @@
 	</div>
 
 	<label class="item" title="Home Services on Demand: An Uber-like Model">
-		<input type="checkbox" name="menu">
+		<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog">
 		<img src="/hometown.svg" loading=lazy alt="🧱">
 	</label>
-	<div class="gallery">
+	<div class="gallery" role="dialog">
 		<h2>Home Services on Demand: An Uber-like Model</h2>
 		<p><strong>Client:</strong> HometownLocal - Construction</p>
 		<p><strong>Overview:</strong> How can we pivot a Demolition and Construction rental web directory into an online communication, scheduling, booking, and billing for our home service partners?</p>
@@ -327,10 +336,10 @@
 	</div>
 
 	<label class="item" title="A New Perspective: E-commerce for Satellite Imagery">
-		<input type="checkbox" name="menu">
+		<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog">
 		<img src="/veng.svg" loading=lazy alt="🛰️">
 	</label>
-	<div class="gallery">
+	<div class="gallery" role="dialog">
 		<h2>A New Perspective: E-commerce for Satellite Imagery</h2>
 		<p><strong>Client:</strong> VENG - Aerospace and Defense</p>
 		<p><strong>Overview:</strong> SAOCOM is a constellation of two high-resolution satellites that are capable of observing Earth's surface around the clock, regardless of weather conditions. What would an e-commerce of its catalog and future satellite images look like?</p>
@@ -340,10 +349,10 @@
 	</div>
 
 	<label class="item" title="Protecting Your Business: Improving Liability Insurance Applications">
-		<input type="checkbox" name="menu">
+		<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog">
 		<img src="/omsnic.svg" loading=lazy alt="☔">
 	</label>
-	<div class="gallery">
+	<div class="gallery" role="dialog">
 		<h2>Protecting Your Business: Improving Liability Insurance Applications</h2>
 		<p><strong>Client:</strong> OMSNIC - Finance and insurance</p>
 		<p><strong>Overview:</strong> How do we turn 112 different forms into one to create a fast and compelling onboarding flow for Oral & Maxillofacial Surgeons?</p>
@@ -353,10 +362,10 @@
 	</div>
 
 	<label class="item" title="News in a Nutshell: A Media Clipping App">
-		<input type="checkbox" name="menu">
+		<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog">
 		<img src="/vlic.svg" loading=lazy alt="🔔">
 	</label>
-	<div class="gallery">
+	<div class="gallery" role="dialog">
 		<h2>News in a Nutshell: The Media Clipping App</h2>
 		<p><strong>Client:</strong> Infoxel - Media, Printing, and Publishing</p>
 		<p><strong>Overview:</strong> As politicians, journalists, and brand managers, staying on top of how your brand is being represented in the media can be a daunting task. With the constant flow of news and information, it can be difficult to keep track of every mention of your brand in TV, radio, and newspapers.</p>
