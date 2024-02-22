@@ -203,11 +203,6 @@
 			z-index: -100;
 		}
 
-		line {
-			stroke-width: 75;
-			stroke-dasharray: 1.5, 1;
-		}
-
 		@keyframes float {
 			0% {
 				transform: translateY(0);
@@ -439,119 +434,125 @@
 	<svg id="lineContainer"></svg>
 	<script async>
 		const checkboxButtons = document.querySelectorAll('input[type="checkbox"]');
-
-		const clearCheckedCheckboxButtons = () => {
-		checkboxButtons.forEach(checkboxButton => {
-			checkboxButton.checked = false;
-		});
-		};
-
-		document.addEventListener('keydown', function (event) {
-		if (event.key === 'Escape' || event.keyCode === 27) {
-			clearCheckedCheckboxButtons();
-		}
-		});
-	
-		const lineColors = ["#E7A545", "#FFC0CB", "#E94136", "#7E3972", "#1E88E5", "#414DA1", "#007A44"];
-		let currentColorIndex = 0;
-
-		function getNextColor() {
-			const color = lineColors[currentColorIndex];
-			currentColorIndex = (currentColorIndex + 1) % lineColors.length;
-			return color;
-		}
-
-		const items = document.querySelectorAll('.item');
-		const svg = document.getElementById('lineContainer');
-
-		items.forEach((item, index) => {
-		item.style.setProperty('--stagger', index);
-
-		const maxAttempts = 100;
-		let attempts = 0;
-
-		while (attempts < maxAttempts) {
-			const xPercent = Math.random() * (100 - item.clientWidth / window.innerWidth * 100);
-			const yPercent = Math.random() * (100 - item.clientHeight / window.innerHeight * 100);
-
-			item.style.left = `${xPercent}%`;
-			item.style.top = `${yPercent}%`;
-
-			const rect1 = item.getBoundingClientRect();
-			let overlapping = false;
-
-			for (const otherItem of items) {
-				if (otherItem === item) continue;
-				const rect2 = otherItem.getBoundingClientRect();
-
-				if (rect1.left < rect2.right &&
-					rect1.right > rect2.left &&
-					rect1.top < rect2.bottom &&
-					rect1.bottom > rect2.top) {
-					overlapping = true;
-					break;
-				}
-			}
-
-			if (!overlapping) {
-				break;
-			}
-
-			attempts++;
-		}
-	});
-
-		let lastHoveredItem = document.getElementById('about');
-
-		items.forEach(item => {
-			item.addEventListener('mouseenter', (e) => {
-				if (!lastHoveredItem) {
-					lastHoveredItem = e.target;
-					return;
-				}
-
-				if (lastHoveredItem !== e.target) {
-					const rect1 = lastHoveredItem.getBoundingClientRect();
-					const rect2 = e.target.getBoundingClientRect();
-					const svgRect = svg.getBoundingClientRect();
-
-					// Calculate midpoints
-					const x1 = rect1.left + rect1.width / 2 - svgRect.left;
-					const y1 = rect1.top + rect1.height / 2 - svgRect.top;
-					const x2 = rect2.left + rect2.width / 2 - svgRect.left;
-					const y2 = rect2.top + rect2.height / 2 - svgRect.top;
-
-					// Calculate the unit vector
-					const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-					const unitVectorX = (x2 - x1) / length;
-					const unitVectorY = (y2 - y1) / length;
-
-					// Calculate the adjusted endpoints
-					const adjustedX1 = x1 + 25 * unitVectorX;
-					const adjustedY1 = y1 + 25 * unitVectorY;
-					const adjustedX2 = x2 - 25 * unitVectorX;
-					const adjustedY2 = y2 - 25 * unitVectorY;
-
-					const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-					line.setAttribute('x1', adjustedX1);
-					line.setAttribute('y1', adjustedY1);
-					line.setAttribute('x2', adjustedX2);
-					line.setAttribute('y2', adjustedY2);
-					line.setAttribute('stroke', getNextColor());
-					svg.appendChild(line);
-
-					lastHoveredItem = e.target;
-				}
-			});
-
-
-		});
-
-		window.addEventListener('resize', () => {
-			const lines = document.querySelectorAll('line');
-			lines.forEach(line => svg.removeChild(line));
-			lastHoveredItem = null;
-		});
+   
+	   const clearCheckedCheckboxButtons = () => {
+		   checkboxButtons.forEach(checkboxButton => {
+			   checkboxButton.checked = false;
+		   });
+	   };
+   
+	   document.addEventListener('keydown', function (event) {
+		   if (event.key === 'Escape' || event.keyCode === 27) {
+			   clearCheckedCheckboxButtons();
+		   }
+	   });
+   
+	   const lineColors = ["#E7A545", "#FFC0CB", "#E94136", "#7E3972", "#1E88E5", "#414DA1", "#007A44"];
+	   let currentColorIndex = 0;
+   
+	   function getNextColor() {
+		   const color = lineColors[currentColorIndex];
+		   currentColorIndex = (currentColorIndex + 1) % lineColors.length;
+		   return color;
+	   }
+   
+	   const items = document.querySelectorAll('.item');
+	   const svg = document.getElementById('lineContainer');
+   
+	   items.forEach((item, index) => {
+		   item.style.setProperty('--stagger', index);
+   
+		   const maxAttempts = 100;
+		   let attempts = 0;
+   
+		   while (attempts < maxAttempts) {
+			   const xPercent = Math.random() * (100 - item.clientWidth / window.innerWidth * 100);
+			   const yPercent = Math.random() * (100 - item.clientHeight / window.innerHeight * 100);
+   
+			   item.style.left = `${xPercent}%`;
+			   item.style.top = `${yPercent}%`;
+   
+			   const rect1 = item.getBoundingClientRect();
+			   let overlapping = false;
+   
+			   for (const otherItem of items) {
+				   if (otherItem === item) continue;
+				   const rect2 = otherItem.getBoundingClientRect();
+   
+				   if (rect1.left < rect2.right &&
+					   rect1.right > rect2.left &&
+					   rect1.top < rect2.bottom &&
+					   rect1.bottom > rect2.top) {
+					   overlapping = true;
+					   break;
+				   }
+			   }
+   
+			   if (!overlapping) {
+				   break;
+			   }
+   
+			   attempts++;
+		   }
+	   });
+   
+	   let lastHoveredItem = document.getElementById('about');
+   
+	   items.forEach(item => {
+		   item.addEventListener('mouseenter', (e) => {
+			   if (!lastHoveredItem) {
+				   lastHoveredItem = e.target;
+				   return;
+			   }
+   
+			   if (lastHoveredItem !== e.target) {
+				   const rect1 = lastHoveredItem.getBoundingClientRect();
+				   const rect2 = e.target.getBoundingClientRect();
+				   const svgRect = svg.getBoundingClientRect();
+   
+				   // Calculate midpoints
+				   const x1 = rect1.left + rect1.width / 2 - svgRect.left;
+				   const y1 = rect1.top + rect1.height / 2 - svgRect.top;
+				   const x2 = rect2.left + rect2.width / 2 - svgRect.left;
+				   const y2 = rect2.top + rect2.height / 2 - svgRect.top;
+   
+				   // Calculate the distance between two points
+				   const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+   
+				   // Calculate the unit vector
+				   const unitVectorX = (x2 - x1) / distance;
+				   const unitVectorY = (y2 - y1) / distance;
+   
+				   // Calculate the number of circles to be placed
+				   const numCircles = Math.floor(distance / 3);
+   
+				   // Calculate the spacing between circles
+				   const spacingX = (x2 - x1) / numCircles;
+				   const spacingY = (y2 - y1) / numCircles;
+   
+				   // Determine the color for circles connecting two items
+				   const color = getNextColor();
+   
+				   for (let i = 0; i < numCircles; i++) {
+					   const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+					   circle.setAttribute('cx', x1 + i * spacingX);
+					   circle.setAttribute('cy', y1 + i * spacingY);
+					   circle.setAttribute('r', 50);
+					   circle.setAttribute('stroke', color),
+					   circle.setAttribute('fill', 'transparent');
+					   svg.appendChild(circle);
+				   }
+   
+				   lastHoveredItem = e.target;
+			   }
+		   });
+	   });
+   
+	   window.addEventListener('resize', () => {
+		   const circles = document.querySelectorAll('circle');
+		   circles.forEach(circle => svg.removeChild(circle));
+		   lastHoveredItem = null;
+	   });
 
 	</script>
 </body>
