@@ -62,36 +62,40 @@
       width: 150px;
       height: 150px;
       position: absolute;
-      animation: float 3s ease-in-out infinite;
-      animation-delay: calc(var(--stagger, 0) * 0.3s);
+      animation: appear .25s;
+      animation-delay: calc(var(--stagger, 0) * 0.2s);
+      animation-fill-mode: forwards;
       text-align: center;
       outline: 0;
       z-index: -11;
       transition: all .5s cubic-bezier(.25, 1.5, .75, .98);
       cursor: zoom-in;
+      scale: 0;
+      opacity: 0;
     }
 
     .item>img {
       transition: all 400ms cubic-bezier(.5, 1.75, .5, .75);
-      animation: appear .25s;
-      animation-delay: calc(var(--stagger, 0) * 0.2s);
-      animation-fill-mode: forwards;
-      scale: 0;
-      opacity: 0;
+      animation: float 3s ease-in-out infinite;
+      animation-delay: calc(var(--stagger, 0) * 0.3s);
       width: 80%;
     }
 
     .item:hover>img,
     .item:focus-within>img {
-      transform: scale(1.5);
+      scale: 1.5;
     }
 
     .item:has(:checked) {
       z-index: 10;
       left: calc(50% - 75px) !important;
       top: 1em !important;
-      animation: none;
       cursor: zoom-out;
+    }
+    .item:has(:checked):hover>img,
+    .item:has(:checked):focus-within>img {
+      animation: none;
+      scale: 1;
     }
 
     .item:has(:checked)::before {
