@@ -637,9 +637,9 @@
 
 				isCellOccupied[y][x] = true;
 
-				item.style.left = `${50 + x * cellWidth + Math.random() * (cellWidth - iconWidth)}px`;
-				item.style.top = `${50 + y * cellHeight + Math.random() * (cellHeight - iconHeight)}px`;
-
+				item.style.left = `${(50 + x * cellWidth + Math.random() * (cellWidth - iconWidth)) / window.innerWidth * 100}%`;
+				item.style.top = `${(50 + y * cellHeight + Math.random() * (cellHeight - iconHeight)) / window.innerHeight * 100}%`;
+				
 				break;
 			}
 		});
