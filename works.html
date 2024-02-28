@@ -215,13 +215,13 @@
 			stroke-width: 75;
 			mix-blend-mode: difference;
 			stroke-linejoin: round;
-      stroke-dasharray: var(--length);
-      animation: draw 1s ease forwards;
-    }
-
-    @keyframes draw {
-      from {
-        stroke-dashoffset: var(--length);
+			stroke-dasharray: var(--length);
+			animation: draw .35s ease forwards;
+		}
+		
+		@keyframes draw {
+			from {
+				stroke-dashoffset: var(--length);
 			}
 
 			to {
