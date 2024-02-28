@@ -120,7 +120,7 @@
 			display: none;
 			padding: 5px;
 			width: 200px;
-			text-wrap: balanced;
+			text-wrap: balance;
 			font-size: 24px;
 			color: var(--body-color);
 		}
@@ -215,14 +215,13 @@
 			stroke-width: 75;
 			mix-blend-mode: difference;
 			stroke-linejoin: round;
-			stroke-dasharray: 5000;
-			stroke-dashoffset: 5000;
-			animation: draw 1s ease forwards;
-		}
+      stroke-dasharray: var(--length);
+      animation: draw 1s ease forwards;
+    }
 
-		@keyframes draw {
-			from {
-				stroke-dashoffset: 5000;
+    @keyframes draw {
+      from {
+        stroke-dashoffset: var(--length);
 			}
 
 			to {
@@ -681,6 +680,8 @@
 					connector.setAttribute('d', pathData);
 					connector.setAttribute('stroke', getNextColor());
 					connector.setAttribute('fill', 'none');
+					const length = connector.getTotalLength();
+					connector.setAttribute('style', `--length: ${length};`);
 					svg.appendChild(connector);
 
 					currentPaths.push(connector);
