@@ -28,16 +28,14 @@
 # 3. View your portfolio:
 #    - Open the generated 'works.html' file in a web browser.
 
-# Let's begin!
-
 # Configuration
 CONTENT_DIR="contents/"
 OUTPUT_FILE="works.html"
 TITLE="Interactive Gallery"
 CSS_FILE="styles.css"
 JS_FILE="script.js"
+INLINE_SVG=true
 
-# Friendly message function
 friendly_message() {
     echo "💡 $1"
     echo "   $2"
@@ -62,7 +60,6 @@ if [ ! -f "$JS_FILE" ]; then
     exit 1
 fi
 
-# Function to parse basic Markdown
 parse_markdown() {
     local line="$1"
     # Headers
@@ -89,7 +86,6 @@ parse_markdown() {
     echo "$line"
 }
 
-# Function to extract title from Markdown file
 extract_title() {
     local file=$1
     local title=$(sed -n '1s/^#\{1,4\} //p' "$file" 2>/dev/null)
@@ -99,7 +95,17 @@ extract_title() {
     echo "$title"
 }
 
-# Function to generate HTML for a main section
+insert_image() {
+    local image_file=$1
+    local alt_text=$2
+
+    if [[ "$image_file" == *.svg ]] && $INLINE_SVG; then
+        cat "$image_file"
+    else
+        echo "<img src=\"${image_file#/}\" loading=\"lazy\" alt=\"$alt_text\" />"
+    fi
+}
+
 generate_main_section() {
     local folder=$1
     local content_file=$(find "$folder" -maxdepth 1 -type f -iname \*.md | head -n 1)
@@ -113,22 +119,18 @@ generate_main_section() {
     echo "<label class=\"item\" title=\"$title\">"
     echo "  <input type=\"checkbox\" name=\"menu\" role=\"button\" tabindex=\"0\" aria-haspopup=\"dialog\" />"
     if [ -f "$image_file" ]; then
-        echo "  <img src=\"${image_file#/}\" loading=\"lazy\" alt=\"$title\" />"
+        insert_image "$image_file" "$title"
     else
         echo "  <div class=\"placeholder-image\">No Image</div>"
     fi
     echo "</label>"
     echo "<div class=\"gallery\" role=\"dialog\" tabindex=\"-1\" aria-hidden=\"false\" aria-modal=\"true\">"
-    echo "  <h2>$title</h2>"  # Add the title inside the gallery div
+    echo "  <h2>$title</h2>"
 
     # Parse and output the Markdown content
     local in_paragraph=false
     local first_line=true
     while IFS= read -r line || [ -n "$line" ]; do
-        if $first_line; then
-            first_line=false
-            continue  # Skip the first line (title) as we've already used it
-        fi
         parsed_line=$(parse_markdown "$line")
         if [[ "$parsed_line" == "<h"* || "$parsed_line" == "<ul>"* || "$parsed_line" == "<li>"* ]]; then
             if $in_paragraph; then
@@ -162,7 +164,6 @@ generate_main_section() {
     echo "</div>"
 }
 
-# Function to generate gallery items
 generate_gallery() {
     local gallery_dir=$1
 
@@ -225,7 +226,7 @@ generate_gallery() {
                 echo "  </div>"
             elif [ -f "$item_image" ]; then
                 echo "  <div class=\"project-image\">"
-                echo "    <img src=\"${item_image#/}\" alt=\"${item_title:-Untitled}\" loading=\"lazy\">"
+                insert_image "$item_image" "${item_title:-Untitled}"
                 echo "  </div>"
             fi
             echo "</div>"
