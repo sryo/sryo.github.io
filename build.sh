@@ -100,7 +100,7 @@ insert_image() {
     local alt_text=$2
 
     if [[ "$image_file" == *.svg ]] && $INLINE_SVG; then
-        cat "$image_file"
+        echo "<img src=\"data:image/svg+xml;base64,$(base64 -w 0 "$image_file")\" alt=\"$alt_text\" />"
     else
         echo "<img src=\"${image_file#/}\" loading=\"lazy\" alt=\"$alt_text\" />"
     fi
