@@ -228,7 +228,7 @@ h3 {
     animation: fadeIn 0.25s ease-in;
 }
 
-svg {
+#lineContainer {
     position: absolute;
     top: 0;
     left: 0;
