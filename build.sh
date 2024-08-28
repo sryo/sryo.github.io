@@ -131,6 +131,10 @@ generate_main_section() {
     local in_paragraph=false
     local first_line=true
     while IFS= read -r line || [ -n "$line" ]; do
+        if $first_line; then
+            first_line=false
+            continue  # Skip the first line (title) as we've already used it
+        fi
         parsed_line=$(parse_markdown "$line")
         if [[ "$parsed_line" == "<h"* || "$parsed_line" == "<ul>"* || "$parsed_line" == "<li>"* ]]; then
             if $in_paragraph; then
@@ -186,10 +190,6 @@ generate_gallery() {
                 local in_paragraph=false
                 local first_line=true
                 while IFS= read -r line || [ -n "$line" ]; do
-                    if $first_line; then
-                        first_line=false
-                        continue  # Skip the first line (title) as we've already used it
-                    fi
                     parsed_line=$(parse_markdown "$line")
                     if [[ "$parsed_line" == "<div class=\"video-responsive\">"* ]]; then
                         embed_code="$parsed_line"
