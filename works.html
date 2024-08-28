@@ -1,656 +1,860 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Interactive Gallery</title>
-		<style>
-			:root {
-				--body-bg: white;
-				--body-color: black;
-			}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Gallery</title>
+    <style>
+    :root {
+    --body-bg: white;
+    --body-color: black;
+}
 
-			@media (prefers-color-scheme: dark) {
-				:root {
-					--body-bg: black;
-					--body-color: white;
-				}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --body-bg: black;
+        --body-color: white;
+    }
 
-				.item>img {
-					filter: invert(100%);
-				}
-			}
+    .item > img {
+        filter: invert(100%);
+    }
+}
 
-			body {
-				margin: 0;
-				background: var(--body-bg);
-				color: var(--body-color);
-				font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-				position: fixed;
-				width: 100vw;
-				height: 100svh;
-				overflow: hidden;
-			}
+body {
+    margin: 0;
+    background: var(--body-bg);
+    color: var(--body-color);
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
+        Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+        "Segoe UI Symbol";
+    position: fixed;
+    width: 100vw;
+    height: 100svh;
+    overflow: hidden;
+}
 
-			.item:has(input[type="checkbox"]:checked)+.gallery {
-				display: block;
-			}
+.item:has(input[type="checkbox"]:checked) + .gallery {
+    display: block;
+}
 
-			input[type="checkbox"] {
-				position: absolute !important;
-				overflow: hidden !important;
-				clip: rect(0, 0, 0, 0) !important;
-			}
+input[type="checkbox"] {
+    position: absolute !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+}
 
-			.gallery {
-				display: none;
-			}
+.gallery {
+    display: none;
+}
 
-			a {
-				color: inherit;
-			}
+a {
+    color: inherit;
+}
 
-			p {
-				line-height: 1.8;
-			}
+p,
+li {
+    line-height: 1.8;
+}
 
-			.item {
-				align-items: center;
-				justify-content: center;
-				font-size: 36px;
-				width: 150px;
-				height: 150px;
-				position: absolute;
-				animation: appear .25s;
-				animation-delay: calc(var(--stagger, 0) * 0.1s);
-				animation-fill-mode: forwards;
-				text-align: center;
-				outline: 0;
-				z-index: -11;
-				transition: all .5s cubic-bezier(.25, 1.5, .75, .98);
-				cursor: zoom-in;
-				scale: 0;
-				opacity: 0;
-			}
+.item {
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    width: 150px;
+    height: 150px;
+    position: absolute;
+    animation: appear 0.25s;
+    animation-delay: calc(var(--stagger, 0) * 0.1s);
+    animation-fill-mode: forwards;
+    text-align: center;
+    outline: 0;
+    z-index: -11;
+    transition: all 0.5s cubic-bezier(0.25, 1.5, 0.75, 0.98);
+    cursor: zoom-in;
+    scale: 0;
+    opacity: 0;
+}
 
-			.item>img {
-				transition: all 400ms cubic-bezier(.5, 1.75, .5, .75);
-				animation: float 3s ease-in-out infinite;
-				animation-delay: calc(var(--stagger, 0) * 0.3s);
-				width: 80%;
-			}
+.item > img {
+    transition: all 400ms cubic-bezier(0.5, 1.75, 0.5, 0.75);
+    animation: float 3s ease-in-out infinite;
+    animation-delay: calc(var(--stagger, 0) * 0.3s);
+    width: 80%;
+}
 
-			.item:hover>img,
-			.item:focus-within>img {
-				scale: 1.5;
-			}
+.item:hover > img,
+.item:focus-within > img {
+    scale: 1.5;
+}
 
-			.item:has(:checked) {
-				z-index: 10;
-				left: calc(50% - 75px) !important;
-				top: 1em !important;
-				cursor: zoom-out;
-			}
+.item:has(:checked) {
+    z-index: 10;
+    left: calc(50% - 75px) !important;
+    top: 1em !important;
+    cursor: zoom-out;
+}
 
-			.item:has(:checked)>img,
-			.item:has(:checked):hover>img,
-			.item:has(:checked):focus-within>img {
-				animation: none;
-				scale: 1;
-			}
+.item:has(:checked) > img,
+.item:has(:checked):hover > img,
+.item:has(:checked):focus-within > img {
+    animation: none;
+    scale: 1;
+}
 
-			.item:has(:checked)::before {
-				content: 'Back';
-				display: block;
-				left: -100px;
-				position: absolute;
-				top: calc(50% - 0.5em);
-				text-decoration: underline;
-				font-size: x-large;
-				animation: appearBack .5s ease;
-			}
+.item:has(:checked)::before {
+    content: "Back";
+    display: block;
+    left: -100px;
+    position: absolute;
+    top: calc(50% - 0.5em);
+    text-decoration: underline;
+    font-size: x-large;
+    animation: appearBack 0.5s ease;
+}
 
-			.item::after {
-				content: attr(title);
-				position: absolute;
-				top: 130px;
-				left: 50%;
-				transform: translateX(-50%);
-				display: none;
-				padding: 5px;
-				width: 200px;
-				text-wrap: balance;
-				font-size: 24px;
-				color: var(--body-color);
-			}
+.item::after {
+    content: attr(title);
+    position: absolute;
+    top: 130px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    padding: 5px;
+    width: 200px;
+    text-wrap: balance;
+    font-size: 24px;
+    color: var(--body-color);
+}
 
-			.item:hover::after,
-			.item:focus-within::after {
-				display: block;
-			}
+.item:hover::after,
+.item:focus-within::after {
+    display: block;
+}
 
-			.item:has(input[type="checkbox"]:checked):hover::after,
-			.item:has(input[type="checkbox"]:checked):focus-within::after {
-				display: none;
-			}
+.item:has(input[type="checkbox"]:checked):hover::after,
+.item:has(input[type="checkbox"]:checked):focus-within::after {
+    display: none;
+}
 
-			.item:has(input[type="checkbox"]:checked):hover>img,
-			.item:has(input[type="checkbox"]:checked):focus-within>img {
-				transform: scale(1);
-			}
+.item:has(input[type="checkbox"]:checked):hover > img,
+.item:has(input[type="checkbox"]:checked):focus-within > img {
+    transform: scale(1);
+}
 
-			.gallery {
-				padding-top: 10rem;
-				border: 0;
-				font-size: large;
-				text-wrap: pretty;
-				background: transparent;
-				color: inherit;
-				animation: fadeIn .125s ease-in;
-				max-width: 780px;
-				margin: auto;
-				height: calc(100svh - 10rem);
-				overflow: scroll;
-			}
+.gallery {
+    padding-top: 10rem;
+    border: 0;
+    font-size: large;
+    text-wrap: pretty;
+    background: transparent;
+    color: inherit;
+    animation: fadeIn 0.125s ease-in;
+    max-width: 780px;
+    margin: auto;
+    height: calc(100svh - 10rem);
+    overflow: scroll;
+}
 
-			h3 {
-				font-size: 2em;
-			}
+h3 {
+    font-size: 2em;
+}
 
-			h2,
-			h3 {
-				max-width: 500px;
-				text-wrap: balance;
-				text-align: center;
-				margin-left: auto;
-				margin-right: auto;
-				font-weight: 300;
-			}
+h2,
+h3 {
+    max-width: 500px;
+    text-wrap: balance;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    font-weight: 300;
+}
 
-			.gallery>img {
-				width: 100%;
-			}
-			.project {
-				display: flex;
-				margin-bottom: 2em;
-				padding-bottom: 2em;
-				}
-				.project-content {
-					flex: 1;
-				}
-				.project-image {
-						flex: 0 0 300px;
-						margin-left: 1em;
-            align-content: center;
-				}
-				.project-image img {
-						width: 100%;
-						height: auto;
-				}
+.gallery > img {
+    width: 100%;
+}
+.project {
+    display: flex;
+    margin-bottom: 2em;
+    padding-bottom: 2em;
+}
 
-			.video-responsive {
-				height: 0;
-				overflow: hidden;
-				padding-bottom: 56.25%;
-				padding-top: 30px;
-				position: relative;
-				max-width: 100% !important;
-			}
+.project-content {
+    flex: 1;
+}
+.project-image {
+    flex: 0 0 300px;
+    margin-left: 1em;
+    align-content: center;
+}
+.project-image img {
+    width: 100%;
+    height: auto;
+}
 
-			.video-responsive iframe {
-				left: 0;
-				top: 0;
-				width: 100%;
-				position: absolute;
-			}
+.project-media {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+}
 
-			.gallery::after {
-				backdrop-filter: blur(30px);
-				-webkit-backdrop-filter: blur(30px);
-				content: '';
-				position: fixed;
-				left: 0;
-				right: 0;
-				top: 0;
-				bottom: 0;
-				z-index: -10;
-				animation: fadeIn .25s ease-in;
-			}
+.project-media iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
 
-			svg {
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
-				z-index: -100;
-			}
+.video-responsive {
+    height: 0;
+    overflow: hidden;
+    padding-bottom: 56.25%;
+    padding-top: 30px;
+    position: relative;
+    max-width: 100% !important;
+}
 
-			path {
-				stroke-width: 75;
-				mix-blend-mode: difference;
-				stroke-linejoin: round;
-				stroke-dasharray: var(--length);
-				animation: draw .35s ease forwards;
-			}
+.video-responsive iframe {
+    left: 0;
+    top: 0;
+    width: 100%;
+}
 
-			@keyframes draw {
-				from {
-					stroke-dashoffset: var(--length);
-				}
+.gallery::after {
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    content: "";
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: -10;
+    animation: fadeIn 0.25s ease-in;
+}
 
-				to {
-					stroke-dashoffset: 0;
-				}
-			}
+svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -100;
+}
 
-			@keyframes float {
-				0% {
-					transform: translateY(0);
-				}
+path {
+    stroke-width: 75;
+    mix-blend-mode: difference;
+    stroke-linejoin: round;
+    stroke-dasharray: var(--length);
+    animation: draw 0.35s ease forwards;
+}
 
-				50% {
-					transform: translateY(-10px);
-				}
+@keyframes draw {
+    from {
+        stroke-dashoffset: var(--length);
+    }
 
-				100% {
-					transform: translateY(0);
-				}
-			}
+    to {
+        stroke-dashoffset: 0;
+    }
+}
 
-			@keyframes appear {
-				to {
-					scale: 1;
-					opacity: 1;
-				}
-			}
+@keyframes float {
+    0% {
+        transform: translateY(0);
+    }
 
-			@keyframes appearBack {
-				from {
-					transform: scale(0);
-				}
+    50% {
+        transform: translateY(-10px);
+    }
 
-				to {
-					transform: scale(1);
-				}
-			}
+    100% {
+        transform: translateY(0);
+    }
+}
 
-			@keyframes fadeIn {
-				from {
-					opacity: 0;
-				}
+@keyframes appear {
+    to {
+        scale: 1;
+        opacity: 1;
+    }
+}
 
-				to {
-					opacity: 1;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<label class="item" id="about" title="Mateo Yadarola">
-			<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" autofocus />
-			<img src="/about.svg" loading="lazy" alt="🙋" />
-		</label>
-		<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
-			<h2>About Me</h2>
-			<p> Hi, I'm Mateo Yadarola, a Product Designer who values the journey as much as the destination. My design journey spans over two decades, with more than ten years in leadership roles. </p>
-			<p> I'm currently at Continental Finance, where I'm shaping a mobile home banking app catering to users with poor credit scores. Beyond my 9-to-5, I'm an experimenter, a creator of side projects that aim to enhance the digital experience. Check out my GitHub; it's my digital playground where tools like ChronoMouse and MenuMaestro come to life. </p>
-			<p>
-				<strong>Feel free to connect with me:</strong>
-			</p>
-			<ul>
-				<li>
-					<a href="https://www.figma.com/@sryo" target="_blank">My Figma plugins</a>
-				</li>
-				<li>
-					<a href="https://github.com/sryo" target="_blank">My GitHub repos</a>
-				</li>
-				<li>
-					<a href="https://www.linkedin.com/in/myadarola/" target="_blank">My LinkedIn profile</a>
-				</li>
-			</ul>
-			<p>I believe that creativity is a muscle—one that must be exercised regularly to be strengthened. This philosophy drives not only my professional work but also my passion for personal projects and experimentation. </p>
-			<p>Join me as I explore the question: "What if...?" in design and technology. Each project below represents a different way I've challenged myself to think creatively, push the boundaries of what's possible in our digital world, and find joy in the journey of creation and problem-solving.</p>
-			<div class="project">
-						<div class="project-content">
-								<h3>What if icons are the problem?</h3>
-								<p>People spend over 10 hours a day on screens. Teens average nearly 9 hours daily. Digital addiction has become a significant concern, driven by social media, algorithmic feeds, and persistent notifications. In response, I designed <a href="https://github.com/sryo/scriptables">ZenTrate</a>—a set of iOS widgets using Scriptable—drawing from digital minimalism and the simplicity of old point-and-click adventure games. ZenTrate replaces cluttered screens of colorful icons with a calm commands palette focused on verbs like "Pay" instead of navigating through a bank app, or "Set Timer" instead of opening the clocks app. By adapting to user behavior and enlarging frequently used actions, we can offer a more intentional and streamlined approach to technology use aiming to reduce the cognitive load and help users manage their screen time more effectively.</p>
-						</div>
-						<div class="project-image">
-								<img src="/zentrate.png" alt="ZenTrate iOS widgets" loading="lazy">
-						</div>
-				</div>
+@keyframes appearBack {
+    from {
+        transform: scale(0);
+    }
 
-				<div class="project">
-						<div class="project-content">
-								<h3>What if using real data in Figma was simpler?</h3>
-								<p>While looking for ways in which we could bring real data into our designs I found a Figma plugin called Google sheets sync, which pretty much does what it says. It allows you to sync data in a google sheet with specific layers in your designs, but it lacks a way to import working clickable links. On a hack day, I decided to create <a href="https://www.figma.com/community/plugin/1284214046492867185/anchorify" target="_blank">Anchorify</a>, a Figma Plugin for converting <code>[text](url)</code> and <code>[url=url]text[/url]</code> links into clickable hyperlinks. Another plugin, <a href="https://www.figma.com/community/plugin/1285425464785405153/word-hugger" target="_blank">Word Hugger</a>, refines text elements with isolated words, known as "orphans," ensuring a polished paragraph layout by grouping together the last couple of words. Because every word deserves company.</p>
-						</div>
-				</div>
+    to {
+        transform: scale(1);
+    }
+}
 
-				<div class="project">
-						<div class="project-content">
-								<h3>What if menus were as intuitive as our thoughts?</h3>
-								<p>Introduced <a href="https://github.com/sryo/Spoons/blob/main/MenuMaestro.lua" target="_blank">MenuMaestro</a>, a tool that simplifies menu navigation, cutting down the distance between a thought and an action. Instead of sifting through dropdowns, users type what they're thinking and directly execute commands. Because sometimes, it's the legacy interfaces that hold the most room for reinvention.</p>
-						</div>
-						<div class="project-image">
-								<img src="/menumaestro.png" alt="MenuMaestro interface" loading="lazy">
-						</div>
-				</div>
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
 
-				<div class="project">
-						<div class="project-content">
-								<h3>What if cursors told the time?</h3>
-								<p>In July 2023, I brought a personal idea to life by building <a href="https://github.com/sryo/ChronoMouse" target="_blank">ChronoMouse</a>, a tool to keep track of time right beside the cursor. This project was more than just a coding exercise; it was a realization of a concept that came from recognizing a need in my own workflow. Learning to program in Swift allowed me to take control of the entire process, from the initial idea to the finished product, reinforcing the power of integrating design and development skills.</p>
-						</div>
-						<div class="project-image">
-								<img src="/chronomouse.svg" alt="ChronoMouse" loading="lazy">
-						</div>
-				</div>
+    to {
+        opacity: 1;
+    }
+}
+    </style>
+</head>
+<body>
+<label class="item" title="About Me">
+  <input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
+  <img src="contents/about//about.svg" loading="lazy" alt="About Me" />
+</label>
+<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
+  <h2>About Me</h2>
+<p>
+Hi, I'm Mateo Yadarola, a Product Designer who values the journey as much as the destination. My design journey spans over two decades, with more than ten years in leadership roles.
+</p>
+<p>
+I'm currently at Continental Finance, where I'm shaping a mobile home banking app catering to users with poor credit scores. Beyond my 9-to-5, I'm an experimenter, a creator of side projects that aim to enhance the digital experience. Check out my GitHub; it's my digital playground where tools like ChronoMouse and MenuMaestro come to life.
+</p>
+<p>
+Feel free to connect with me:
+</p>
+<li><a href="https://www.figma.com/@sryo">My Figma plugins</a></li>
+<li><a href="https://github.com/sryo">My GitHub repos</a></li>
+<li><a href="https://www.linkedin.com/in/myadarola/">My LinkedIn profile</a></li>
+<p>
+I believe that creativity is a muscle—one that must be exercised regularly to be strengthened. This philosophy drives not only my professional work but also my passion for personal projects and experimentation.
+</p>
+<p>
+Join me as I explore the question: "What if...?" in design and technology. Each project below represents a different way I've challenged myself to think creatively, push the boundaries of what's possible in our digital world, and find joy in the journey of creation and problem-solving.
+</p>
+<div class="project">
+  <div class="project-content">
+    <h3>What if cursors told the time?</h3>
+<p>
+In July 2023, I brought a personal idea to life by building <a href="https://github.com/sryo/ChronoMouse">ChronoMouse</a>, a tool to keep track of time right beside the cursor. This project was more than just a coding exercise; it was a realization of a concept that came from recognizing a need in my own workflow. Learning to program in Swift allowed me to take control of the entire process, from the initial idea to the finished product, reinforcing the power of integrating design and development skills.
+</p>
+  </div>
+  <div class="project-image">
+    <img src="contents/about//gallery/chronomouse/chronomouse.svg" alt="What if cursors told the time?" loading="lazy">
+  </div>
+</div>
+<div class="project">
+  <div class="project-content">
+    <h3>What if using real data in Figma was simpler?</h3>
+<p>
+While looking for ways in which we could bring real data into our designs I found a Figma plugin called Google sheets sync, which pretty much does what it says. It allows you to sync data in a google sheet with specific layers in your designs, but it lacks a way to import working clickable links. On a hack day, I decided to create <a href="https://www.figma.com/community/plugin/1284214046492867185/anchorify">Anchorify</a>, a Figma Plugin for converting `<a href="url">text</a>` and `[url=url]text[/url]` links into clickable hyperlinks. Another plugin, <a href="https://www.figma.com/community/plugin/1285425464785405153/word-hugger">Word Hugger</a>, refines text elements with isolated words, known as "orphans," ensuring a polished paragraph layout by grouping together the last couple of words. Because every word deserves company.
+</p>
+  </div>
+  <div class="project-image">
+    <img src="contents/about//gallery/figma-plugins/anchorify.svg" alt="What if using real data in Figma was simpler?" loading="lazy">
+  </div>
+</div>
+<div class="project">
+  <div class="project-content">
+    <h3>What if emails blogged?</h3>
+<p>
+Emails have always been an intuitive self-publishing tool, yet confined to specific recipients. To overcome this, I wrote a <a href="https://github.com/sryo/GmailScripts/blob/master/email2Web.gs">Google Apps script</a> that adds a public folder to your Gmail account. This endeavor highlights the innovation possible when we reimagine the potential of everyday tools.
+</p>
+  </div>
+  <div class="project-image">
+    <img src="contents/about//gallery/mail2web/mail2web.svg" alt="What if emails blogged?" loading="lazy">
+  </div>
+</div>
+<div class="project">
+  <div class="project-content">
+    <h3>What if touchpads typed?</h3>
+<p>
+This month, I've been tinkering with my digital workspace. I started wondering: what if my touchpad worked as a keyboard? From this thought, <a href="https://github.com/sryo/Spoons/blob/main/TrackpadWizard.lua">TrackpadWizard</a> was born. It's still a work in progress, but I'm happy with what I've accomplished so far. In addition, I created <a href="https://github.com/sryo/Spoons/blob/main/HyperlinkHijacker.lua">HyperlinkHijacker</a>, a no-fuss tool to control your hyperlink destinations. Click a link, and you get a list of browsers/profiles to choose from.
+</p>
+<p>
+ <div class="video-responsive"><iframe loading="lazy" src="https://www.youtube.com/embed/PQBv28n0zno?si=2F75WTutySao2zXC" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+</p>
+  </div>
+</div>
+<div class="project">
+  <div class="project-content">
+    <h3>What if icons are the problem?</h3>
+<p>
+People spend over 10 hours a day on screens. Teens average nearly 9 hours daily. Digital addiction has become a significant concern, driven by social media, algorithmic feeds, and persistent notifications. In response, I designed <a href="https://github.com/sryo/scriptables">ZenTrate</a>—a set of iOS widgets using Scriptable—drawing from digital minimalism and the simplicity of old point-and-click adventure games. ZenTrate replaces cluttered screens of colorful icons with a calm commands palette focused on verbs like "Pay" instead of navigating through a bank app, or "Set Timer" instead of opening the clocks app. By adapting to user behavior and enlarging frequently used actions, we can offer a more intentional and streamlined approach to technology use aiming to reduce the cognitive load and help users manage their screen time more effectively.
+</p>
+  </div>
+  <div class="project-image">
+    <img src="contents/about//gallery/zentrate/zentrate.png" alt="What if icons are the problem?" loading="lazy">
+  </div>
+</div>
+</div>
+<label class="item" title="Bancón: Reimagining Banking for the Digital Age">
+  <input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
+  <img src="contents/bancon//bancon.svg" loading="lazy" alt="Bancón: Reimagining Banking for the Digital Age" />
+</label>
+<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
+  <h2>Bancón: Reimagining Banking for the Digital Age</h2>
+<p>
+In 2021, I led the UX design for Bancón at Bancor, driven by a fundamental question: <em>How can we make banking as intuitive as using a virtual wallet?</em> This project was born from the realization that traditional banking apps were losing ground to more user-friendly fintech solutions.
+</p>
+<h2>The Challenge</h2>
+<p>
+According to Veritran, 7 out of 10 users in Argentina prefer digital transactions through virtual wallets over traditional banking apps. Additionally, 3 out of 10 still visit physical branches for major transactions. Our mission was clear: transform an antiquated industry through User-Centered Design and drive the future of finance forward.
+</p>
+<h2>Our Approach</h2>
+<p>
+We implemented a user-centered design approach to modernize Bancor's mobile app. Our goal was to create an experience that was easily navigated by each of the bank's key audiences:
+</p>
+<li>Older adults</li>
+<li>Public employees</li>
+<li>Students</li>
+<li>Business owners</li>
+<h2>Key Features</h2>
+<li><strong>Intuitive Interface:</strong> Redesigned UI that mimics the simplicity of popular virtual wallets.</li>
+<li><strong>Smart Categorization:</strong> Transactions automatically sorted and categorized for easy financial management.</li>
+<li><strong>Personalized Insights:</strong> AI-driven financial advice tailored to each user's spending habits and goals.</li>
+<li><strong>Seamless Transfers:</strong> One-tap transfers to frequently used contacts, rivaling the ease of peer-to-peer payment apps.</li>
+<li><strong>Virtual Assistant:</strong> An AI chatbot to guide users through complex banking operations.</li>
+<h2>Development Journey</h2>
+<li>Conducted extensive user research to understand the pain points of different user groups.</li>
+<li>Created and tested multiple prototypes, iterating based on user feedback.</li>
+<li>Collaborated closely with backend developers to ensure the feasibility of new features.</li>
+<li>Implemented accessibility features to make the app usable for all, regardless of ability.</li>
+<h2>Impact and Results</h2>
+<p>
+The reimagined Bancón app saw significant growth in 2021:
+</p>
+<li>Over 845,000 individual users</li>
+<li>18,200 companies actively using the app</li>
+<li>68,400 new customers onboarded</li>
+<p>
+These numbers not only validated our user-centric approach but also demonstrated that traditional banks can compete with fintech startups when they prioritize user experience.
+</p>
+<p>
+Some of my favorite touches:
+</p>
+<li>The "financial health score" feature that gamifies good financial habits.</li>
+<li>The subtle haptic feedback when completing a transaction, providing a sense of security.</li>
+<li>The "branch finder" that uses AR to guide users to the nearest physical bank when needed.</li>
+<p>
+View more details: <a href="https://drive.google.com/file/d/1gekSKbQl82T0MtQsx0baiyesIURSF_40/view?usp=sharing">Project Link</a>
+</p>
+</div>
+<label class="item" title="Bancor: Where's My Card?">
+  <input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
+  <img src="contents/bancor//bancor.svg" loading="lazy" alt="Bancor: Where's My Card?" />
+</label>
+<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
+  <h2>Bancor: Where's My Card?</h2>
+<p>
+In response to the COVID-19 pandemic, I led a project at Bancor to address a critical question: <em>How can we alleviate user anxiety when card deliveries are delayed due to nationwide quarantine?</em> This project was born from the urgent need to adapt our services to the unprecedented challenges posed by the pandemic.
+</p>
+<h2>The Challenge</h2>
+<p>
+The COVID-19 pandemic severely impacted traditional postal services, leading to significant delays in credit and debit card deliveries. This situation caused considerable anxiety among our customers, who were uncertain about when they would receive their cards and how they could access their funds in the meantime.
+</p>
+<h2>Our Solution</h2>
+<p>
+We developed a two-pronged approach to address this challenge:
+</p>
+<p>
+1. Real-time Card Tracking
+2. Virtual Card Activation
+</p>
+<h2>Key Features</h2>
+<li><strong>In-App Delivery Tracking:</strong> Integrated real-time parcel tracking directly into the Bancor mobile app.</li>
+<li><strong>Push Notifications:</strong> Automatic updates on card status and estimated delivery dates.</li>
+<li><strong>Virtual Card Activation:</strong> Ability to use debit and prepaid cards for transfers and payments before physical card arrival.</li>
+<li><strong>Secure Digital Verification:</strong> Enhanced security measures to verify identity for virtual card activation.</li>
+<li><strong>Interactive FAQ:</strong> A dynamic, context-aware FAQ section to address common concerns about card delivery and usage.</li>
+<h2>Development Journey</h2>
+<li>Collaborated closely with our postal service provider to integrate their tracking API into our app.</li>
+<li>Designed and implemented a user-friendly interface for tracking information, focusing on clarity and reassurance.</li>
+<li>Worked with our security team to develop robust verification processes for virtual card activation.</li>
+<li>Conducted rapid user testing to ensure the new features effectively reduced anxiety and improved user experience.</li>
+<h2>Impact and Insights</h2>
+<p>
+The implementation of these features significantly reduced customer support calls related to card deliveries. Users reported feeling more in control and less anxious about their banking services during the pandemic. The virtual card activation feature, in particular, proved so popular that it has become a permanent offering, even as delivery delays have normalized.
+</p>
+<p>
+Some of my favorite touches:
+</p>
+<li>The "card journey" visualization that shows the card's progress from printing to delivery in an engaging, animated timeline.</li>
+<li>The calming color scheme and reassuring microcopy used throughout the tracking interface.</li>
+<li>The "virtual unboxing" experience when activating a card digitally, complete with a satisfying unwrapping animation.</li>
+</div>
+<label class="item" title="Continental Finance: Banking as a Game">
+  <input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
+  <img src="contents/cfc//cfc.svg" loading="lazy" alt="Continental Finance: Banking as a Game" />
+</label>
+<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
+  <h2>Continental Finance: Banking as a Game</h2>
+<p>
+At Continental Finance, I led the development of a gamified banking experience, driven by a critical question: <em>How can we make improving credit scores as engaging as leveling up in a video game?</em> This project aimed to address the challenges faced by the 48 million Americans deemed to have bad credit.
+</p>
+<h2>The Challenge</h2>
+<p>
+Qualifying for a credit card is particularly difficult for those with poor credit scores or no credit history. Traditional banking apps often fail to engage users in improving their financial health. We needed to find a way to not only help users grow their credit line but also educate them on why it's important.
+</p>
+<h2>Our Solution</h2>
+<p>
+We created a gamified banking app that turns the journey of improving one's credit score into an interactive and enjoyable experience.
+</p>
+<h2>Key Features</h2>
+<li><strong>Financial Health Score:</strong> A dynamic score that updates in real-time based on user actions.</li>
+<li><strong>Quest System:</strong> Daily, weekly, and monthly financial tasks presented as quests with rewards.</li>
+<li><strong>Achievement Badges:</strong> Visual rewards for reaching financial milestones.</li>
+<li><strong>Interactive Credit Lessons:</strong> Bite-sized, gamified lessons on credit management and personal finance.</li>
+<li><strong>Spending Insights:</strong> AI-powered analysis of spending habits with actionable recommendations.</li>
+<li><strong>Credit Line Growth Visualization:</strong> An engaging visual representation of credit line increases.</li>
+<li><strong>Social Challenges:</strong> Optional feature to compete with friends on savings goals or budget adherence.</li>
+<h2>Development Journey</h2>
+<li>Conducted extensive research on gamification principles and their application in financial contexts.</li>
+<li>Collaborated with financial educators to ensure the accuracy and relevance of educational content.</li>
+<li>Designed an intuitive, visually appealing UI that makes financial information less intimidating.</li>
+<li>Implemented a robust backend capable of securely handling financial data while supporting game-like features.</li>
+<li>Conducted extensive user testing to fine-tune the balance between education and engagement.</li>
+<h2>Impact and Insights</h2>
+<p>
+The app has been well-received by users, with many reporting significant improvements in their credit scores and overall financial knowledge. We've seen increased engagement with budgeting tools and educational content compared to traditional banking apps.
+</p>
+<p>
+Some of my favorite touches:
+</p>
+<li>The "credit score growth" animation that plays when a user reaches a new milestone.</li>
+<li>The "money tree" feature that grows or shrinks based on savings habits.</li>
+<li>The "financial time machine" that projects future financial health based on current habits.</li>
+<h2>Lessons Learned</h2>
+<p>
+This project reinforced the power of gamification in driving behavior change. We learned that by aligning financial goals with human psychology and motivations, we could make the often daunting task of credit improvement feel achievable and even fun. It also highlighted the importance of continuous feedback in maintaining user engagement.
+</p>
+</div>
+<label class="item" title="HometownLocal: Revolutionizing Home Services">
+  <input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
+  <img src="contents/hometown//hometown.svg" loading="lazy" alt="HometownLocal: Revolutionizing Home Services" />
+</label>
+<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
+  <h2>HometownLocal: Revolutionizing Home Services</h2>
+<p>
+At HometownLocal, I led the transformation of a simple demolition and construction rental web directory into a full-fledged platform for home services. The driving question was: <em>What if we could make booking a home service as easy as ordering a ride?</em>
+</p>
+<h2>The Challenge</h2>
+<p>
+The home service industry, particularly in demolition and construction, was ripe for disruption. Service providers were struggling with inefficient scheduling, communication gaps, and billing headaches. We saw an opportunity to streamline these processes and create an Uber-like experience for both service providers and homeowners.
+</p>
+<h2>Our Solution</h2>
+<p>
+We developed a comprehensive platform that covers the entire service lifecycle, from booking to billing. Here's what we built:
+</p>
+<h2>Key Features</h2>
+<li><strong>Seamless Onboarding:</strong> A smooth, intuitive process for both service providers and customers to join the platform.</li>
+<li><strong>Smart Booking Flow:</strong> An AI-powered system that matches customer needs with the right service providers.</li>
+<li><strong>Multi-view Management Tools:</strong></li>
+<p>
+  - Calendar view for easy scheduling
+  - Kanban board for job status tracking
+  - Map view for efficient route planning
+</p>
+<li><strong>Real-time Route Navigation:</strong> Integrated GPS navigation to help service providers reach job sites efficiently.</li>
+<li><strong>Internal Messaging System:</strong> A secure channel for clear communication between customers and service providers.</li>
+<li><strong>Automated Invoicing:</strong> Streamlined billing process that triggers upon job completion.</li>
+<h2>Development Journey</h2>
+<li>Conducted extensive research into the pain points of both home service providers and customers.</li>
+<li>Rapidly prototyped and iterated on the UI/UX design, focusing on simplicity and efficiency.</li>
+<li>Collaborated closely with backend developers to ensure seamless integration of complex features like real-time scheduling and route optimization.</li>
+<li>Implemented a robust testing strategy to ensure the platform could handle the complexities of various home services.</li>
+<h2>Impact and Insights</h2>
+<p>
+The platform has transformed how home services are booked and managed in our target markets. Service providers report significant improvements in efficiency, with some seeing up to a 30% increase in completed jobs per week. Customers appreciate the transparency and ease of use, leading to higher satisfaction rates and repeat bookings.
+</p>
+<p>
+Some of my favorite touches:
+</p>
+<li>The "service provider match" feature that uses machine learning to pair customers with the best-suited professionals.</li>
+<li>The satisfying "job complete" animation that plays when a service is marked as finished.</li>
+<li>The "time-lapse" feature that automatically creates a video of before-and-after photos for significant renovation projects.</li>
+<p>
+View more details: <a href="https://www.darwoft.com/blog/best-logistics-management-software-solution-service-providers">Project Link</a>
+</p>
+</div>
+<label class="item" title="Protecting Your Business: Improving Liability Insurance Applications">
+  <input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
+  <img src="contents/omsnic//omsnic.svg" loading="lazy" alt="Protecting Your Business: Improving Liability Insurance Applications" />
+</label>
+<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
+  <h2>Protecting Your Business: Improving Liability Insurance Applications</h2>
+<p>
+<strong>Client:</strong> OMSNIC - Finance and insurance
+</p>
+<p>
+<strong>Overview:</strong> How do we turn 112 different forms into one to create a fast and compelling onboarding flow for Oral & Maxillofacial Surgeons?
+</p>
+<p>
+In order to streamline the onboarding process for Oral & Maxillofacial Surgeons, our team set out to consolidate the 112 different forms they were required to fill out.
+</p>
+<p>
+We began by iterating over multiple ideas for a conversational quoting tool, allowing surgeons to quickly and easily provide the necessary information. After conducting user testing and gathering feedback, we refined and improved the tool, creating a fast and compelling onboarding experience for surgeons. This streamlined process has improved the user experience and made it easier for surgeons to complete the onboarding process.
+</p>
+<p>
+<strong>Learn more:</strong> <a href="https://quickquote.fortressins.com/">Project Link</a>
+</p>
+</div>
+<label class="item" title="VENG: A New Perspective on Earth">
+  <input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
+  <img src="contents/veng//veng.svg" loading="lazy" alt="VENG: A New Perspective on Earth" />
+</label>
+<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
+  <h2>VENG: A New Perspective on Earth</h2>
+<p>
+At VENG, I led the conceptualization of an e-commerce platform for satellite imagery, driven by the question: <em>What if accessing high-resolution satellite images was as easy as buying a book online?</em> This project aimed to democratize access to advanced satellite technology and Earth observation data.
+</p>
+<h2>The Challenge</h2>
+<p>
+SAOCOM, a constellation of two high-resolution satellites, can observe Earth's surface 24/7, regardless of weather conditions. However, accessing this valuable data was complex and often restricted to specialized organizations. We saw an opportunity to make this technology accessible to a broader audience.
+</p>
+<h2>Our Solution</h2>
+<p>
+We developed an intuitive e-commerce platform that allows users to search, request, and purchase satellite images from the SAOCOM 1A & B satellites.
+</p>
+<h2>Key Features</h2>
+<li><strong>Interactive Map Interface:</strong> Users can visually select areas of interest on a global map.</li>
+<li><strong>Advanced Search Filters:</strong> Options to filter images by date, weather conditions, resolution, and more.</li>
+<li><strong>Image Preview:</strong> Low-resolution previews of available images before purchase.</li>
+<li><strong>Custom Request System:</strong> Users can request images of specific areas not currently in the catalog.</li>
+<li><strong>Secure Payment Gateway:</strong> Integration with multiple payment methods for easy transactions.</li>
+<li><strong>Download Manager:</strong> Efficient delivery of large image files to users.</li>
+<li><strong>Usage Rights Management:</strong> Clear explanation and management of image usage rights.</li>
+<h2>Development Journey</h2>
+<li>Collaborated with satellite engineers to understand the capabilities and limitations of the SAOCOM satellites.</li>
+<li>Designed an intuitive UI that simplifies complex satellite data for non-expert users.</li>
+<li>Implemented a robust backend capable of handling large image files and complex search queries.</li>
+<li>Developed a pricing algorithm that balances accessibility with the high costs of satellite operation.</li>
+<h2>Impact and Insights</h2>
+<p>
+The platform has opened up new markets for satellite imagery, from environmental researchers to urban planners and even artists. We've seen a significant increase in the use of SAOCOM data across various fields, contributing to advancements in climate research, agriculture, and urban development.
+</p>
+<p>
+Some of my favorite touches:
+</p>
+<li>The "Earth Diary" feature that shows users how their area of interest has changed over time.</li>
+<li>The satisfying "capture" animation that plays when a user requests a new image.</li>
+<li>The "resolution comparison" tool that visually demonstrates the power of SAOCOM's imaging capabilities.</li>
+<p>
+View more details: <a href="https://www.lavoz.com.ar/negocios/con-una-pata-en-cordoba-una-empresa-creo-un-mercado-para-imagenes-de-satelites-argentinos">Project Link</a>
+</p>
+</div>
+<label class="item" title="Vlic: News in a Nutshell">
+  <input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
+  <img src="contents/vlic//vlic.svg" loading="lazy" alt="Vlic: News in a Nutshell" />
+</label>
+<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
+  <h2>Vlic: News in a Nutshell</h2>
+<p>
+I led the development of Vlic at Infoxel, driven by a pressing question: <em>What if brand managers could instantly know how they're perceived in the media?</em> This project emerged from the realization that in our fast-paced media landscape, staying informed is both crucial and increasingly challenging.
+</p>
+<h2>The Challenge</h2>
+<p>
+Politicians, journalists, and brand managers face a daunting task: keeping track of their brand's representation across TV, radio, and newspapers. The constant flow of information makes it easy to miss critical mentions or emerging trends.
+</p>
+<h2>Our Solution</h2>
+<p>
+We created Vlic, a mobile app that revolutionizes media monitoring. It's not just a news aggregator; it's a real-time brand perception tool that puts the power of media analysis in your pocket.
+</p>
+<h2>Key Features</h2>
+<li><strong>Real-time Notifications:</strong> Instant alerts when your brand is mentioned, allowing for rapid response to emerging stories.</li>
+<li><strong>Customizable Feeds:</strong> Tailored news streams that focus on your specific brand or areas of interest.</li>
+<li><strong>One-tap Sharing:</strong> Quickly disseminate relevant news to your team or followers, fostering collaborative media management.</li>
+<li><strong>Sentiment Analysis:</strong> AI-powered insights into the tone and context of brand mentions.</li>
+<li><strong>Historical Trends:</strong> Track your brand's media presence over time, identifying patterns and areas for improvement.</li>
+<h2>Development Journey</h2>
+<li>Collaborated with a team of skilled engineers to build a robust backend capable of processing vast amounts of media data in real-time.</li>
+<li>Designed an intuitive UI that presents complex media data in an easily digestible format.</li>
+<li>Implemented machine learning algorithms to improve the accuracy of brand mention detection and sentiment analysis over time.</li>
+<h2>Impact and Insights</h2>
+<p>
+Vlic has transformed how professionals interact with media. It's not just about staying informed; it's about gaining a competitive edge through timely, actionable insights. The app has been particularly embraced by political campaign managers and PR professionals, who've reported making faster, more informed decisions about their public image strategies.
+</p>
+<p>
+Some of my favorite touches:
+</p>
+<li>The "media pulse" feature that visualizes the frequency and sentiment of brand mentions over the past 24 hours.</li>
+<li>The satisfying "ping" sound when a high-priority mention is detected, distinct from regular notifications.</li>
+<li>The "reaction time" metric that gamifies how quickly users respond to significant media mentions.</li>
+<p>
+View on <a href="https://appadvice.com/app/vlic/1176938054">AppAdvice</a>
+</p>
+</div>
+    <svg id="lineContainer"></svg>
+    <script>
+    const checkboxButtons = document.querySelectorAll('input[type="checkbox"]');
+const svg = document.getElementById("lineContainer");
+const MAX_PATHS = 10;
+let currentPaths = [];
+const clearCheckedCheckboxButtons = () => {
+  checkboxButtons.forEach((checkboxButton) => {
+    checkboxButton.checked = false;
+  });
+};
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape" || event.keyCode === 27) {
+    clearCheckedCheckboxButtons();
+  }
+});
 
-				<div class="project">
-						<div class="project-content">
-								<h3>What if touchpads typed?</h3>
-								<p>This month, I've been tinkering with my digital workspace. I started wondering: what if my touchpad worked as a keyboard? From this thought, <a href="https://github.com/sryo/Spoons/blob/main/TrackpadWizard.lua" target="_blank">TrackpadWizard</a> was born. It's still a work in progress, but I'm happy with what I've accomplished so far. In addition, I created <a href="https://github.com/sryo/Spoons/blob/main/HyperlinkHijacker.lua" target="_blank">HyperlinkHijacker</a>, a no-fuss tool to control your hyperlink destinations. Click a link, and you get a list of browsers/profiles to choose from.</p>
+function updateHistory(checkbox) {
+  let url = new URL(window.location.href);
+  if (checkbox.checked) {
+    url.searchParams.set(checkbox.name, checkbox.id);
+  } else {
+    url.searchParams.delete(checkbox.name);
+  }
+  window.history.pushState(
+    {
+      checkboxId: checkbox.id,
+      checked: checkbox.checked,
+    },
+    "",
+    url,
+  );
+}
+checkboxButtons.forEach((checkbox) => {
+  checkbox.addEventListener("change", function () {
+    updateHistory(this);
+  });
+});
+window.addEventListener("popstate", clearCheckedCheckboxButtons);
+const lineColors = [
+  "#E7A545",
+  "#FFC0CB",
+  "#E94136",
+  "#7E3972",
+  "#1E88E5",
+  "#414DA1",
+  "#007A44",
+];
+let currentColorIndex = 0;
 
-						</div>
-						<div class="project-image video-responsive">
-							<iframe width="560" height="315" loading="lazy" src="https://www.youtube.com/embed/PQBv28n0zno?si=2F75WTutySao2zXC" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-						</div>
-				</div>
-
-				<div class="project">
-						<div class="project-content">
-								<h3>What if emails blogged?</h3>
-								<p>Emails have always been an intuitive self-publishing tool, yet confined to specific recipients. To overcome this, I wrote a <a href="https://github.com/sryo/GmailScripts/blob/master/email2Web.gs" target="_blank">Google Apps script</a> that adds a public folder to your Gmail account. This endeavor highlights the innovation possible when we reimagine the potential of everyday tools.</p>
-						</div>
-				</div>
-		</div>
-		<label class="item" title="A Gamified Banking Experience" role="button" tabindex="0" aria-haspopup="dialog">
-			<input type="checkbox" name="menu" />
-			<img src="/cfc.svg" loading="lazy" alt="👾" />
-		</label>
-		<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
-			<h2>A Gamified Banking Experience</h2>
-			<p>
-				<strong>Client:</strong> Continental Finance - Finance and insurance
-			</p>
-			<p>
-				<strong>Overview:</strong> Qualifying for a credit card is not easy when you have a poor credit score or none at all. Around 48 million Americans are deemed to have bad credit. How can we help our users grow their credit line while also teaching them why that’s important?
-			</p>
-			<p>To address the challenge of helping users improve their credit score and increase their credit line, our team focused on human motivations rather than simply adding features to the app.</p>
-			<p>To align motivations, goals, and tasks, we gamified the experience of learning about personal finance and credit management, making it an interactive and enjoyable journey for users to improve their financial literacy. By highlighting budgeting and other behaviors into the app, we are able to guide users towards actions that will help them reduce their spending and improve their credit score. This approach not only helps users qualify for credit cards but also teaches them the importance of building and maintaining a good credit score.</p>
-			<p>Our new app has been well-received by users, with many reporting significant improvements in their credit score and overall financial knowledge.</p>
-		</div>
-		<label class="item" title="Banking Made Simple: The Public Bank E-wallet">
-			<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
-			<img src="/bancon.svg" loading="lazy" alt="" />
-		</label>
-		<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
-			<h2>Banking Made Simple: The Public Bank E-wallet</h2>
-			<p>
-				<strong>Client:</strong> Bancor - Finance and insurance
-			</p>
-			<p>
-				<strong>Overview:</strong> According to Veritran in Argentina, 7 out of 10 users choose to do their digital transactions through a virtual wallet instead of their bank home banking app, and 3 out of 10 still go to a physical branch for operations that they consider to be of greater importance, such as the transfer of large amounts, the request for loans, or the subscription of time deposits. How can we transform an antiquated industry through User-Centered Design and drive the future of finance forward, providing an experience that is easily navigated by each of the bank's key audiences and meets each of their unique needs?
-			</p>
-			<p>In response to the increasing popularity of virtual wallets and the need for an improved user experience in the banking industry, our team implemented a user-centered design approach to modernize the bank's mobile app. By streamlining the most commonly used flows and incorporating new features that cater to the unique needs of our key audiences (older adults, public employees, students, and business owners), we were able to transform the outdated experience and drive the future of finance forward. As a result, our app saw significant growth in 2021, with over 845,000 individuals and 18,200 companies using the app, and over 68,400 new customers onboarded.</p>
-			<p>
-				<strong>Learn more:</strong>
-				<a href="https://drive.google.com/file/d/1gekSKbQl82T0MtQsx0baiyesIURSF_40/view?usp=sharing">Project Link</a>
-			</p>
-		</div>
-		<label class="item" title="Where's my Card: Real-time Delivery Tracking">
-			<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
-			<img src="/bancor.svg" loading="lazy" alt="💸" />
-		</label>
-		<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
-			<h2>Where's my Card: Real-time Delivery Tracking</h2>
-			<p>
-				<strong>Client:</strong> Bancor - Finance and insurance
-			</p>
-			<p>
-				<strong>Overview:</strong> The COVID-19 pandemic has hit the demand for traditional postal services hard. How can we reduce user anxiety while a country-wide quarantine extends card shipping delays?
-			</p>
-			<p>To address the challenges posed by the Covid restrictions and extended quarantine, our team worked closely with our postal service provider to develop solutions that would reduce user anxiety and alleviate shipping delays. We implemented a feature that allows regular credit and debit card users to track their parcel delivery directly from their homebanking app. This provides users with peace of mind and allows them to stay informed about the status of their delivery. Additionally, we enabled users to make transfers and payments using their debit and prepaid cards even if the physical card has not yet arrived. This allows users to continue accessing their funds and conducting transactions without having to wait for their physical card to arrive. Overall, these solutions have helped to improve the user experience and reduce anxiety for our customers during the pandemic.</p>
-		</div>
-		<label class="item" title="Home Services on Demand: An Uber-like Model">
-			<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
-			<img src="/hometown.svg" loading="lazy" alt="🧱" />
-		</label>
-		<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
-			<h2>Home Services on Demand: An Uber-like Model</h2>
-			<p>
-				<strong>Client:</strong> HometownLocal - Construction
-			</p>
-			<p>
-				<strong>Overview:</strong> How can we pivot a Demolition and Construction rental web directory into an online communication, scheduling, booking, and billing for our home service partners?
-			</p>
-			<p> In a short time, our team designed and developed a new onboarding experience and job booking flow. We also added new management tools, including calendar, kanban, and map views for job orders, as well as route navigation and internal messaging capabilities. </p>
-			<p> These features enable businesses to easily manage their fleet and complete tasks from booking to invoicing. This new platform allows home service providers to communicate, schedule, book, and bill their clients more efficiently, helping to improve their overall business operations. </p>
-			<p>
-				<strong>Learn more:</strong>
-				<a href="https://www.darwoft.com/blog/best-logistics-management-software-solution-service-providers">Project Link</a>
-			</p>
-		</div>
-		<label class="item" title="A New Perspective: E-commerce for Satellite Imagery">
-			<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
-			<img src="/veng.svg" loading="lazy" alt="🛰️" />
-		</label>
-		<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
-			<h2>A New Perspective: E-commerce for Satellite Imagery</h2>
-			<p>
-				<strong>Client:</strong> VENG - Aerospace and Defense
-			</p>
-			<p>
-				<strong>Overview:</strong> SAOCOM is a constellation of two high-resolution satellites that are capable of observing Earth's surface around the clock, regardless of weather conditions. What would an e-commerce of its catalog and future satellite images look like?
-			</p>
-			<p>I conceptualized an e-commerce platform for searching, requesting, and paying for satellite images provided by these satellites.</p>
-			<p>This new web app allows users to easily browse and purchase images from the SAOCOM 1A & B satellites, providing them with access to valuable information and insights about Earth's surface. This platform not only provides a convenient way for users to access and purchase satellite images but also helps to promote the use of these advanced satellite technologies.</p>
-			<p>
-				<strong>Learn more:</strong>
-				<a href="https://www.lavoz.com.ar/negocios/con-una-pata-en-cordoba-una-empresa-creo-un-mercado-para-imagenes-de-satelites-argentinos">Project Link</a>
-			</p>
-		</div>
-		<label class="item" title="Protecting Your Business: Improving Liability Insurance Applications">
-			<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
-			<img src="/omsnic.svg" loading="lazy" alt="☔" />
-		</label>
-		<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
-			<h2>Protecting Your Business: Improving Liability Insurance Applications</h2>
-			<p>
-				<strong>Client:</strong> OMSNIC - Finance and insurance
-			</p>
-			<p>
-				<strong>Overview:</strong> How do we turn 112 different forms into one to create a fast and compelling onboarding flow for Oral & Maxillofacial Surgeons?
-			</p>
-			<p>In order to streamline the onboarding process for Oral & Maxillofacial Surgeons, our team set out to consolidate the 112 different forms they were required to fill out.</p>
-			<p> We began by iterating over multiple ideas for a conversational quoting tool, allowing surgeons to quickly and easily provide the necessary information. After conducting user testing and gathering feedback, we refined and improved the tool, creating a fast and compelling onboarding experience for surgeons. This streamlined process has improved the user experience and made it easier for surgeons to complete the onboarding process. </p>
-			<p>
-				<strong>Learn more:</strong>
-				<a href="https://quickquote.fortressins.com/">Project Link</a>
-			</p>
-		</div>
-		<label class="item" title="News in a Nutshell: A Media Clipping App">
-			<input type="checkbox" name="menu" role="button" tabindex="0" aria-haspopup="dialog" />
-			<img src="/vlic.svg" loading="lazy" alt="🔔" />
-		</label>
-		<div class="gallery" role="dialog" tabindex="-1" aria-hidden="false" aria-modal="true">
-			<h2>News in a Nutshell: The Media Clipping App</h2>
-			<p>
-				<strong>Client:</strong> Infoxel - Media, Printing, and Publishing
-			</p>
-			<p>
-				<strong>Overview:</strong> As politicians, journalists, and brand managers, staying on top of how your brand is being represented in the media can be a daunting task. With the constant flow of news and information, it can be difficult to keep track of every mention of your brand in TV, radio, and newspapers.
-			</p>
-			<p> To address this challenge, we decided to develop Vlic, a mobile app that would allow our users to quickly and easily see how their brand was being represented in the media as soon as news happened. With a team of skilled engineers, we set out to build a new media clipping product that would provide targeted information consumption and reduce the reliance on third-party applications. Thanks to our media clipping app, politicians, journalists, and brand managers are now able to stay on top of how their brand is being represented in the media, and make informed decisions about their public image. </p>
-			<p>
-				<strong>Key Features:</strong>
-			</p>
-			<ul>
-				<li>Real-time notifications: Immediate notifications whenever the brand is mentioned in the media.</li>
-				<li>Customizable feeds: Users can customize feeds to see news related to their specific brand.</li>
-				<li>Easy sharing: Quick and easy sharing of news stories related to the brand with colleagues and followers. </li>
-			</ul>
-			<p>
-				<strong>Project Link:</strong>
-				<a href="https://appadvice.com/app/vlic/1176938054">Vlic on AppAdvice</a>
-			</p>
-		</div>
-		<!--
-	<label class="item" title="In Progress"><input type="checkbox" name="menu"><img src="/ey.svg" loading=lazy alt="📚"></label><div class="gallery"><h2>In Progress</h2><p><strong>Client:</strong></p><p><strong>Overview:</strong></p></div><label class="item" title="In Progress"><input type="checkbox" name="menu"><img src="/fortress.svg" loading=lazy alt="🦷"></label><div class="gallery"><h2>In Progress</h2><p><strong>Client:</strong></p><p><strong>Overview:</strong></p></div><label class="item" title="In Progress"><input type="checkbox" name="menu"><img src="/premium.svg" loading=lazy alt="📰"></label><div class="gallery"><h2>In Progress</h2><p><strong>Client:</strong></p><p><strong>Overview:</strong></p></div><label class="item" title="In Progress"><input type="checkbox" name="menu"><img src="/topicflower.svg" loading=lazy alt="🌸"></label><div class="gallery"><h2>In Progress</h2><p><strong>Client:</strong></p><p><strong>Overview:</strong></p></div><label class="item" title="In Progress"><input type="checkbox" name="menu"><img src="/web.svg" loading=lazy alt="🧭"></label><div class="gallery"><h2>In Progress</h2><p><strong>Client:</strong></p><p><strong>Overview:</strong></p></div>
--->
-		<svg id="lineContainer"></svg>
-		<script async>
-			const checkboxButtons = document.querySelectorAll('input[type="checkbox"]');
-			const svg = document.getElementById('lineContainer');
-			const MAX_PATHS = 10;
-			let currentPaths = [];
-			const clearCheckedCheckboxButtons = () => {
-				checkboxButtons.forEach(checkboxButton => {
-					checkboxButton.checked = false;
-				});
-			};
-			document.addEventListener('keydown', function(event) {
-				if (event.key === 'Escape' || event.keyCode === 27) {
-					clearCheckedCheckboxButtons();
-				}
-			});
-
-			function updateHistory(checkbox) {
-				let url = new URL(window.location.href);
-				if (checkbox.checked) {
-					url.searchParams.set(checkbox.name, checkbox.id);
-				} else {
-					url.searchParams.delete(checkbox.name);
-				}
-				window.history.pushState({
-					checkboxId: checkbox.id,
-					checked: checkbox.checked
-				}, "", url);
-			}
-			checkboxButtons.forEach(checkbox => {
-				checkbox.addEventListener('change', function() {
-					updateHistory(this);
-				});
-			});
-			window.addEventListener('popstate', clearCheckedCheckboxButtons);
-			const lineColors = ["#E7A545", "#FFC0CB", "#E94136", "#7E3972", "#1E88E5", "#414DA1", "#007A44"];
-			let currentColorIndex = 0;
-
-			function getNextColor() {
-				const color = lineColors[currentColorIndex];
-				currentColorIndex = (currentColorIndex + 1) % lineColors.length;
-				return color;
-			}
-			const items = document.querySelectorAll('.item');
-			const cellWidth = 137;
-			const cellHeight = 120;
-			const numCols = Math.floor((window.innerWidth - 100) / cellWidth);
-			const numRows = Math.floor((window.innerHeight - 100) / cellHeight);
-			const isCellOccupied = Array(numRows).fill(null).map(() => Array(numCols).fill(false));
-			const maxAttempts = 100;
-			items.forEach((item, index) => {
-				item.style.setProperty('--stagger', index);
-				let attempts = 0;
-				let x, y;
-				while (attempts < maxAttempts) {
-					x = Math.floor(Math.random() * numCols);
-					y = Math.floor(Math.random() * numRows);
-					const iconWidth = item.clientWidth;
-					const iconHeight = item.clientHeight;
-					const iconRightEdge = x * cellWidth + 50 + cellWidth - iconWidth;
-					const iconBottomEdge = y * cellHeight + 50 + cellHeight - iconHeight;
-					if (iconRightEdge > window.innerWidth || iconBottomEdge > window.innerHeight) {
-						attempts++;
-						continue;
-					}
-					if (isCellOccupied[y][x]) {
-						attempts++;
-						continue;
-					}
-					isCellOccupied[y][x] = true;
-					item.style.left = `${(50 + x * cellWidth + Math.random() * (cellWidth - iconWidth)) / window.innerWidth * 100}%`;
-					item.style.top = `${(50 + y * cellHeight + Math.random() * (cellHeight - iconHeight)) / window.innerHeight * 100}%`;
-					break;
-				}
-			});
-			let lastHoveredItem = document.getElementById('about');
-			items.forEach(item => {
-				item.addEventListener('mouseenter', (e) => {
-					if (!lastHoveredItem) {
-						lastHoveredItem = e.target;
-						return;
-					}
-					if (lastHoveredItem !== e.target) {
-						const rect1 = lastHoveredItem.getBoundingClientRect();
-						const rect2 = e.target.getBoundingClientRect();
-						const svgRect = svg.getBoundingClientRect();
-						const startX = rect1.left + rect1.width / 2 - svgRect.left;
-						const startY = rect1.top + rect1.height / 2 - svgRect.top;
-						const endX = rect2.left + rect2.width / 2 - svgRect.left;
-						const endY = rect2.top + rect2.height / 2 - svgRect.top;
-						const maxCornerRadius = 80; // Maximum corner radius
-						let pathData;
-						const distX = Math.abs(endX - startX);
-						const distY = Math.abs(endY - startY);
-						const isHorizontalFirst = distX > distY;
-						// Dynamically adjust corner radius
-						const cornerRadius = Math.min(maxCornerRadius, isHorizontalFirst ? distY / 2 : distX / 2);
-						const directionX = endX > startX ? 1 : -1;
-						const directionY = endY > startY ? 1 : -1;
-						if (isHorizontalFirst) {
-							const midX = (startX + endX) / 2;
-							if (distY < 2 * cornerRadius) {
-								// Simplified path for small vertical distances
-								pathData = `M${startX},${startY} H${midX} L${endX},${endY}`;
-							} else {
-								const sweepFlag1 = directionX * directionY > 0 ? 1 : 0;
-								const sweepFlag2 = directionX * directionY > 0 ? 0 : 1;
-								pathData = `M${startX},${startY}
+function getNextColor() {
+  const color = lineColors[currentColorIndex];
+  currentColorIndex = (currentColorIndex + 1) % lineColors.length;
+  return color;
+}
+const items = document.querySelectorAll(".item");
+const cellWidth = 137;
+const cellHeight = 120;
+const numCols = Math.floor((window.innerWidth - 100) / cellWidth);
+const numRows = Math.floor((window.innerHeight - 100) / cellHeight);
+const isCellOccupied = Array(numRows)
+  .fill(null)
+  .map(() => Array(numCols).fill(false));
+const maxAttempts = 100;
+items.forEach((item, index) => {
+  item.style.setProperty("--stagger", index);
+  let attempts = 0;
+  let x, y;
+  while (attempts < maxAttempts) {
+    x = Math.floor(Math.random() * numCols);
+    y = Math.floor(Math.random() * numRows);
+    const iconWidth = item.clientWidth;
+    const iconHeight = item.clientHeight;
+    const iconRightEdge = x * cellWidth + 50 + cellWidth - iconWidth;
+    const iconBottomEdge = y * cellHeight + 50 + cellHeight - iconHeight;
+    if (
+      iconRightEdge > window.innerWidth ||
+      iconBottomEdge > window.innerHeight
+    ) {
+      attempts++;
+      continue;
+    }
+    if (isCellOccupied[y][x]) {
+      attempts++;
+      continue;
+    }
+    isCellOccupied[y][x] = true;
+    item.style.left = `${((50 + x * cellWidth + Math.random() * (cellWidth - iconWidth)) / window.innerWidth) * 100}%`;
+    item.style.top = `${((50 + y * cellHeight + Math.random() * (cellHeight - iconHeight)) / window.innerHeight) * 100}%`;
+    break;
+  }
+});
+let lastHoveredItem = items[0];
+items.forEach((item) => {
+  item.addEventListener("mouseenter", (e) => {
+    if (!lastHoveredItem) {
+      lastHoveredItem = e.target;
+      return;
+    }
+    if (lastHoveredItem !== e.target) {
+      const rect1 = lastHoveredItem.getBoundingClientRect();
+      const rect2 = e.target.getBoundingClientRect();
+      const svgRect = svg.getBoundingClientRect();
+      const startX = rect1.left + rect1.width / 2 - svgRect.left;
+      const startY = rect1.top + rect1.height / 2 - svgRect.top;
+      const endX = rect2.left + rect2.width / 2 - svgRect.left;
+      const endY = rect2.top + rect2.height / 2 - svgRect.top;
+      const maxCornerRadius = 80; // Maximum corner radius
+      let pathData;
+      const distX = Math.abs(endX - startX);
+      const distY = Math.abs(endY - startY);
+      const isHorizontalFirst = distX > distY;
+      // Dynamically adjust corner radius
+      const cornerRadius = Math.min(
+        maxCornerRadius,
+        isHorizontalFirst ? distY / 2 : distX / 2,
+      );
+      const directionX = endX > startX ? 1 : -1;
+      const directionY = endY > startY ? 1 : -1;
+      if (isHorizontalFirst) {
+        const midX = (startX + endX) / 2;
+        if (distY < 2 * cornerRadius) {
+          // Simplified path for small vertical distances
+          pathData = `M${startX},${startY} H${midX} L${endX},${endY}`;
+        } else {
+          const sweepFlag1 = directionX * directionY > 0 ? 1 : 0;
+          const sweepFlag2 = directionX * directionY > 0 ? 0 : 1;
+          pathData = `M${startX},${startY}
 																H${midX - directionX * cornerRadius}
 																A${cornerRadius},${cornerRadius} 0 0 ${sweepFlag1} ${midX},${startY + directionY * cornerRadius}
 																V${endY - directionY * cornerRadius}
 																A${cornerRadius},${cornerRadius} 0 0 ${sweepFlag2} ${midX + directionX * cornerRadius},${endY}
 																H${endX}`;
-							}
-						} else {
-							const midY = (startY + endY) / 2;
-							if (distX < 2 * cornerRadius) {
-								// Simplified path for small horizontal distances
-								pathData = `M${startX},${startY} V${midY} L${endX},${endY}`;
-							} else {
-								const sweepFlag1 = directionX * directionY < 0 ? 1 : 0;
-								const sweepFlag2 = directionX * directionY < 0 ? 0 : 1;
-								pathData = `M${startX},${startY}
+        }
+      } else {
+        const midY = (startY + endY) / 2;
+        if (distX < 2 * cornerRadius) {
+          // Simplified path for small horizontal distances
+          pathData = `M${startX},${startY} V${midY} L${endX},${endY}`;
+        } else {
+          const sweepFlag1 = directionX * directionY < 0 ? 1 : 0;
+          const sweepFlag2 = directionX * directionY < 0 ? 0 : 1;
+          pathData = `M${startX},${startY}
 																V${midY - directionY * cornerRadius}
 																A${cornerRadius},${cornerRadius} 0 0 ${sweepFlag1} ${startX + directionX * cornerRadius},${midY}
 																H${endX - directionX * cornerRadius}
 																A${cornerRadius},${cornerRadius} 0 0 ${sweepFlag2} ${endX},${midY + directionY * cornerRadius}
 																V${endY}`;
-							}
-						}
-						const connector = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-						connector.setAttribute('d', pathData);
-						connector.setAttribute('stroke', getNextColor());
-						connector.setAttribute('fill', 'none');
-						const length = connector.getTotalLength();
-						connector.setAttribute('style', `--length: ${length};`);
-						svg.appendChild(connector);
-						currentPaths.push(connector);
-						if (currentPaths.length > MAX_PATHS) {
-							const oldestPath = currentPaths.shift();
-							svg.removeChild(oldestPath);
-						}
-						lastHoveredItem = e.target;
-					}
-				});
-			});
-			window.addEventListener('resize', () => {
-				currentPaths.forEach(path => svg.removeChild(path));
-				currentPaths = [];
-				lastHoveredItem = null;
-			});
-		</script>
-	</body>
+        }
+      }
+      const connector = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path",
+      );
+      connector.setAttribute("d", pathData);
+      connector.setAttribute("stroke", getNextColor());
+      connector.setAttribute("fill", "none");
+      const length = connector.getTotalLength();
+      connector.setAttribute("style", `--length: ${length};`);
+      svg.appendChild(connector);
+      currentPaths.push(connector);
+      if (currentPaths.length > MAX_PATHS) {
+        const oldestPath = currentPaths.shift();
+        svg.removeChild(oldestPath);
+      }
+      lastHoveredItem = e.target;
+    }
+  });
+});
+window.addEventListener("resize", () => {
+  currentPaths.forEach((path) => svg.removeChild(path));
+  currentPaths = [];
+  lastHoveredItem = null;
+});
+    </script>
+</body>
 </html>
