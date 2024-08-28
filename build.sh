@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ◯┃ LineAndForm (L+F)
-# A Simple Portfolio Generator
+# A Simple Portfolio Generator.
 
 # What is LineAndForm?
 # LineAndForm is a lightweight, command-line tool that generates an interactive
