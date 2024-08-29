@@ -4,9 +4,17 @@
 # A Simple Portfolio Generator.
 
 # What is LineAndForm?
-# LineAndForm is a lightweight, command-line tool that generates an interactive
+# LineAndForm is a simple, self-contained bash script that generates an interactive
 # HTML portfolio from my content. It's designed for myself, but available to other
 # creators who want a quick way to showcase their work online.
+
+# Why LineAndForm?
+# - Because updating my portfolio manually was tedious
+# - Because I can
+
+# What makes LineAndForm special:
+# 1. It's simple: Just organize your content in folders, run the script, and you have a portfolio.
+# 2. It's self-contained: One bash script does it all. Zero dependencies.
 
 # How to use LineAndForm:
 # 1. Set up your content:
@@ -24,9 +32,15 @@
 # 2. Run the script:
 #    - Open a terminal in the folder containing this script.
 #    - Run the command: ./build.sh (or bash build.sh)
+#    - To use the self-destruct option, run: ./build.sh -d
 
 # 3. View your portfolio:
 #    - Open the generated 'works.html' file in a web browser.
+
+# License:
+# THE UNRESTRICTED BUT RESPONSIBLY SHARED, ALTERED AND DISTRIBUTED SOFTWARE WITHOUT WARRANTIES AND WITH THE ABSENCE OF LIABILITY FOR ANY UNINTENDED CONSEQUENCES LICENSE (VERSION 1.0, AUGUST 4, 2023)
+#
+# Use it, change it, share it - but keep it under this license. No promises, no liability. Enjoy.
 
 # Configuration
 CONTENT_DIR="contents/"
@@ -36,10 +50,28 @@ CSS_FILE="styles.css"
 JS_FILE="script.js"
 INLINE_SVG=true
 
+# The following line sets up the script to delete itself after it finishes running.
+# This is useful for deployments where you don't want to leave build scripts on the server.
+# CAUTION: This will permanently delete this script file. Use with care and keep backups!
+SELF_DESTRUCT=false
+
 friendly_message() {
     echo "💡 $1"
     echo "   $2"
 }
+
+# Parse command-line options
+while getopts ":d" opt; do
+  case ${opt} in
+    d )
+      SELF_DESTRUCT=true
+      ;;
+    \? )
+      friendly_message "Invalid Option" "Usage: $0 [-d]"
+      exit 1
+      ;;
+  esac
+done
 
 # Check if required directories and files exist
 if [ ! -d "$CONTENT_DIR" ]; then
@@ -273,3 +305,10 @@ EOF
 
 echo "◯┃ LineAndForm is done!"
 echo "Open \"$OUTPUT_FILE\" in a web browser to see your work."
+
+# Self-destruct if option is set
+if $SELF_DESTRUCT; then
+    friendly_message "Self-destruct activated" "This script will delete itself after execution."
+    trap 'rm -- "$0"' EXIT
+    echo "This script has self-destructed."
+fi
