@@ -33,9 +33,4 @@ We developed a comprehensive platform that covers the entire service lifecycle, 
 
 The platform has transformed how home services are booked and managed in our target markets. Service providers report significant improvements in efficiency, with some seeing up to a 30% increase in completed jobs per week. Customers appreciate the transparency and ease of use, leading to higher satisfaction rates and repeat bookings.
 
-Some of my favorite touches:
-- The "service provider match" feature that uses machine learning to pair customers with the best-suited professionals.
-- The satisfying "job complete" animation that plays when a service is marked as finished.
-- The "time-lapse" feature that automatically creates a video of before-and-after photos for significant renovation projects.
-
 View more details: [Project Link](https://www.darwoft.com/blog/best-logistics-management-software-solution-service-providers)

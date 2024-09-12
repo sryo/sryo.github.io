@@ -40,9 +40,4 @@ The reimagined Bancón app saw significant growth in 2021:
 
 These numbers not only validated our user-centric approach but also demonstrated that traditional banks can compete with fintech startups when they prioritize user experience.
 
-Some of my favorite touches:
-- The "financial health score" feature that gamifies good financial habits.
-- The subtle haptic feedback when completing a transaction, providing a sense of security.
-- The "branch finder" that uses AR to guide users to the nearest physical bank when needed.
-
 View more details: [Project Link](https://drive.google.com/file/d/1gekSKbQl82T0MtQsx0baiyesIURSF_40/view?usp=sharing)

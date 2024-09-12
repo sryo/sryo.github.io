@@ -28,9 +28,4 @@ We created Vlic, a mobile app that revolutionizes media monitoring. It's not jus
 
 Vlic has transformed how professionals interact with media. It's not just about staying informed; it's about gaining a competitive edge through timely, actionable insights. The app has been particularly embraced by political campaign managers and PR professionals, who've reported making faster, more informed decisions about their public image strategies.
 
-Some of my favorite touches:
-- The "media pulse" feature that visualizes the frequency and sentiment of brand mentions over the past 24 hours.
-- The satisfying "ping" sound when a high-priority mention is detected, distinct from regular notifications.
-- The "reaction time" metric that gamifies how quickly users respond to significant media mentions.
-
 View on [AppAdvice](https://appadvice.com/app/vlic/1176938054)
