@@ -31,9 +31,4 @@ We developed an intuitive e-commerce platform that allows users to search, reque
 
 The platform has opened up new markets for satellite imagery, from environmental researchers to urban planners and even artists. We've seen a significant increase in the use of SAOCOM data across various fields, contributing to advancements in climate research, agriculture, and urban development.
 
-Some of my favorite touches:
-- The "Earth Diary" feature that shows users how their area of interest has changed over time.
-- The satisfying "capture" animation that plays when a user requests a new image.
-- The "resolution comparison" tool that visually demonstrates the power of SAOCOM's imaging capabilities.
-
 View more details: [Project Link](https://www.lavoz.com.ar/negocios/con-una-pata-en-cordoba-una-empresa-creo-un-mercado-para-imagenes-de-satelites-argentinos)
