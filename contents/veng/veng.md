@@ -17,15 +17,11 @@ We developed an intuitive e-commerce platform that allows users to search, reque
 - **Image Preview:** Low-resolution previews of available images before purchase.
 - **Custom Request System:** Users can request images of specific areas not currently in the catalog.
 - **Secure Payment Gateway:** Integration with multiple payment methods for easy transactions.
-- **Download Manager:** Efficient delivery of large image files to users.
-- **Usage Rights Management:** Clear explanation and management of image usage rights.
 
 ## Development Journey
 
-- Collaborated with satellite engineers to understand the capabilities and limitations of the SAOCOM satellites.
+- Collaborated with the client to understand the capabilities of the SAOCOM satellites.
 - Designed an intuitive UI that simplifies complex satellite data for non-expert users.
-- Implemented a robust backend capable of handling large image files and complex search queries.
-- Developed a pricing algorithm that balances accessibility with the high costs of satellite operation.
 
 ## Impact and Insights
 
