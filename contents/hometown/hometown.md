@@ -27,7 +27,6 @@ We developed a comprehensive platform that covers the entire service lifecycle, 
 - Conducted extensive research into the pain points of both home service providers and customers.
 - Rapidly prototyped and iterated on the UI/UX design, focusing on simplicity and efficiency.
 - Collaborated closely with backend developers to ensure seamless integration of complex features like real-time scheduling and route optimization.
-- Implemented a robust testing strategy to ensure the platform could handle the complexities of various home services.
 
 ## Impact and Insights
 

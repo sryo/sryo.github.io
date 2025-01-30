@@ -17,9 +17,7 @@ We developed a two-pronged approach to address this challenge:
 
 - **In-App Delivery Tracking:** Integrated real-time parcel tracking directly into the Bancor mobile app.
 - **Push Notifications:** Automatic updates on card status and estimated delivery dates.
-- **Virtual Card Activation:** Ability to use debit and prepaid cards for transfers and payments before physical card arrival.
-- **Secure Digital Verification:** Enhanced security measures to verify identity for virtual card activation.
-- **Interactive FAQ:** A dynamic, context-aware FAQ section to address common concerns about card delivery and usage.
+- **Virtual Card Activation:** Ability to use debit or prepaid cards for transfers and payments before physical card arrival.
 
 ## Development Journey
 
@@ -32,9 +30,4 @@ We developed a two-pronged approach to address this challenge:
 
 The implementation of these features significantly reduced customer support calls related to card deliveries. Users reported feeling more in control and less anxious about their banking services during the pandemic. The virtual card activation feature, in particular, proved so popular that it has become a permanent offering, even as delivery delays have normalized.
 
-Some of my favorite touches:
-- The "card journey" visualization that shows the card's progress from printing to delivery in an engaging, animated timeline.
-- The calming color scheme and reassuring microcopy used throughout the tracking interface.
-- The "virtual unboxing" experience when activating a card digitally, complete with a satisfying unwrapping animation.
-
-The implementation of these features significantly reduced customer support calls related to card deliveries. Users reported feeling more in control and less anxious about their banking services during the pandemic. The virtual card activation feature, in particular, proved so popular that it has become a permanent offering, even as delivery delays have normalized.
+The implementation of these features significantly reduced customer support calls related to card deliveries. Users reported feeling more in control and less anxious about their banking services during the pandemic.
