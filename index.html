@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="description" content="Mateo Yadarola: Diseñador UX. Portfolio y contacto.">
+	<link rel="canonical" href="https://yadarola.com.ar">
+	<title>Mateo Yadarola &mdash; UX</title>
+	<meta name="viewport" content="width=device-width">
+	<meta name="theme-color" content="#FFFFFF">
+
+	<style>
+		:root { --scheme-1: #00dbeb, #FF5733; --scheme-2: #ffa71a, #3357FF; --scheme-3: #f5009b, #57FF33; --scheme-4: #a323d1, #33FF57; --scheme-5: #4e00de, #FFAD33; --scheme-6: #00FA9A, #FF4500; --scheme-7: #1E90FF, #FFD700; --scheme-8: #FF69B4, #48D1CC; --scheme-9: #4833FF, #FF9A33; --scheme-10: #6B47E5, #E5475E; --scheme: var(--scheme-1); --scheme-bg: var(--scheme, 1);  --scheme-shadow: var(--scheme, 2); }
+		body { width: 100%; height: 100%; -webkit-text-size-adjust: 100%; font-family: -apple-system, system-ui, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, Helvetica Neue, Arial; cursor: default; overflow: hidden; background-color: var(--scheme-bg); }
+		a, a:hover { color: inherit; text-decoration-thickness: 0.12em; position: relative; }
+		header.bio { font-weight: 600; position: fixed; font-size: clamp(40px, 5vw, 80px); line-height: 1em; width: clamp(390px, 80vw, 1200px); z-index: 1; text-wrap: balance; padding: 5vw; box-sizing: border-box; color: var(--scheme-bg); }
+			header.bio h1, header.bio p:not(.other) { font-size: 1em; margin: 0; line-height: 1em; display: contents; }
+			header.bio .links, header.bio .other { margin-top: 1em; font-size: .35em; line-height: 1em; }
+				header.bio .links ul { list-style: none; padding: 0; margin: 0; }
+				header.bio .links ul li { display: inline; margin-right: 0.5em; }
+				header.bio .links ul li:not(:last-child)::after { content: "|"; margin-left: 0.5em; }
+		.icon { position: absolute; transform-origin: top left; white-space: nowrap; color: transparent; text-shadow: 0 0 var(--scheme-shadow); }
+	</style>    
+</head>
+
+<body>
+	<header class="bio h-card h-resume">
+		<h1>Hola, soy <a href="https://www.linkedin.com/in/myadarola/" aria-label="Perfil de LinkedIn de Mateo Yadarola" class="u-url p-name">Mateo Yadarola</a></h1><!--
+		--><p class="p-note">, un Diseñador UX con una tendencia a hacer muchas preguntas. Me motiva poner sobre la mesa hasta las peores ideas y empujar pixeles con un&nbsp;propósito.</p>
+		<nav class="links">
+			<ul>
+				<li><a href="https://www.figma.com/@sryo" aria-label="Mi perfil de Figma" class="u-url">Figma</a></li>
+				<li><a href="https://github.com/sryo" aria-label="Mi perfil de GitHub" class="u-url">GitHub</a></li>
+				<li><a href="https://read.cv/sryo" aria-label="Mi CV en Read.cv" class="u-url">Read.cv</a></li>
+			</ul>
+		</nav>
+		<p class="other">¿Te gustaría que trabajemos juntos? <a href="https://contact.yadarola.com.ar/" aria-label="Formulario para oportunidades de trabajo">Escribime</a>.</p>
+		<p class="other">¿Estás buscando un <a href="https://paper.dropbox.com/doc/Mentoreo-MenteeMentor--B_CPIw0tT31kwlE2HBPgKoS7Ag-c5lyQ5Ad9d9ff3QfiIIxd" aria-label="Manual de mentor-mentee">mentor</a>, querés hablar de lo que estás haciendo o simplemente desahogarte un rato? Buscá un espacio en <a href="https://calendar.app.google/2oCmcWsNkdEQZhBF7" class="u-url">mi calendario</a>; estoy seguro de que podemos colaborar.</p>
+	</header>
+
+	<script async>
+		function updateFavicon(emoji, color) {
+			const faviconData = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='${color}'><rect width='100' height='100' fill='${color}'/><text y='.9em' font-size='90'>${emoji}</text></svg>`;
+			const link = document.querySelector("link[rel~='icon']");
+			if (!link) {
+				const newLink = document.createElement('link');
+				newLink.rel = 'icon';
+				newLink.href = 'data:image/svg+xml,' + encodeURIComponent(faviconData);
+				document.head.appendChild(newLink);
+			} else {
+				link.href = 'data:image/svg+xml,' + encodeURIComponent(faviconData);
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', () => {
+			const schemes = ['--scheme-1', '--scheme-2', '--scheme-3', '--scheme-4', '--scheme-5', '--scheme-6', '--scheme-7', '--scheme-8', '--scheme-9', '--scheme-10'];
+			const selectedScheme = schemes[Math.floor(Math.random() * schemes.length)];
+			const [bgColor, shadowColor] = getComputedStyle(document.documentElement)
+				.getPropertyValue(selectedScheme)
+				.split(', ');
+
+			document.documentElement.style.setProperty('--scheme-bg', bgColor.trim());
+			document.documentElement.style.setProperty('--scheme-shadow', shadowColor.trim());
+
+			const themeColorMeta = document.querySelector("meta[name='theme-color']");
+			themeColorMeta.content = bgColor.trim();
+
+			const themes = [
+				['🎨', '📱', '🌟', '🥦', '👽'],
+				['✏️', '💻', '🦈', '🪐', '🍺', '☕', '👾'],
+				['🖌️', '🧠', '🌱', '🥰', '🚲'],
+				['📐', '🛰️', '🐶', '😎', '🏡'],
+				['🖋️', '🤖', '🦅', '🦄', '🎉', '🍆']
+			];
+
+			const emojis = themes[Math.floor(Math.random() * themes.length)];
+			const icons = document.querySelectorAll('.icon');
+
+			let moved = 0, count = 0;
+
+			function handleEvent(e) {
+				let x, y;
+				if (e.type === 'mousemove') {
+					x = e.pageX;
+					y = e.pageY;
+				} else if (e.type === 'touchmove' || e.type === 'touchstart') {
+					const touch = e.touches[0] || e.changedTouches[0];
+					x = touch.pageX;
+					y = touch.pageY;
+				}
+
+				if (++moved >= 2) {
+					create(x, y, emojis);
+					moved = 0;
+				}
+				e.preventDefault();
+			}
+
+			document.addEventListener('mousemove', handleEvent);
+			document.addEventListener('touchmove', handleEvent);
+			document.addEventListener('touchstart', handleEvent);
+
+
+			const create = (x, y, emojis) => {
+				const text = emojis[random(0, emojis.length - 1)];
+				const symbol = document.createElement('div');
+				symbol.className = 'icon';
+				symbol.setAttribute('aria-hidden', 'true');
+				symbol.style.left = `${x}px`;
+				symbol.style.top = `${y}px`;
+				symbol.style.fontSize = `${random(50, 200)}px`;
+				symbol.style.transform = `rotate(${random(0, 360)}deg) translate(-50%, -50%) translateZ(0)`;
+				symbol.innerHTML = text;
+				document.body.appendChild(symbol);
+
+				if (count++ > 2000) {
+					document.querySelector('.icon').remove();
+				}
+			};
+
+			const random = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+			const chosenEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+			updateFavicon(chosenEmoji, bgColor.trim());
+		});
+	</script>
+</body>
+
+</html>
