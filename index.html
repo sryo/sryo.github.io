@@ -11,7 +11,7 @@
 	<meta name="theme-color" content="#FFFFFF">
 
 	<style>
-		:root { --scheme-1: #00dbeb, #FF5733; --scheme-2: #ffa71a, #3357FF; --scheme-3: #f5009b, #57FF33; --scheme-4: #a323d1, #33FF57; --scheme-5: #4e00de, #FFAD33; --scheme-6: #00FA9A, #FF4500; --scheme-7: #1E90FF, #FFD700; --scheme-8: #FF69B4, #48D1CC; --scheme-9: #4833FF, #FF9A33; --scheme-10: #6B47E5, #E5475E; --scheme: var(--scheme-1); --scheme-bg: var(--scheme, 1);  --scheme-shadow: var(--scheme, 2); }
+		:root { --scheme-bg: #fff; --scheme-shadow: #000; }
 		body { width: 100%; height: 100%; -webkit-text-size-adjust: 100%; font-family: -apple-system, system-ui, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, Helvetica Neue, Arial; cursor: default; overflow: hidden; background-color: var(--scheme-bg); }
 		a, a:hover { color: inherit; text-decoration-thickness: 0.12em; position: relative; }
 		header.bio { font-weight: 600; position: fixed; font-size: clamp(40px, 5vw, 80px); line-height: 1em; width: clamp(390px, 80vw, 1200px); z-index: 1; text-wrap: balance; padding: 5vw; box-sizing: border-box; color: var(--scheme-bg); }
@@ -40,6 +40,27 @@
 	</header>
 
 	<script async>
+		function randomInt(min, max) {
+			return Math.floor(Math.random() * (max - min + 1) + min);
+		}
+
+		function getRandomHSL() {
+			const h = randomInt(0, 359);
+			const s = randomInt(50, 90);
+			const l = randomInt(40, 60);
+			return [h, s, l];
+		}
+
+		function getComplementaryHSL(h, s, l) {
+			const offset = randomInt(40, 320);
+			const comp = (h + offset) % 360;
+			return [comp, s, l];
+		}
+
+		function toHSLString(h, s, l) {
+			return `hsl(${h}, ${s}%, ${l}%)`;
+		}
+
 		function updateFavicon(emoji, color) {
 			const faviconData = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='${color}'><rect width='100' height='100' fill='${color}'/><text y='.9em' font-size='90'>${emoji}</text></svg>`;
 			const link = document.querySelector("link[rel~='icon']");
@@ -54,17 +75,14 @@
 		}
 
 		document.addEventListener('DOMContentLoaded', () => {
-			const schemes = ['--scheme-1', '--scheme-2', '--scheme-3', '--scheme-4', '--scheme-5', '--scheme-6', '--scheme-7', '--scheme-8', '--scheme-9', '--scheme-10'];
-			const selectedScheme = schemes[Math.floor(Math.random() * schemes.length)];
-			const [bgColor, shadowColor] = getComputedStyle(document.documentElement)
-				.getPropertyValue(selectedScheme)
-				.split(', ');
-
-			document.documentElement.style.setProperty('--scheme-bg', bgColor.trim());
-			document.documentElement.style.setProperty('--scheme-shadow', shadowColor.trim());
-
-			const themeColorMeta = document.querySelector("meta[name='theme-color']");
-			themeColorMeta.content = bgColor.trim();
+					const [h, s, l] = getRandomHSL();
+					const [hComp, sComp, lComp] = getComplementaryHSL(h, s, l);
+					const bgColor = toHSLString(h, s, l);
+					const shadowColor = toHSLString(hComp, sComp, lComp);
+					document.documentElement.style.setProperty('--scheme-bg', bgColor);
+					document.documentElement.style.setProperty('--scheme-shadow', shadowColor);
+					const themeColorMeta = document.querySelector("meta[name='theme-color']");
+					if (themeColorMeta) themeColorMeta.content = bgColor;
 
 			const themes = [
 				['🎨', '📱', '🌟', '🥦', '👽'],
