@@ -1,4 +1,4 @@
-A Newspaper's Digital Transformation: Reinventing the news for the digital age
+# A Newspaper's Digital Transformation: Reinventing the news for the digital age
 
 ## The Context
 
