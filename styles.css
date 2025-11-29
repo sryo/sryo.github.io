@@ -143,7 +143,7 @@ li {
     background: transparent;
     color: inherit;
     animation: fadeIn 0.125s ease-in;
-    padding-inline: calc(26vw - 120px);
+    padding-inline: calc(26vw - 76px);
     height: calc(100svh - 30rem);
     overflow: scroll;
 }
