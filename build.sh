@@ -137,6 +137,9 @@ parse_markdown() {
     line=$(echo "$line" | sed 's/^### \(.*\)/<h3>\1<\/h3>/' 2>/dev/null)
     line=$(echo "$line" | sed 's/^#### \(.*\)/<h4>\1<\/h4>/' 2>/dev/null)
 
+    # Inline Code
+    line=$(echo "$line" | sed 's/`\([^`]*\)`/<code>\1<\/code>/g' 2>/dev/null)
+
     # Bold & Italic
     line=$(echo "$line" | sed 's/\*\*\([^*]*\)\*\*/<strong>\1<\/strong>/g' 2>/dev/null)
     line=$(echo "$line" | sed 's/\*\([^*]*\)\*/<em>\1<\/em>/g' 2>/dev/null)
@@ -160,6 +163,7 @@ render_markdown_content() {
     local file=$1
     local content=""
     local in_paragraph=false
+    local in_list=false
     local first_line=true
 
     while IFS= read -r line || [ -n "$line" ]; do
@@ -172,7 +176,26 @@ render_markdown_content() {
 
         parsed_line=$(parse_markdown "$line")
         
-        if [[ "$parsed_line" == "<h"* || "$parsed_line" == "<ul>"* || "$parsed_line" == "<li>"* || "$parsed_line" == "<div"* ]]; then
+        # Check for list item
+        if [[ "$parsed_line" == "<li>"* ]]; then
+            if $in_paragraph; then
+                content+="</p>"
+                in_paragraph=false
+            fi
+            if ! $in_list; then
+                content+="<ul>"
+                in_list=true
+            fi
+            content+="$parsed_line"
+            continue
+        else
+            if $in_list; then
+                content+="</ul>"
+                in_list=false
+            fi
+        fi
+
+        if [[ "$parsed_line" == "<h"* || "$parsed_line" == "<div"* ]]; then
             if $in_paragraph; then
                 content+="</p>"
                 in_paragraph=false
@@ -192,10 +215,14 @@ render_markdown_content() {
         fi
     done < <(strip_frontmatter "$file")
 
+    if $in_list; then
+        content+="</ul>"
+    fi
     if $in_paragraph; then
         content+="</p>"
     fi
     echo "$content"
+
 }
 
 process_gallery() {
@@ -347,7 +374,8 @@ EOF
 rm -rf "$temp_dir"
 
 echo "◯┃ LineAndForm is done!"
-echo "Open \"$OUTPUT_FILE\" in a web browser to see your work."
+full_path=$(cd "$(dirname "$OUTPUT_FILE")"; pwd)/$(basename "$OUTPUT_FILE")
+echo "Open \"$full_path\" in a web browser to see your work."
 
 if $SELF_DESTRUCT; then
     rm -- "$0"
