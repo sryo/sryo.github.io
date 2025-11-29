@@ -6,13 +6,13 @@ tags: [Profile, Bio]
 
 ## Overview
 
-Hi, I'm Mateo Yadarola, a Product Designer who values the journey as much as the destination. My design journey spans over two decades, with more than ten years in leadership roles.
+Hi, I'm Mateo Yadarola, a **Product Designer** who **values the journey** as much as the destination. My design journey spans over two decades, with more than **ten years in leadership roles**.
 
-I'm currently at Continental Finance, where I'm shaping a mobile home banking app catering to users with poor credit scores. Beyond my 9-to-5, I'm an experimenter, a creator of side projects that aim to enhance the digital experience. Check out my GitHub; it's my digital playground where tools like ChronoMouse and MenuMaestro come to life.
+I'm currently at Continental Finance, where I'm **shaping a mobile home banking app** catering to users with poor credit scores. Beyond my 9-to-5, I'm an **experimenter**, a **creator of side projects** that aim to enhance the digital experience. Check out my GitHub; it's my digital playground where tools like ChronoMouse and MenuMaestro come to life.
 
 ## Philosophy
 
-I believe that creativity is a muscle—one that must be exercised regularly to be strengthened. This philosophy drives not only my professional work but also my passion for personal projects and experimentation.
+I believe that **creativity is a muscle**; one that must be exercised regularly to be strengthened. This philosophy drives not only my professional work but also my passion for personal projects and experimentation.
 
 ## Connect
 

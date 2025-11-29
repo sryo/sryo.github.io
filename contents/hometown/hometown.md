@@ -8,15 +8,15 @@ tags: [UX, Service Design, Marketplace]
 
 ## Overview
 
-At HometownLocal, I led the transformation of a simple demolition and construction rental web directory into a full-fledged platform for home services. The driving question was: *What if we could make booking a home service as easy as ordering a ride?*
+At HometownLocal, I led the **transformation of a simple demolition and construction rental web directory** into a full-fledged platform for home services. The driving question was: *What if we could make booking a home service as easy as ordering a ride?*
 
 ## The Challenge
 
-The home service industry, particularly in demolition and construction, was ripe for disruption. Service providers were struggling with inefficient scheduling, communication gaps, and billing headaches. We saw an opportunity to streamline these processes and create an Uber-like experience for both service providers and homeowners.
+The home service industry, particularly in demolition and construction, was ripe for disruption. Service providers were struggling with inefficient scheduling, communication gaps, and billing headaches. We saw an opportunity to **streamline these processes** and create an **Uber-like experience** for both service providers and homeowners.
 
 ## Our Solution
 
-We developed a comprehensive platform that covers the entire service lifecycle, from booking to billing. Here's what we built:
+We developed a **comprehensive platform** that covers the entire service lifecycle, from **booking to billing**. Here's what we built:
 
 ## Key Features
 
