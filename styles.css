@@ -143,7 +143,7 @@ li {
     background: transparent;
     color: inherit;
     animation: fadeIn 0.125s ease-in;
-    padding-inline: calc(50vw - 390px);
+    padding-inline: calc(38vw - 180px);
     height: calc(100svh - 10rem);
     overflow: scroll;
 }
@@ -296,9 +296,6 @@ path {
 }
 
 @media (max-width: 768px) {
-    .gallery {
-        padding-inline: 1.5rem;
-    }
 
     .project {
         flex-direction: column;
