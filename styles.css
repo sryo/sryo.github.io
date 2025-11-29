@@ -215,8 +215,8 @@ h3 {
 }
 
 .gallery::after {
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
+    backdrop-filter: blur(50px);
+    -webkit-backdrop-filter: blur(50px);
     content: "";
     position: fixed;
     left: 0;
