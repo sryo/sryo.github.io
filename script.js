@@ -54,40 +54,58 @@ function getNextColor() {
 const items = document.querySelectorAll(".item");
 const cellWidth = 137;
 const cellHeight = 120;
-const numCols = Math.floor((window.innerWidth - 100) / cellWidth);
-const numRows = Math.floor((window.innerHeight - 100) / cellHeight);
-const isCellOccupied = Array(numRows)
-  .fill(null)
-  .map(() => Array(numCols).fill(false));
-const maxAttempts = 100;
-items.forEach((item, index) => {
-  item.style.setProperty("--stagger", index);
-  let attempts = 0;
-  let x, y;
-  while (attempts < maxAttempts) {
-    x = Math.floor(Math.random() * numCols);
-    y = Math.floor(Math.random() * numRows);
-    const iconWidth = item.clientWidth;
-    const iconHeight = item.clientHeight;
-    const iconRightEdge = x * cellWidth + 50 + cellWidth - iconWidth;
-    const iconBottomEdge = y * cellHeight + 50 + cellHeight - iconHeight;
-    if (
-      iconRightEdge > window.innerWidth ||
-      iconBottomEdge > window.innerHeight
-    ) {
-      attempts++;
-      continue;
+
+function layoutItems() {
+  const numCols = Math.max(1, Math.floor((window.innerWidth - 100) / cellWidth));
+  const numRows = Math.max(1, Math.floor((window.innerHeight - 100) / cellHeight));
+  const isCellOccupied = Array(numRows)
+    .fill(null)
+    .map(() => Array(numCols).fill(false));
+  const maxAttempts = 100;
+
+  items.forEach((item, index) => {
+    item.style.setProperty("--stagger", index);
+    let attempts = 0;
+    let x, y;
+    while (attempts < maxAttempts) {
+      x = Math.floor(Math.random() * numCols);
+      y = Math.floor(Math.random() * numRows);
+      const iconWidth = item.clientWidth;
+      const iconHeight = item.clientHeight;
+      
+      // Ensure we don't go out of bounds (simplified check)
+      if (x >= numCols || y >= numRows) {
+          attempts++;
+          continue;
+      }
+
+      const iconRightEdge = x * cellWidth + 50 + cellWidth - iconWidth;
+      const iconBottomEdge = y * cellHeight + 50 + cellHeight - iconHeight;
+      
+      if (
+        iconRightEdge > window.innerWidth ||
+        iconBottomEdge > window.innerHeight
+      ) {
+        attempts++;
+        continue;
+      }
+      
+      if (isCellOccupied[y][x]) {
+        attempts++;
+        continue;
+      }
+      
+      isCellOccupied[y][x] = true;
+      item.style.left = `${((50 + x * cellWidth + Math.random() * (cellWidth - iconWidth)) / window.innerWidth) * 100}%`;
+      item.style.top = `${((50 + y * cellHeight + Math.random() * (cellHeight - iconHeight)) / window.innerHeight) * 100}%`;
+      break;
     }
-    if (isCellOccupied[y][x]) {
-      attempts++;
-      continue;
-    }
-    isCellOccupied[y][x] = true;
-    item.style.left = `${((50 + x * cellWidth + Math.random() * (cellWidth - iconWidth)) / window.innerWidth) * 100}%`;
-    item.style.top = `${((50 + y * cellHeight + Math.random() * (cellHeight - iconHeight)) / window.innerHeight) * 100}%`;
-    break;
-  }
-});
+  });
+}
+
+// Initial layout
+layoutItems();
+
 let lastHoveredItem = items[0];
 items.forEach((item) => {
   item.addEventListener("mouseenter", (e) => {
@@ -165,8 +183,24 @@ items.forEach((item) => {
     }
   });
 });
-window.addEventListener("resize", () => {
-  currentPaths.forEach((path) => svg.removeChild(path));
-  currentPaths = [];
-  lastHoveredItem = null;
-});
+
+function debounce(func, wait) {
+  let timeout;
+  return function (...args) {
+    const context = this;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(context, args), wait);
+  };
+}
+
+window.addEventListener(
+  "resize",
+  debounce(() => {
+    if (svg) {
+        currentPaths.forEach((path) => svg.removeChild(path));
+        currentPaths = [];
+    }
+    lastHoveredItem = null;
+    layoutItems();
+  }, 250),
+);

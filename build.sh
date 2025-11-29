@@ -4,7 +4,7 @@
 # A Simple Portfolio Generator.
 
 # What is LineAndForm?
-# LineAndForm is a simple, self-contained bash script that generates an interactive
+# LineAndForm is a simple, mostly self-contained bash script that generates an interactive
 # HTML portfolio from my content. It's designed for myself, but available to other
 # creators who want a quick way to showcase their work online.
 
@@ -14,14 +14,18 @@
 
 # What makes LineAndForm special:
 # 1. It's simple: Just organize your content in folders, run the script, and you have a portfolio.
-# 2. It's self-contained: One bash script does it all. Zero dependencies.
+# 2. It's mostly self-contained: One bash script does it all (with a config file and assets).
 
 # How to use LineAndForm:
-# 1. Set up your content:
-#    - Create a 'contents/' directory in the same folder as this script.
-#    - Inside 'contents/', make a folder for each main section of your portfolio.
+# 1. Configure:
+#    - Edit 'config.cfg' to set your title, output filename, and other options.
+#    - Ensure 'styles.css' and 'script.js' are present.
+
+# 2. Set up your content:
+#    - Create a 'contents/' directory (or whatever you set in config).
+#    - Inside, make a folder for each main section of your portfolio.
 #    - In each section folder:
-#      a) Add a .md (Markdown) file with your content. Start it with '# Title'.
+#      a) Add a .md (Markdown) file with your content. Start it with '# Title' or frontmatter.
 #      b) Optionally, add an image file (.jpg, .png, or .svg) for the section cover.
 #    - For projects or sub-galleries:
 #      a) Create a 'gallery' folder inside any section folder.
@@ -29,10 +33,10 @@
 #      c) In each project folder, add a .md file and an image file.
 #    - To add a video or other embed, include a line starting with 'EMBED:' in your .md file.
 
-# 2. Run the script:
+# 3. Run the script:
 #    - Open a terminal in the folder containing this script.
 #    - Run the command: ./build.sh (or bash build.sh)
-#    - To use the self-destruct option, run: ./build.sh -d
+#    - To use the self-destruct option (if enabled in config), run: ./build.sh -d
 
 # 3. View your portfolio:
 #    - Open the generated 'works.html' file in a web browser.
@@ -42,18 +46,20 @@
 #
 # Use it, change it, share it - but keep it under this license. No promises, no liability. Enjoy.
 
-# Configuration
-CONTENT_DIR="contents/"
-OUTPUT_FILE="works.html"
-TITLE="Interactive Gallery"
-CSS_FILE="styles.css"
-JS_FILE="script.js"
-INLINE_SVG=true
 
-# The following line sets up the script to delete itself after it finishes running.
-# This is useful for deployments where you don't want to leave build scripts on the server.
-# CAUTION: This will permanently delete this script file. Use with care and keep backups!
-SELF_DESTRUCT=false
+# Load Configuration
+if [ -f "config.cfg" ]; then
+    source config.cfg
+else
+    # Default Configuration
+    CONTENT_DIR="contents/"
+    OUTPUT_FILE="works.html"
+    TITLE="Interactive Gallery"
+    CSS_FILE="styles.css"
+    JS_FILE="script.js"
+    INLINE_SVG=true
+    SELF_DESTRUCT=false
+fi
 
 friendly_message() {
     echo "💡 $1"
@@ -73,24 +79,55 @@ while getopts ":d" opt; do
   esac
 done
 
-# Check if required directories and files exist
-if [ ! -d "$CONTENT_DIR" ]; then
-    friendly_message "The content directory '$CONTENT_DIR' is missing." \
-    "Create a folder named 'contents' in the same directory as this script."
-    exit 1
-fi
+# Check requirements
+for file in "$CONTENT_DIR" "$CSS_FILE" "$JS_FILE"; do
+    if [ ! -e "$file" ]; then
+        friendly_message "Missing requirement: $file" "Please ensure all required files and directories exist."
+        exit 1
+    fi
+done
 
-if [ ! -f "$CSS_FILE" ]; then
-    friendly_message "The CSS file '$CSS_FILE' is not found." \
-    "Create a file named 'styles.css' in the same directory as this script."
-    exit 1
-fi
+# --- Helper Functions ---
 
-if [ ! -f "$JS_FILE" ]; then
-    friendly_message "The JavaScript file '$JS_FILE' is not found." \
-    "Create a file named 'script.js' in the same directory as this script."
-    exit 1
-fi
+extract_title() {
+    local file=$1
+    local title=$(sed -n '/^---$/,/^---$/p' "$file" | grep "^title:" | sed 's/^title: //;s/^"//;s/"$//')
+    
+    if [ -z "$title" ]; then
+        title=$(sed -n '1s/^#\{1,4\} //p' "$file" 2>/dev/null)
+    fi
+    
+    if [ -z "$title" ]; then
+        title=$(basename "$(dirname "$file")")
+    fi
+    echo "$title"
+}
+
+strip_frontmatter() {
+    local file=$1
+    if [[ $(head -n 1 "$file") == "---" ]]; then
+        sed '1,/^---$/d' "$file"
+    else
+        cat "$file"
+    fi
+}
+
+insert_image() {
+    local image_file=$1
+    local alt_text=$2
+
+    if [[ "$image_file" == *.svg ]] && $INLINE_SVG; then
+        local b64_data
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            b64_data=$(base64 -i "$image_file" | tr -d '\n')
+        else
+            b64_data=$(base64 "$image_file" | tr -d '\n')
+        fi
+        echo "<img src=\"data:image/svg+xml;base64,$b64_data\" alt=\"$alt_text\" />"
+    else
+        echo "<img src=\"${image_file#/}\" loading=\"lazy\" alt=\"$alt_text\" />"
+    fi
+}
 
 parse_markdown() {
     local line="$1"
@@ -100,13 +137,14 @@ parse_markdown() {
     line=$(echo "$line" | sed 's/^### \(.*\)/<h3>\1<\/h3>/' 2>/dev/null)
     line=$(echo "$line" | sed 's/^#### \(.*\)/<h4>\1<\/h4>/' 2>/dev/null)
 
-    # Bold
+    # Bold & Italic
     line=$(echo "$line" | sed 's/\*\*\([^*]*\)\*\*/<strong>\1<\/strong>/g' 2>/dev/null)
-    # Italic
     line=$(echo "$line" | sed 's/\*\([^*]*\)\*/<em>\1<\/em>/g' 2>/dev/null)
+    
     # Links
     line=$(echo "$line" | sed 's/\[\([^]]*\)\](\([^)]*\))/<a href="\2">\1<\/a>/g' 2>/dev/null)
-    # Lists
+    
+    # Lists (Simple implementation)
     line=$(echo "$line" | sed 's/^- \(.*\)/<li>\1<\/li>/' 2>/dev/null)
 
     # Embed code
@@ -118,35 +156,87 @@ parse_markdown() {
     echo "$line"
 }
 
-extract_title() {
+render_markdown_content() {
     local file=$1
-    local title=$(sed -n '1s/^#\{1,4\} //p' "$file" 2>/dev/null)
-    if [ -z "$title" ]; then
-        title=$(basename "$(dirname "$file")")
+    local content=""
+    local in_paragraph=false
+    local first_line=true
+
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Skip legacy headers on first line if frontmatter is preferred
+        if $first_line && [[ "$line" == "# "* ]]; then
+            first_line=false
+            continue
+        fi
+        first_line=false
+
+        parsed_line=$(parse_markdown "$line")
+        
+        if [[ "$parsed_line" == "<h"* || "$parsed_line" == "<ul>"* || "$parsed_line" == "<li>"* || "$parsed_line" == "<div"* ]]; then
+            if $in_paragraph; then
+                content+="</p>"
+                in_paragraph=false
+            fi
+            content+="$parsed_line"
+        elif [[ -z "$parsed_line" ]]; then
+            if $in_paragraph; then
+                content+="</p>"
+                in_paragraph=false
+            fi
+        else
+            if ! $in_paragraph; then
+                content+="<p>"
+                in_paragraph=true
+            fi
+            content+="$parsed_line"
+        fi
+    done < <(strip_frontmatter "$file")
+
+    if $in_paragraph; then
+        content+="</p>"
     fi
-    echo "$title"
+    echo "$content"
 }
 
-insert_image() {
-    local image_file=$1
-    local alt_text=$2
-
-    if [[ "$image_file" == *.svg ]] && $INLINE_SVG; then
-        echo "<img src=\"data:image/svg+xml;base64,$(base64 -w 0 "$image_file")\" alt=\"$alt_text\" />"
-    else
-        echo "<img src=\"${image_file#/}\" loading=\"lazy\" alt=\"$alt_text\" />"
-    fi
+process_gallery() {
+    local gallery_dir=$1
+    
+    for item in "$gallery_dir"/*; do
+        if [ -d "$item" ]; then
+            local item_content=$(find "$item" -maxdepth 1 -type f -iname \*.md | head -n 1)
+            local item_image=$(find "$item" -maxdepth 1 -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.svg \) | head -n 1)
+            
+            if [ -f "$item_content" ]; then
+                local title=$(extract_title "$item_content")
+                local content=$(render_markdown_content "$item_content")
+                
+                echo "<div class=\"project\">"
+                echo "  <div class=\"project-content\">"
+                echo "    <h3>$title</h3>"
+                echo "    $content"
+                echo "  </div>"
+                
+                if [ -f "$item_image" ]; then
+                    echo "  <div class=\"project-image\">"
+                    insert_image "$item_image" "$title"
+                    echo "  </div>"
+                fi
+                echo "</div>"
+            fi
+        fi
+    done
 }
 
-generate_main_section() {
+process_section() {
     local folder=$1
     local content_file=$(find "$folder" -maxdepth 1 -type f -iname \*.md | head -n 1)
-    local title=$(extract_title "$content_file")
-    local image_file=$(find "$folder" -maxdepth 1 -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.svg \) | head -n 1)
+    
+    if [ ! -f "$content_file" ]; then return; fi
 
-    if [ ! -f "$content_file" ]; then
-        return
-    fi
+    local title=$(extract_title "$content_file")
+    echo "  > Processing section: $title" >&2
+    local image_file=$(find "$folder" -maxdepth 1 -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.svg \) | head -n 1)
+    local content=$(render_markdown_content "$content_file")
 
     echo "<label class=\"item\" title=\"$title\">"
     echo "  <input type=\"checkbox\" name=\"menu\" role=\"button\" tabindex=\"0\" aria-haspopup=\"dialog\" />"
@@ -157,116 +247,72 @@ generate_main_section() {
     fi
     echo "</label>"
     echo "<div class=\"gallery\" role=\"dialog\" tabindex=\"-1\" aria-hidden=\"false\" aria-modal=\"true\">"
-    echo "  <h2>$title</h2>"
+    echo "  <h1>$title</h1>"
+    echo "  $content"
 
-    # Parse and output the Markdown content
-    local in_paragraph=false
-    local first_line=true
-    while IFS= read -r line || [ -n "$line" ]; do
-        if $first_line; then
-            first_line=false
-            continue  # Skip the first line (title) as we've already used it
-        fi
-        parsed_line=$(parse_markdown "$line")
-        if [[ "$parsed_line" == "<h"* || "$parsed_line" == "<ul>"* || "$parsed_line" == "<li>"* ]]; then
-            if $in_paragraph; then
-                echo "</p>"
-                in_paragraph=false
-            fi
-            echo "$parsed_line"
-        elif [[ -z "$parsed_line" ]]; then
-            if $in_paragraph; then
-                echo "</p>"
-                in_paragraph=false
-            fi
-        else
-            if ! $in_paragraph; then
-                echo "<p>"
-                in_paragraph=true
-            fi
-            echo "$parsed_line"
-        fi
-    done < "$content_file"
-
-    if $in_paragraph; then
-        echo "</p>"
-    fi
-
-    # Check if gallery folder exists and generate gallery if it does
     if [ -d "$folder/gallery" ]; then
-        generate_gallery "$folder/gallery"
+        process_gallery "$folder/gallery"
     fi
-
     echo "</div>"
 }
 
-generate_gallery() {
-    local gallery_dir=$1
+# What makes LineAndForm special:
+# 1. It's simple: Just organize your content in folders, run the script, and you have a portfolio.
+# 2. It's lightweight: Uses standard Unix tools. No heavy frameworks or complex dependencies.
 
-    for item in "$gallery_dir"/*; do
-        if [ -d "$item" ]; then
-            local item_content=$(find "$item" -maxdepth 1 -type f -iname \*.md | head -n 1)
-            local item_image=$(find "$item" -maxdepth 1 -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.svg \) | head -n 1)
-            local embed_code=""
+# How to use LineAndForm:
+# 1. Configure:
+#    - Edit 'config.cfg' to set your title, output filename, and other options.
+#    - Ensure 'styles.css' and 'script.js' are present (or point to them in config).
 
-            echo "<div class=\"project\">"
-            echo "  <div class=\"project-content\">"
-            if [ -f "$item_content" ]; then
-                local item_title=$(extract_title "$item_content")
-                if [ -z "$item_title" ]; then
-                    friendly_message "No title found in gallery item '${item##*/}'." \
-                    "Add a heading (# Title) at the start of your .md file to set a custom title."
-                    item_title="Untitled"
-                fi
-                echo "    <h3>$item_title</h3>"
-                local in_paragraph=false
-                local first_line=true
-                while IFS= read -r line || [ -n "$line" ]; do
-                    parsed_line=$(parse_markdown "$line")
-                    if [[ "$parsed_line" == "<div class=\"video-responsive\">"* ]]; then
-                        embed_code="$parsed_line"
-                    elif [[ "$parsed_line" == "<h"* || "$parsed_line" == "<ul>"* || "$parsed_line" == "<li>"* ]]; then
-                        if $in_paragraph; then
-                            echo "</p>"
-                            in_paragraph=false
-                        fi
-                        echo "$parsed_line"
-                    elif [[ -z "$parsed_line" ]]; then
-                        if $in_paragraph; then
-                            echo "</p>"
-                            in_paragraph=false
-                        fi
-                    else
-                        if ! $in_paragraph; then
-                            echo "<p>"
-                            in_paragraph=true
-                        fi
-                        echo "$parsed_line"
-                    fi
-                done < "$item_content"
-                if $in_paragraph; then
-                    echo "</p>"
-                fi
-            else
-                friendly_message "No content file found for gallery item '${item##*/}'." \
-                "Add a .md file to the '${item##*/}' folder in the gallery. Start with '# Title' to set the item's title."
-            fi
-            echo "  </div>"
-            if [ -n "$embed_code" ]; then
-                echo "  <div class=\"project-media\">"
-                echo "    $embed_code"
-                echo "  </div>"
-            elif [ -f "$item_image" ]; then
-                echo "  <div class=\"project-image\">"
-                insert_image "$item_image" "${item_title:-Untitled}"
-                echo "  </div>"
-            fi
-            echo "</div>"
-        fi
-    done
-}
+# 2. Set up your content:
+#    - Create a 'contents/' directory (or whatever you set in config).
+#    - Inside, make a folder for each main section of your portfolio.
+#    - In each section folder:
+#      a) Add a .md (Markdown) file with your content. Start it with '# Title' or frontmatter.
+#      b) Optionally, add an image file (.jpg, .png, or .svg) for the section cover.
+#    - For projects or sub-galleries:
+#      a) Create a 'gallery' folder inside any section folder.
+#      b) In the 'gallery' folder, make a subfolder for each project.
+#      c) In each project folder, add a .md file and an image file.
+#    - To add a video or other embed, include a line starting with 'EMBED:' in your .md file.
 
-# Start generating the HTML file
+# 3. Run the script:
+#    - Open a terminal in the folder containing this script.
+#    - Run the command: ./build.sh (or bash build.sh)
+#    - To use the self-destruct option (if enabled in config), run: ./build.sh -d
+
+# 3. View your portfolio:
+#    - Open the generated 'works.html' file in a web browser.
+
+# License:
+# THE UNRESTRICTED BUT RESPONSIBLY SHARED, ALTERED AND DISTRIBUTED SOFTWARE WITHOUT WARRANTIES AND WITH THE ABSENCE OF LIABILITY FOR ANY UNINTENDED CONSEQUENCES LICENSE (VERSION 1.0, AUGUST 4, 2023)
+#
+# Use it, change it, share it - but keep it under this license. No promises, no liability. Enjoy.
+
+# --- Main Execution ---
+
+# Prepare output
+temp_dir=$(mktemp -d)
+pids=""
+
+# Process sections in parallel
+echo "Building sections..."
+i=0
+for folder in "$CONTENT_DIR"*/; do
+    (
+        process_section "$folder" > "$temp_dir/$i.html"
+    ) &
+    pids="$pids $!"
+    ((i++))
+done
+
+# Wait for all processes
+wait $pids
+
+# Assemble final HTML
+echo "Assembling $OUTPUT_FILE..."
+
 cat << EOF > "$OUTPUT_FILE"
 <!DOCTYPE html>
 <html lang="en">
@@ -275,40 +321,35 @@ cat << EOF > "$OUTPUT_FILE"
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>$TITLE</title>
     <style>
-    $(cat "$CSS_FILE" 2>/dev/null)
+    $(cat "$CSS_FILE")
     </style>
 </head>
 <body>
 EOF
 
-# Generate main sections
-content_folders=("$CONTENT_DIR"*/)
-if [ ${#content_folders[@]} -eq 0 ]; then
-    friendly_message "No content folders found in '$CONTENT_DIR'." \
-    "Add subfolders to the 'contents' directory. Each subfolder should contain a .md file and optionally an image file."
-    exit 1
-fi
-
-for folder in "${content_folders[@]}"; do
-    generate_main_section "$folder" >> "$OUTPUT_FILE"
+# Concatenate section HTMLs
+for ((j=0; j<i; j++)); do
+    if [ -f "$temp_dir/$j.html" ]; then
+        cat "$temp_dir/$j.html" >> "$OUTPUT_FILE"
+    fi
 done
 
-# Close the HTML file
 cat << EOF >> "$OUTPUT_FILE"
     <svg id="lineContainer"></svg>
     <script>
-    $(cat "$JS_FILE" 2>/dev/null)
+    $(cat "$JS_FILE")
     </script>
 </body>
 </html>
 EOF
 
+# Cleanup
+rm -rf "$temp_dir"
+
 echo "◯┃ LineAndForm is done!"
 echo "Open \"$OUTPUT_FILE\" in a web browser to see your work."
 
-# Self-destruct if option is set
 if $SELF_DESTRUCT; then
-    friendly_message "Self-destruct activated" "This script will delete itself after execution."
-    trap 'rm -- "$0"' EXIT
-    echo "This script has self-destructed."
+    rm -- "$0"
+    echo "Self-destructed."
 fi

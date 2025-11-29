@@ -1,23 +1,45 @@
-# A Clipping Bureau's Digital Transformation: Rapid Experiments in Real-Time Media Tools
-## The Context
+---
+title: "A Clipping Bureau's Digital Transformation: Rapid Experiments in Real-Time Media Tools"
+date: 2018-01-01
+tags: [Product Design, Innovation, Real-time Data]
+---
 
-Infoxel Media Labs is a software company focusing on data analysis and machine learning solutions for the media industry.
-It's ads and content monitoring platform was continuously recording and archiving media broadcasts from television, radio, and print outlets around the clock. This 24/7 capture system was originally built to power advertising analytics for marketing agencies and brands – for example, tracking every time their commercials aired on TV or their brand was mentioned on radio. However, storing such vast amounts of video and audio data was expensive, and the company realized this archive held untapped potential beyond ad tracking. The challenge emerged: How else could we repurpose this always-on media corpus into new, impactful products? I joined the team as a Product Designer tasked with answering that question. My role was to explore new ideas on a weekly basis, rapidly prototyping and testing concepts that leveraged InfoAD’s rich media data. Through this fast-paced, iterative experimentation, we developed Vlic and Welo – two tools that give journalists, political analysts, and PR teams real-time access to media insights and instant live content sharing.
+[View on AppAdvice](https://appadvice.com/app/vlic/1176938054)
+
+## Overview
+
+Infoxel Media Labs was sitting on a goldmine: a massive, 24/7 archive of media broadcasts used for ad tracking. But this "always-on" capture system was just a cost center—expensive storage for data that wasn't being fully used.
+
+The challenge emerged: How could we repurpose this vast media corpus into new, impactful products? We needed to find value beyond simple ad tracking.
+
+## Objective
+
+To transform a passive media archive into active, real-time intelligence tools for journalists, political analysts, and PR teams.
+
+## My Role
+
+I joined as a Product Designer tasked with answering that question. My role was to explore new ideas on a weekly basis, rapidly prototyping and testing concepts that leveraged the data. I led the "hackathon" culture that birthed our new product suite.
 
 ## Making Things Happen
 
 ### Vlic: Real-Time News Monitoring
-- Challenge: Traditional media monitoring relied on delayed reports and cluttered email digests, which made real-time reactions difficult. PR professionals and brand managers often learned about important mentions hours after they aired. In a fast-moving news cycle, this delay was a major pain point – teams couldn’t react to a critical TV mention or radio comment until it was almost too late. We needed to flip media monitoring from a passive, day-after exercise into an active, moment-by-moment awareness tool.
-- Experimentation: We kicked off by brainstorming a variety of approaches for real-time monitoring. Early concepts included a web dashboard streaming live transcripts, and daily email summaries of keyword hits. We soon discovered these weren’t immediate or convenient enough. Through quick user interviews with communications teams, we learned that mobile push notifications might be the most actionable solution – people wanted to know the instant something happened, wherever they were. So, in our first weekly sprint, we prototyped a simple phone app that would ping the user whenever their chosen keyword appeared in a broadcast. Each week, we iterated: refining how users subscribe to keywords (e.g. brand names, public figures) and how the alert details are presented. We simplified the interface repeatedly, making it dead easy to add or adjust keywords and eliminating any clutter.
-In-app, users could review a short transcript or audio snippet of the mention and immediately share it onward – to a colleague, or out on Twitter to engage the public conversation.
+Traditional monitoring was too slow. PR pros learned about crises hours after they aired.
+- **The Pivot:** We needed to flip monitoring from a passive, day-after email to an active, moment-by-moment awareness tool.
+- **Experimentation:** We started with web dashboards, but they weren't immediate enough. Through user interviews, we realized mobile push notifications were the key.
+- **The Result:** We built an app that pinged users the instant their keyword was mentioned on TV or radio, allowing them to react in real-time.
 
-### Welo: Live TV Clipping and Sharing
-- Challenge: Capturing and sharing live TV content was traditionally slow and required technical skills, making it hard to capitalize on viral moments in real time. When a wow moment happened on live TV, newsrooms often had to wait for a recording or have an engineer manually pull the footage. By the time the clip was ready, the social media buzz could be dying down. We saw an opportunity to let our users (journalists, campaign staff, social media teams) grab those moments instantly – without needing specialized video equipment or expertise.
-- Experimentation: The first prototype of Welo was essentially a “live DVR” with a record button. A timeline enabled users to drag two handles to set start and end points. All the heavy lifting (video processing) would happen on the server, so on the phone it felt instant. Each weekly iteration we invited a few journalists to try the updated version, and their feedback helped us streamline everything from the size of the preview window to the steps required to post a clip on Twitter.
+### Welo: Live TV Clipping
+Capturing live TV was hard. Newsrooms had to wait for engineers to pull footage, missing the viral moment.
+- **The Idea:** A "live DVR" for everyone.
+- **The Prototype:** We built a timeline interface that let users drag handles to set start and end points on a live stream. All the heavy video processing happened on the server, making it feel instant on the phone.
+- **Iteration:** Each week, we invited journalists to try it. Their feedback helped us streamline the process from "clip" to "tweet" down to seconds.
 
-The evolving design took inspiration from familiar video-editing timelines, but we kept it simple enough for anyone to use on a smartphone.
+## Results
 
-## Laying a Foundation for the Future
-Vlic and Welo together set a new standard for real-time media tracking and live news sharing in Infoxel’s market. More importantly, the process behind these products became a template for innovation at the company. By running weekly "hackathons" and rapidly iterating on user feedback, we proved the value of lean product design – we could go from idea to validated prototype in a matter of days. This approach de-risked bold ideas and surfaced the features that truly mattered to users before heavy development. Ultimately, Infoxel successfully transformed its huge archive of media (previously just a storage cost) into actionable, high-value services.  The success of Vlic and Welo also helped position Infoxel (now Seenka) as an early mover in real-time media intelligence in Latin America. The company continues to build on this foundation, applying the same principles of rapid experimentation and user-centric design to expand its suite of products – all aimed at empowering users with instant access to the information that matters most.
+- **New Revenue Streams:** Transformed a cost center (storage) into a profit center by creating high-value services.
+- **Market Leadership:** Positioned Infoxel (now Seenka) as an early mover in real-time media intelligence in Latin America.
+- **Cultural Shift:** Established a culture of rapid experimentation and user-centric design within the company.
 
-View on [AppAdvice](https://appadvice.com/app/vlic/1176938054)
+## Reflection
+
+The process behind these products became a template for innovation at the company. By running weekly "hackathons," we proved the value of lean product design—going from idea to validated prototype in days. This approach de-risked bold ideas and surfaced the features that truly mattered.

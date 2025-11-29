@@ -1,26 +1,45 @@
-# A Bank's Digital Transformation: Racing Against Time During a Crisis
-
-## The Context
-In March 2020, as COVID-19 swept through Argentina, Bancor’s team faced an unprecedented emergency. Overnight, bank physical branches closed and hundreds of thousands of customers were cut off from services. The government’s new Ingreso Familiar de Emergencia (IFE) program meant over 600,000 provincial residents were slated to receive emergency relief payments, many of them unbanked. Ensuring these citizens could access their money quickly and safely became a mission charged with urgency and responsibility.
-
-Bancor’s leadership had long seen digital banking as a necessity, but not a priority. Now this belief was put to the ultimate test, and failed. Inside Bancor, the atmosphere was intense. The sense of duty to the community was palpable: if their digital channels failed, families might go without essential funds. Under a ticking clock, project teams mobilized in “war room” mode, working round-the-clock and compressing timelines from months to mere days. Years of digital progress suddenly needed to happen in a week. I was hired to lead Bancor's UX efforts, as owner of Bancon, their home banking app. Analysts and owners pulled long nights, fueled by purpose and caffeine, knowing that tens of thousands of people depended on us. “The pandemic thrust the retail banking industry into a digital-first mindset,” as one report observed, and for my team this was no abstract concept – it was the daily reality of delivering under high stakes. The urgency of the crisis forged an emotional bond within the team, defined by exhaustion, determination, and a singular focus on delivering relief to customers.
-
-## Making Things Happen
-Behind the scenes, our cross-functional task force was rapidly problem-solving and innovating to stand up critical digital services. We had to rethink systems and prioritize ruthlessly. Among the key challenges we navigated:
-
-- **Credit Card Delivery Tracking:** To ensure users could manage their credit card deliveries during the pandemic-induced postal delays, I designed a new feature to track card shipments and make address changes when needed. Through Bancor’s app, Bancón, users could access real-time updates on the status of their new or replacement credit cards, providing them with essential visibility on its journey. A standout option was the ability to **request delivery to a different address**, a crucial solution for many customers unable to receive cards at their registered address due to quarantine restrictions.
-
-- **Onboarding Changes:** While we worked on this, opening bank accounts for unbanked IFE recipients in bulk was another massive challenge. Traditional onboarding was too slow, and prone to failure. We proposed and worked on a modified backend system to create “logical accounts” – essentially fast-tracked accounts generated in software – without the usual paperwork bottlenecks. This technical workaround allowed ~380,000 new accounts (savings or checking) to be opened remotely in the months after lockdown. This meant previously unbanked citizens could have an account ready to receive their funds within days, a process that normally took weeks. The trade-off was dealing with legacy core banking constraints; the team had to ensure these rapid accounts would reconcile properly in the system later. It was a classic speed vs. rigor dilemma – and we chose speed, with controlled risk.
-
-- **Full Redesign (Project “Peperina”):** At the same time, my team undertook a complete overhaul of the digital interface to accommodate the wave of first-time users. Many of the 380,000 new customers had never used a banking app before, so simplicity and clarity were paramount. I proposed and convinced management to fast-track a new design system, code-named “Peperina,” to unify the look and feel of Bancor’s web and mobile platforms. In practice, this meant reimagining navigation, enlarging fonts and buttons, and adding guided prompts for tasks like account setup and money withdrawal. We built a library of reusable components (login forms, transfer screens, help dialogs) that could be deployed quickly across Bancón first, and then all of Bancor's apps. This design system approach ensured consistency under intense deadlines – every element followed Peperina’s standards, which reduced confusion for users and development time for the team. There were tough trade-offs here too: some nice-to-have features were postponed to focus on core flows (like checking balances, receiving funds, and making money transfers). The result was a stripped-down but highly intuitive UI, born directly out of crisis needs. Internal testing with employees’ relatives (including elderly family members) and select customers provided quick feedback to polish the experience.
-
-## Laying a Foundation for the Future
-Bancor’s pandemic-driven transformation did not end with the crisis – it fundamentally reset the bank’s trajectory, accelerating a long-term digital shift. The intense work I led became a springboard for innovation, leaving lasting changes in how Bancor serves customers. Key outcomes and lessons include:
-- Transactions through the app jumped 418% year-over-year.
-- The user base more than doubled, from 360,000 at the start of 2020 to over 680,000 by year’s end.
-- Customer segments historically slow to go digital were now on board; for instance, the number of pensioners using the app rose by 81% as retirees learned to bank from home.
-- And critically, 380,000+ "Cordobeses" entered the financial system during the pandemic via new accounts, a massive boost to financial inclusion.
-
-These numbers illustrate a broad truth: once forced to try digital banking, many customers embraced it. Bancor effectively leap-frogged ahead in digital adoption, reaching usage levels it might have otherwise taken years to achieve.
+---
+title: "A Bank's Digital Transformation: Racing Against Time During a Crisis"
+date: 2020-03-01
+tags: [UX, Digital Transformation, Crisis Management]
+---
 
 [Project Link](https://drive.google.com/file/d/1gekSKbQl82T0MtQsx0baiyesIURSF_40/view?usp=sharing)
+
+## Overview
+
+In March 2020, as COVID-19 swept through Argentina, Bancor’s team faced an unprecedented emergency. Overnight, physical branches closed, cutting off hundreds of thousands of customers from essential services. The government’s new emergency relief program (IFE) meant over 600,000 residents needed to receive payments, many of whom were unbanked.
+
+Inside Bancor, the atmosphere was intense. We were in "war room" mode, working round-the-clock. The mission was clear: ensure these citizens could access their money quickly and safely. Failure meant families going without essential funds.
+
+## Objective
+
+To rapidly digitize essential banking services and onboard hundreds of thousands of new users in a matter of days, not months.
+
+## My Role
+
+I led Bancor's UX efforts as the owner of Bancon, the home banking app. My role was to lead the design of critical crisis features and a new design system, ensuring that the sudden influx of first-time digital users could navigate the platform without confusion.
+
+## Making Things Happen
+
+### The "War Room" Response
+We had to rethink systems and prioritize ruthlessly. Years of digital progress needed to happen in a week.
+
+- **Rapid Onboarding:** Traditional onboarding was too slow. We worked on a modified backend system to create “logical accounts” for unbanked citizens without the usual paperwork. This allowed ~380,000 new accounts to be opened remotely.
+- **Project "Peperina":** I proposed and convinced management to fast-track a new design system, code-named “Peperina,” to unify the look and feel of Bancor’s web and mobile platforms. We built a library of reusable components that ensured consistency under intense deadlines.
+- **Crisis Features:** I designed a new feature to track credit card shipments and request delivery to a different address—a crucial solution for customers unable to receive cards at their registered address due to quarantine.
+
+## Results
+
+The transformation fundamentally reset the bank’s trajectory:
+
+- **418% increase** in app transactions year-over-year.
+- **User base doubled** from 360,000 to over 680,000.
+- **380,000+ new accounts** created, significantly boosting financial inclusion.
+- **81% increase** in app usage among pensioners.
+
+## Reflection
+
+The urgency of the crisis forged an emotional bond within the team, defined by exhaustion, determination, and a singular focus on delivering relief. It was a classic speed vs. rigor dilemma—and we chose speed, with controlled risk.
+
+This experience proved that once forced to try digital banking, many customers embraced it. Bancor effectively leap-frogged ahead in digital adoption, reaching usage levels it might have otherwise taken years to achieve.

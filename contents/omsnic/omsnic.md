@@ -1,11 +1,35 @@
-### Protecting Your Business: Improving Liability Insurance Applications
+---
+title: "Protecting Your Business: Improving Liability Insurance Applications"
+date: 2021-01-01
+tags: [UX, FinTech, Insurance]
+---
 
-**Client:** OMSNIC - Finance and insurance
+[Project Link](https://quickquote.fortressins.com/)
 
-**Overview:** How do we turn 112 different forms into one to create a fast and compelling onboarding flow for Oral & Maxillofacial Surgeons?
+## Overview
 
-In order to streamline the onboarding process for Oral & Maxillofacial Surgeons, our team set out to consolidate the 112 different forms they were required to fill out.
+Applying for liability insurance is rarely fun, but for Oral & Maxillofacial Surgeons, it was a nightmare. The process involved **112 different forms**. This bureaucratic maze was a significant barrier to entry, causing frustration and drop-offs.
 
-We began by iterating over multiple ideas for a conversational quoting tool, allowing surgeons to quickly and easily provide the necessary information. After conducting user testing and gathering feedback, we refined and improved the tool, creating a fast and compelling onboarding experience for surgeons. This streamlined process has improved the user experience and made it easier for surgeons to complete the onboarding process.
+## Objective
 
-**Learn more:** [Project Link](https://quickquote.fortressins.com/)
+To turn 112 different forms into one, creating a fast and compelling onboarding flow for surgeons.
+
+## My Role
+
+I led the UX design to streamline this complex process. My goal was to hide the complexity of the insurance backend behind a simple, conversational interface.
+
+## Making Things Happen
+
+### The Consolidation
+We didn't just digitize the forms; we rethought the entire data collection process.
+- **Conversational Design:** We iterated on multiple ideas for a conversational quoting tool. Instead of a wall of inputs, we asked questions one by one, allowing surgeons to provide information naturally.
+- **User Testing:** We put prototypes in front of surgeons early. Their feedback was critical in refining the language and flow to match their mental model, not the insurance company's database schema.
+
+## Results
+
+- **Streamlined Onboarding:** Drastically reduced the time and effort required to apply.
+- **Improved Experience:** Created a fast, compelling process that replaced a bureaucratic nightmare with a modern digital experience.
+
+## Reflection
+
+This project highlighted the power of UX to transform even the most mundane and complex tasks. By focusing on the user's journey rather than the system's requirements, we turned a painful obligation into a smooth interaction.

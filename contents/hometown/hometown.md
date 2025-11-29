@@ -1,4 +1,12 @@
-# HometownLocal: Revolutionizing Home Services
+---
+title: "HometownLocal: Revolutionizing Home Services"
+date: 2016-01-01
+tags: [UX, Service Design, Marketplace]
+---
+
+[Project Link](https://www.darwoft.com/blog/best-logistics-management-software-solution-service-providers)
+
+## Overview
 
 At HometownLocal, I led the transformation of a simple demolition and construction rental web directory into a full-fledged platform for home services. The driving question was: *What if we could make booking a home service as easy as ordering a ride?*
 
@@ -31,5 +39,3 @@ We developed a comprehensive platform that covers the entire service lifecycle, 
 ## Impact and Insights
 
 The platform has transformed how home services are booked and managed in our target markets. Service providers report significant improvements in efficiency, with some seeing up to a 30% increase in completed jobs per week. Customers appreciate the transparency and ease of use, leading to higher satisfaction rates and repeat bookings.
-
-View more details: [Project Link](https://www.darwoft.com/blog/best-logistics-management-software-solution-service-providers)
