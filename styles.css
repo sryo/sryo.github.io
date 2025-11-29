@@ -136,15 +136,15 @@ li {
 }
 
 .gallery {
-    padding-top: 10rem;
+    padding-block: 15rem;
     border: 0;
     font-size: large;
     text-wrap: pretty;
     background: transparent;
     color: inherit;
     animation: fadeIn 0.125s ease-in;
-    padding-inline: calc(38vw - 180px);
-    height: calc(100svh - 10rem);
+    padding-inline: calc(26vw - 120px);
+    height: calc(100svh - 30rem);
     overflow: scroll;
 }
 
