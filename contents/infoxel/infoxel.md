@@ -36,10 +36,15 @@ Capturing live TV was hard. Newsrooms had to wait for engineers to pull footage,
 
 ## Results
 
-- **New Revenue Streams:** Transformed a cost center (storage) into a profit center by creating high-value services.
-- **Market Leadership:** Positioned Infoxel (now Seenka) as an early mover in real-time media intelligence in Latin America.
-- **Cultural Shift:** Established a culture of rapid experimentation and user-centric design within the company.
+METRICS:
+- **2** new products launched (Vlic, Welo)
+- **Real-time** monitoring vs day-after
+- **#1** in LatAm media intelligence
 
 ## Reflection
 
 The process behind these products became a **template for innovation** at the company. By running weekly "hackathons," we proved the value of **lean product design**, going from idea to validated prototype in days. This approach de-risked bold ideas and surfaced the features that truly mattered.
+
+---
+
+Need to modernize a legacy product or establish an innovation process? [Let's talk](https://www.linkedin.com/in/myadarola/).

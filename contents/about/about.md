@@ -4,23 +4,20 @@ date: 2023-01-01
 tags: [Profile, Bio]
 ---
 
-## Overview
+## Hi, I'm Mateo
 
-Hi, I'm Mateo Yadarola, a **Product Designer** who **values the journey** as much as the destination. My design journey spans over two decades, with more than **ten years in leadership roles**.
+I'm a product designer who asks **"what if?"** a lot. What if cursors told time? What if portfolios were just bash scripts? What if I stopped waiting for perfect and just shipped things?
 
-I'm currently at Continental Finance, where I'm **shaping a mobile home banking app** catering to users with poor credit scores. Beyond my 9-to-5, I'm an **experimenter**, a **creator of side projects** that aim to enhance the digital experience. Check out my GitHub; it's my digital playground where tools like ChronoMouse and MenuMaestro come to life.
+Twenty years of designing, ten of those leading teams. Currently making fintech less intimidating at Continental Finance. But the work I'm proudest of usually happens after hours—small tools and experiments that scratch my own itches.
 
-## Philosophy
+## I believe creativity is a muscle
 
-I believe that **creativity is a muscle**; one that must be exercised regularly to be strengthened. This philosophy drives not only my professional work but also my passion for personal projects and experimentation.
+Use it or lose it. That's why I build things on the side. Not to launch startups or grow audiences, but to **stay curious** and **keep making**. Some of these projects are useful. Some are just weird. All of them taught me something.
 
-## Connect
+## Find me elsewhere
 
-Feel free to connect with me:
-- [My Figma plugins](https://www.figma.com/@sryo)
-- [My GitHub repos](https://github.com/sryo)
-- [My LinkedIn profile](https://www.linkedin.com/in/myadarola/)
+- [Figma](https://www.figma.com/@sryo) / plugins I've made
+- [GitHub](https://github.com/sryo) / code I've written
+- [LinkedIn](https://www.linkedin.com/in/myadarola/) / the professional stuff
 
-## The "What If"
-
-Join me as I explore the question: "What if...?" in design and technology. Each project below represents a different way I've challenged myself to think creatively, push the boundaries of what's possible in our digital world, and find joy in the journey of creation and problem-solving.
+## Some things I've made

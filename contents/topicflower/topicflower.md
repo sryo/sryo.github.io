@@ -31,10 +31,15 @@ Upgrading from a visual tool to a platform required a major overhaul. We utilize
 
 ## Results
 
-- **Global Expansion:** Grew presence to 19 countries.
-- **Major Client Acquisition:** Attracted enterprise clients like IBM, Movistar, Starbucks, BBVA, and Mercedes-Benz.
-- **Strategic Value:** Shifted the value proposition from "seeing your topics" to "driving your strategy."
+METRICS:
+- **19** countries reached
+- **5+** Fortune 500 clients
+- **100%** shift from visualization to strategy tool
 
 ## Reflection
 
-What was once just a pretty visualization evolved into a **decision-driving platform**. The redesign reinforced TopicFlower’s role as an innovative social insights platform, proving that you **don't have to sacrifice beauty for utility**, you just have to make sure the utility is there.
+What was once just a pretty visualization evolved into a **decision-driving platform**. The redesign reinforced TopicFlower's role as an innovative social insights platform, proving that you **don't have to sacrifice beauty for utility**, you just have to make sure the utility is there.
+
+---
+
+Turning data visualization into actionable insights? [Let's talk](https://www.linkedin.com/in/myadarola/).

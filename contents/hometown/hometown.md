@@ -36,6 +36,13 @@ We developed a **comprehensive platform** that covers the entire service lifecyc
 - Rapidly prototyped and iterated on the UI/UX design, focusing on simplicity and efficiency.
 - Collaborated closely with backend developers to ensure seamless integration of complex features like real-time scheduling and route optimization.
 
-## Impact and Insights
+## Impact
 
-The platform has transformed how home services are booked and managed in our target markets. Service providers report significant improvements in efficiency, with some seeing up to a 30% increase in completed jobs per week. Customers appreciate the transparency and ease of use, leading to higher satisfaction rates and repeat bookings.
+METRICS:
+- **30%** increase in jobs completed per week
+- **5** integrated service tools
+- **100%** booking-to-billing automation
+
+---
+
+Building a marketplace or service platform? [Let's talk](https://www.linkedin.com/in/myadarola/).
