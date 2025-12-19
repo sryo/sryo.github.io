@@ -35,11 +35,15 @@ The most daring move was the paywall. Commercial solutions were too expensive (p
 
 The transformation turned a traditional print outlet into a digital-forward media company:
 
-- **10,000+ subscribers** in the first 6 months.
-- **23,500 subscribers** within 2 years.
-- **Finalist** for WAN-IFRA’s Digital Media LATAM Awards (Best Paid Content Strategy).
-- **Named "10 News Publishers That Do It Right"** globally by Editor & Publisher magazine.
+METRICS:
+- **23.5K** paying subscribers in 2 years
+- **10K** subscribers in first 6 months
+- **Top 10** global recognition by Editor & Publisher
 
 ## Reflection
 
 This project was about more than just technology; it was about **culture change**. We had to convince a newsroom steeped in tradition to **embrace a new way of telling stories**. The success of Wyleex, which we later offered as a service to other publishers in Latin America, proved that local solutions could compete on a global stage.
+
+---
+
+Reinventing content or editorial workflows? [Let's talk](https://www.linkedin.com/in/myadarola/).

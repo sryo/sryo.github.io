@@ -31,15 +31,20 @@ We had to **rethink systems and prioritize ruthlessly**. **Years of digital prog
 
 ## Results
 
-The transformation fundamentally reset the bank’s trajectory:
+The transformation fundamentally reset the bank's trajectory:
 
-- **418% increase** in app transactions year-over-year.
-- **User base doubled** from 360,000 to over 680,000.
-- **380,000+ new accounts** created, significantly boosting financial inclusion.
-- **81% increase** in app usage among pensioners.
+METRICS:
+- **418%** increase in app transactions
+- **680K** users (doubled from 360K)
+- **380K+** new accounts created
+- **81%** increase in pensioner usage
 
 ## Reflection
 
 The urgency of the crisis forged an emotional bond within the team, defined by exhaustion, determination, and a singular focus on delivering relief. It was a **classic speed vs. rigor dilemma**, and we **chose speed, with controlled risk**.
 
 This experience proved that once forced to try digital banking, many customers embraced it. Bancor effectively leap-frogged ahead in digital adoption, reaching usage levels it might have otherwise taken years to achieve.
+
+---
+
+Navigating a digital transformation or crisis response? [Let's talk](https://www.linkedin.com/in/myadarola/).
