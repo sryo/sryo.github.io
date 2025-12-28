@@ -1,25 +1,18 @@
-// ========================================
-// Portfolio Interactions
-// ========================================
-
 const checkboxButtons = document.querySelectorAll('input[type="checkbox"]');
 const items = document.querySelectorAll(".item");
 const galleries = document.querySelectorAll(".gallery");
 const svg = document.getElementById("lineContainer");
 
-// --- Configuration ---
 const MAX_PATHS = 10;
 const LINE_COLORS = [
-    "#E7A545", "#FFC0CB", "#E94136",
-    "#7E3972", "#1E88E5", "#414DA1", "#007A44"
+    "#FF2D55", "#00C7BE", "#FFCC00",
+    "#007AFF", "#FF9500", "#AF52DE", "#34C759"
 ];
 
-// --- State ---
 let currentPaths = [];
 let currentColorIndex = 0;
 let lastHoveredItem = items[0];
 
-// --- Gallery Management ---
 function closeAllGalleries() {
     checkboxButtons.forEach(cb => cb.checked = false);
     galleries.forEach(g => g.classList.remove("active"));
@@ -39,18 +32,14 @@ function openGallery(itemId) {
     }
 }
 
-// Handle checkbox changes
 checkboxButtons.forEach(checkbox => {
     checkbox.addEventListener("change", function() {
-        // Close all galleries first
         galleries.forEach(g => g.classList.remove("active"));
 
         if (this.checked) {
-            // Uncheck other checkboxes
             checkboxButtons.forEach(cb => {
                 if (cb !== this) cb.checked = false;
             });
-            // Open corresponding gallery
             openGallery(this.id);
         }
 
@@ -58,17 +47,14 @@ checkboxButtons.forEach(checkbox => {
     });
 });
 
-// Click on back button area closes gallery
 galleries.forEach(gallery => {
     gallery.addEventListener("click", function(e) {
-        // Only close if clicking the top-left back button area
         if (e.clientX < 150 && e.clientY < 80) {
             closeAllGalleries();
         }
     });
 });
 
-// --- Keyboard Navigation ---
 document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
         closeAllGalleries();
@@ -94,7 +80,6 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-// --- URL History ---
 function updateHistory(checkbox) {
     const url = new URL(window.location.href);
     if (checkbox.checked) {
@@ -107,7 +92,6 @@ function updateHistory(checkbox) {
 
 window.addEventListener("popstate", closeAllGalleries);
 
-// --- SVG Line Drawing ---
 function getNextColor() {
     const color = LINE_COLORS[currentColorIndex];
     currentColorIndex = (currentColorIndex + 1) % LINE_COLORS.length;
@@ -195,7 +179,6 @@ items.forEach((item) => {
     });
 });
 
-// --- Layout: Radial Positioning ---
 function layoutItems(stagger = false) {
     const itemCount = items.length;
     const radius = Math.min(window.innerWidth, window.innerHeight) * 0.35;
@@ -215,7 +198,6 @@ function layoutItems(stagger = false) {
     });
 }
 
-// --- Debounce ---
 function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -224,7 +206,6 @@ function debounce(func, wait) {
     };
 }
 
-// --- Resize Handler ---
 window.addEventListener("resize", debounce(() => {
     if (svg) {
         currentPaths.forEach(path => svg.removeChild(path));
@@ -234,10 +215,8 @@ window.addEventListener("resize", debounce(() => {
     layoutItems();
 }, 250));
 
-// --- Initialize ---
 layoutItems(true);
 
-// Restore from URL
 const params = new URLSearchParams(window.location.search);
 const viewParam = params.get("view");
 if (viewParam) {
