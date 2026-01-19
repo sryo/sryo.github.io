@@ -1,5 +1,5 @@
 ---
-title: "HometownLocal: Revolutionizing Home Services"
+title: "HometownLocal: from web directory to service platform"
 date: 2016-01-01
 tags: [UX, Service Design, Marketplace]
 ---
@@ -8,33 +8,31 @@ tags: [UX, Service Design, Marketplace]
 
 ## Overview
 
-At HometownLocal, I led the **transformation of a simple demolition and construction rental web directory** into a full-fledged platform for home services. The driving question was: *What if we could make booking a home service as easy as ordering a ride?*
+At HometownLocal, I led the redesign of a demolition and construction rental web directory into a platform for home services. The question we kept asking: could we make booking a home service as easy as ordering a ride?
 
-## The Challenge
+## The challenge
 
-The home service industry, particularly in demolition and construction, was ripe for disruption. Service providers were struggling with inefficient scheduling, communication gaps, and billing headaches. We saw an opportunity to **streamline these processes** and create an **Uber-like experience** for both service providers and homeowners.
+The home service industry, especially demolition and construction, had real problems. Service providers dealt with messy scheduling, poor communication, and billing headaches. We wanted to fix these specific pain points for both providers and homeowners.
 
-## Our Solution
+## Our solution
 
-We developed a **comprehensive platform** that covers the entire service lifecycle, from **booking to billing**. Here's what we built:
+We built a platform that covers the entire service lifecycle, from booking to billing.
 
-## Key Features
+## Key features
 
-- **Seamless Onboarding:** A smooth, intuitive process for both service providers and customers to join the platform.
-- **Smart Booking Flow:** An AI-powered system that matches customer needs with the right service providers.
-- **Multi-view Management Tools:**
-  - Calendar view for easy scheduling
-  - Kanban board for job status tracking
-  - Map view for efficient route planning
-- **Real-time Route Navigation:** Integrated GPS navigation to help service providers reach job sites efficiently.
-- **Internal Messaging System:** A secure channel for clear communication between customers and service providers.
-- **Automated Invoicing:** Streamlined billing process that triggers upon job completion.
+- **Onboarding:** A straightforward process for service providers and customers to join.
+- **Booking flow:** A matching system that connects customer needs with the right providers.
+- **Management tools:**
+  - Calendar view for scheduling
+  - Kanban board for job status
+  - Map view for route planning
+- **Route navigation:** Integrated GPS to help providers reach job sites.
+- **Messaging:** A channel for communication between customers and providers.
+- **Invoicing:** Automated billing that triggers when jobs complete.
 
-## Development Journey
+## Development journey
 
-- Conducted extensive research into the pain points of both home service providers and customers.
-- Rapidly prototyped and iterated on the UI/UX design, focusing on simplicity and efficiency.
-- Collaborated closely with backend developers to ensure seamless integration of complex features like real-time scheduling and route optimization.
+I researched the pain points of home service providers and their customers. We prototyped quickly and iterated on the design, focusing on simplicity. I worked closely with backend developers to integrate the scheduling and route optimization features.
 
 ## Impact
 

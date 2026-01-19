@@ -1,5 +1,5 @@
 ---
-title: "VENG: A New Perspective on Earth"
+title: "VENG: an e-commerce platform for satellite imagery"
 date: 2019-06-01
 tags: [Product Design, E-commerce, Space Tech]
 ---
@@ -8,28 +8,21 @@ tags: [Product Design, E-commerce, Space Tech]
 
 ## Overview
 
-At VENG, I led the conceptualization of an **e-commerce platform for satellite imagery**, driven by the question: *What if accessing high-resolution satellite images was as easy as buying a book online?* This project aimed to **democratize access to advanced satellite technology** and Earth observation data.
+At VENG, I led the concept work for an e-commerce platform selling satellite imagery. The starting question was simple: what if buying a satellite image was as easy as buying a book online?
 
-## The Challenge
+## The challenge
 
-SAOCOM, a constellation of two high-resolution satellites, can observe Earth's surface 24/7, regardless of weather conditions. However, **accessing this valuable data was complex** and often restricted to specialized organizations. We saw an opportunity to make this technology accessible to a broader audience.
+SAOCOM is a constellation of two high-resolution satellites that can observe Earth's surface 24/7, regardless of weather. But getting this data meant working through specialized organizations and complicated request processes. Most people who could use these images—researchers, planners, analysts—had no practical way to access them.
 
-## Our Solution
+## What we built
 
-We developed an **intuitive e-commerce platform** that allows users to search, request, and purchase satellite images from the SAOCOM 1A & B satellites.
+An e-commerce platform where users search, request, and purchase images from the SAOCOM 1A and B satellites.
 
-## Key Features
+The interface includes a map for selecting areas of interest, filters for date and resolution, low-resolution previews before purchase, a system for requesting images of areas not in the catalog, and payment integration.
 
-- **Interactive Map Interface:** Users can visually select areas of interest on a global map.
-- **Advanced Search Filters:** Options to filter images by date, weather conditions, resolution, and more.
-- **Image Preview:** Low-resolution previews of available images before purchase.
-- **Custom Request System:** Users can request images of specific areas not currently in the catalog.
-- **Secure Payment Gateway:** Integration with multiple payment methods for easy transactions.
+## How we worked
 
-## Development Journey
-
-- Collaborated with the client to understand the capabilities of the SAOCOM satellites.
-- Designed an intuitive UI that simplifies complex satellite data for non-expert users.
+I collaborated with the VENG team to understand the satellites' capabilities and constraints. The main design challenge was making complex satellite data usable for people without a remote sensing background.
 
 ## Impact
 
@@ -38,7 +31,7 @@ METRICS:
 - **24/7** all-weather imaging access
 - **New markets** opened for researchers and planners
 
-The platform has **opened up new markets** for satellite imagery, from environmental researchers to urban planners and even artists.
+The platform brought satellite imagery to environmental researchers, urban planners, and others who previously couldn't access it directly.
 
 ---
 

@@ -1,39 +1,39 @@
 ---
-title: "A Newspaper's Digital Transformation: Reinventing the news for the digital age"
+title: "La Voz del Interior: Building a paywall for a 115-year-old newspaper"
 date: 2017-06-01
 tags: [Product Strategy, Digital Transformation, Media]
 ---
 
 ## Overview
 
-By the mid-2010s, *La Voz del Interior*, a 115-year-old Argentine newspaper, faced a critical challenge. While online readership was surging, **print advertising revenue had plummeted** by 40%. The "**digital business**" had to become the **primary revenue source**, but monetizing an audience used to free content seemed impossible.
+By the mid-2010s, *La Voz del Interior*, a 115-year-old Argentine newspaper, was in trouble. Online readership was growing, but **print advertising revenue had dropped** by 40%. The "**digital business**" needed to become the **primary revenue source**, but the audience expected news to be free.
 
-The fear of losing audience was palpable. Even major papers delayed implementing paywalls. But with ad revenues stagnant, we recognized that a new business model wasn't optional; it was essential.
+Other papers were hesitant to add paywalls. We decided to try anyway.
 
 ## Objective
 
-To **modernize the product for a mobile-first audience** and **build a sustainable subscription model** (paywall) in a market resistant to paying for news.
+To **redesign the product for mobile readers** and **build a subscription model** (paywall) in a market where people weren't used to paying for news.
 
-## My Role
+## My role
 
-I joined the team to **lead this transformation**, **balancing user needs with business survival**. I worked with an interdisciplinary team, editorial leaders, developers, marketing analysts, to design and implement a mobile-first strategy and a custom paywall solution.
+I joined the team to **lead this work**, **balancing user needs with business reality**. I worked with an interdisciplinary team—editorial leaders, developers, marketing analysts—to design and implement a mobile-first strategy and a custom paywall solution.
 
-## Making Things Happen
+## Making things happen
 
-### Embracing Mobile-First Storytelling
-Younger readers were on Instagram and WhatsApp, not reading long broadsheets. We had to meet them on their turf.
-- **Visual Storytelling:** We **shifted from text-heavy articles to "snackable" content**, rich with photos, videos, and infographics optimized for thumb-scrolling.
-- **Clean Design:** We rolled out a fresh, minimalist interface that put content first, removing the clutter that drove mobile users away.
+### Mobile-first storytelling
+Younger readers were on Instagram and WhatsApp, not reading long broadsheets. We had to meet them where they were.
+- **Visual storytelling:** I **shifted the approach from text-heavy articles to "snackable" content**, rich with photos, videos, and infographics optimized for thumb-scrolling.
+- **Clean design:** We rolled out a minimalist interface that put content first, removing the clutter that drove mobile users away.
 
-### Building "Wyleex" (The Paywall)
-The most daring move was the paywall. Commercial solutions were too expensive (priced in dollars) for the Argentine economy.
-- **Build vs. Buy:** We decided to **build our own paywall platform**. It was a **risky choice**, essentially opting to act like a tech company.
-- **Research-Driven:** I led the research to understand what content readers would pay for. We benchmarked global models and designed a flexible system that fit our local reality.
-- **The Launch:** In February 2018, we launched. It was a momentous step.
+### Building "Wyleex" (the paywall)
+Commercial paywall solutions were priced in dollars—too expensive for the Argentine economy.
+- **Build vs. buy:** We decided to **build our own paywall platform**. It was **risky**, essentially choosing to act like a tech company.
+- **Research-driven:** I led the research to understand what content readers would actually pay for. We benchmarked global models and designed a flexible system that fit our local market.
+- **The launch:** In February 2018, we went live.
 
 ## Results
 
-The transformation turned a traditional print outlet into a digital-forward media company:
+The project turned a traditional print outlet into a digital-forward media company:
 
 METRICS:
 - **23.5K** paying subscribers in 2 years
@@ -42,8 +42,8 @@ METRICS:
 
 ## Reflection
 
-This project was about more than just technology; it was about **culture change**. We had to convince a newsroom steeped in tradition to **embrace a new way of telling stories**. The success of Wyleex, which we later offered as a service to other publishers in Latin America, proved that local solutions could compete on a global stage.
+This project required convincing a newsroom steeped in tradition to tell stories differently. The paywall worked. We later offered Wyleex as a service to other publishers in Latin America.
 
 ---
 
-Reinventing content or editorial workflows? [Let's talk](https://www.linkedin.com/in/myadarola/).
+Reinventing content or editorial workflows?  [Let's talk](https://www.linkedin.com/in/myadarola/).
