@@ -1,5 +1,5 @@
 ---
-title: "A Bank's Digital Transformation: Racing Against Time During a Crisis"
+title: "Bancor's COVID response: digitizing a bank in a week"
 date: 2020-03-01
 tags: [UX, Digital Transformation, Crisis Management]
 ---
@@ -8,30 +8,30 @@ tags: [UX, Digital Transformation, Crisis Management]
 
 ## Overview
 
-In March 2020, as COVID-19 swept through Argentina, Bancor’s team faced an **unprecedented emergency**. Overnight, **physical branches closed**, cutting off hundreds of thousands of customers from essential services. The government’s new emergency relief program (IFE) meant over 600,000 residents needed to receive payments, many of whom were unbanked.
+In March 2020, COVID-19 hit Argentina and Bancor's physical branches closed overnight. This cut off hundreds of thousands of customers from basic services. The government announced an emergency relief program (IFE) that would pay over 600,000 residents, many of whom had never had a bank account.
 
-Inside Bancor, the atmosphere was intense. We were in "war room" mode, working round-the-clock. The mission was clear: **ensure these citizens could access their money quickly and safely**. Failure meant families going without essential funds.
+We worked around the clock. The goal was simple: get people their money. If we failed, families wouldn't eat.
 
 ## Objective
 
-To rapidly **digitize essential banking services** and **onboard hundreds of thousands of new users** in a matter of days, not months.
+Digitize essential banking services and onboard hundreds of thousands of new users in days, not months.
 
-## My Role
+## My role
 
-I **led Bancor's UX efforts** as the owner of Bancon, the home banking app. My role was to lead the design of **critical crisis features** and a **new design system**, ensuring that the sudden influx of first-time digital users could navigate the platform without confusion.
+I led Bancor's UX as the owner of Bancon, the home banking app. I designed the crisis features and a new design system so that first-time digital users could actually use the platform.
 
-## Making Things Happen
+## What we did
 
-### The "War Room" Response
-We had to **rethink systems and prioritize ruthlessly**. **Years of digital progress needed to happen in a week**.
+### Round-the-clock response
+We had to rethink systems and cut anything non-essential. Years of digital progress needed to happen in a week.
 
-- **Rapid Onboarding:** Traditional onboarding was too slow. We worked on a modified backend system to create “logical accounts” for unbanked citizens without the usual paperwork. This allowed ~380,000 new accounts to be opened remotely.
-- **Project "Peperina":** I proposed and convinced management to fast-track a new design system, code-named “Peperina,” to unify the look and feel of Bancor’s web and mobile platforms. We built a library of reusable components that ensured consistency under intense deadlines.
-- **Crisis Features:** I designed a new feature to track credit card shipments and request delivery to a different address, a crucial solution for customers unable to receive cards at their registered address due to quarantine.
+- **Rapid onboarding:** Traditional onboarding was too slow. We worked with backend to create "logical accounts" for unbanked citizens without the usual paperwork. This let us open ~380,000 new accounts remotely.
+- **Project "Peperina":** I proposed and convinced management to fast-track a new design system. We called it "Peperina." It unified the look and feel across web and mobile with reusable components that held up under the deadline pressure.
+- **Credit card tracking:** I designed a feature to track credit card shipments and request delivery to a different address. Customers stuck in quarantine couldn't receive cards at their registered address, so this solved a real problem.
 
 ## Results
 
-The transformation fundamentally reset the bank's trajectory:
+The numbers after the crisis:
 
 METRICS:
 - **418%** increase in app transactions
@@ -41,9 +41,9 @@ METRICS:
 
 ## Reflection
 
-The urgency of the crisis forged an emotional bond within the team, defined by exhaustion, determination, and a singular focus on delivering relief. It was a **classic speed vs. rigor dilemma**, and we **chose speed, with controlled risk**.
+The urgency created a kind of bond in the team. We were exhausted but focused on one thing: getting relief to people who needed it. We chose speed over rigor, with calculated risks.
 
-This experience proved that once forced to try digital banking, many customers embraced it. Bancor effectively leap-frogged ahead in digital adoption, reaching usage levels it might have otherwise taken years to achieve.
+This experience showed something interesting. Once people were forced to try digital banking, many of them kept using it. Bancor jumped ahead in digital adoption by years.
 
 ---
 

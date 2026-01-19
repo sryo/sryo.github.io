@@ -1,5 +1,5 @@
 ---
-title: "A Clipping Bureau's Digital Transformation: Rapid Experiments in Real-Time Media Tools"
+title: "Turning a media archive into real-time tools"
 date: 2018-01-01
 tags: [Product Design, Innovation, Real-time Data]
 ---
@@ -8,31 +8,27 @@ tags: [Product Design, Innovation, Real-time Data]
 
 ## Overview
 
-Infoxel Media Labs was sitting on a goldmine: a **massive, 24/7 archive of media broadcasts** used for ad tracking. But this "always-on" capture system was just a **cost center**, expensive storage for data that wasn't being fully used.
+Infoxel Media Labs ran a 24/7 archive of media broadcasts for ad tracking. The system captured everything, but all that data just sat in expensive storage.
 
-The challenge emerged: How could we repurpose this vast media corpus into new, impactful products? We needed to find value beyond simple ad tracking.
+I came in as a Product Designer to figure out what else we could do with it. Could this archive become something more than an ad-tracking tool?
 
-## Objective
+## My role
 
-To **transform a passive media archive into active, real-time intelligence tools** for journalists, political analysts, and PR teams.
+I explored new product ideas on a weekly basis, prototyping and testing concepts that used the existing data. I led the internal "hackathon" sessions that produced our new product suite.
 
-## My Role
+## What we built
 
-I joined as a Product Designer tasked with answering that question. My role was to **explore new ideas on a weekly basis**, **rapidly prototyping and testing** concepts that leveraged the data. I led the "hackathon" culture that birthed our new product suite.
+### Vlic: real-time news monitoring
 
-## Making Things Happen
+PR teams were learning about crises hours after they aired. Traditional monitoring was too slow.
 
-### Vlic: Real-Time News Monitoring
-Traditional monitoring was too slow. PR pros learned about crises hours after they aired.
-- **The Pivot:** We needed to **flip monitoring from a passive, day-after email to an active, moment-by-moment awareness tool**.
-- **Experimentation:** We started with web dashboards, but they weren't immediate enough. Through user interviews, we realized mobile push notifications were the key.
-- **The Result:** We built an app that pinged users the instant their keyword was mentioned on TV or radio, allowing them to react in real-time.
+We started with web dashboards, but they weren't immediate enough. User interviews pointed us toward mobile push notifications. The final app pinged users the instant their keyword was mentioned on TV or radio, so they could react while the story was still developing.
 
-### Welo: Live TV Clipping
-Capturing live TV was hard. Newsrooms had to wait for engineers to pull footage, missing the viral moment.
-- **The Idea:** A "**live DVR**" for everyone.
-- **The Prototype:** We built a timeline interface that let users drag handles to set start and end points on a live stream. All the heavy video processing happened on the server, making it feel instant on the phone.
-- **Iteration:** Each week, we invited journalists to try it. Their feedback helped us streamline the process from "clip" to "tweet" down to seconds.
+### Welo: live TV clipping
+
+Newsrooms had to wait for engineers to pull footage, often missing the window for viral moments.
+
+We built a "live DVR" with a timeline interface. Users dragged handles to set start and end points on a live stream. Server-side video processing made it feel instant on the phone. Each week, we invited journalists to try it. Their feedback helped us cut the time from "clip" to "tweet" down to seconds.
 
 ## Results
 
@@ -43,7 +39,7 @@ METRICS:
 
 ## Reflection
 
-The process behind these products became a **template for innovation** at the company. By running weekly "hackathons," we proved the value of **lean product design**, going from idea to validated prototype in days. This approach de-risked bold ideas and surfaced the features that truly mattered.
+Running weekly hackathons let us go from idea to validated prototype in days. We tested features quickly and dropped the ones that didn't work. The approach became how the company tried new ideas going forward.
 
 ---
 
