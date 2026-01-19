@@ -46,4 +46,4 @@ This project required convincing a newsroom steeped in tradition to tell stories
 
 ---
 
-Reinventing content or editorial workflows?  [Let's talk](https://www.linkedin.com/in/myadarola/).
+Reinventing content or editorial workflows? [Let's talk](https://www.linkedin.com/in/myadarola/).
