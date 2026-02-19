@@ -8,7 +8,7 @@ tags: [Profile, Bio]
 
 I'm a product designer who asks **"what if?"** a lot. What if cursors told time? What if portfolios were just bash scripts? What if I stopped waiting for perfect and just shipped things?
 
-Twenty years of designing, ten of those leading teams. Currently making fintech less intimidating at Continental Finance. But the work I'm proudest of usually happens after hours—small tools and experiments that scratch my own itches.
+Twenty years of designing, ten of those leading teams. Currently making fintech less intimidating at Continental Finance. But the work I'm proudest of usually happens after hours, small tools and experiments that scratch my own itches.
 
 ## I believe creativity is a muscle
 
