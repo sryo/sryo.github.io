@@ -1,5 +1,5 @@
 ---
-title: "What if bus apps weren't painful?"
+title: "Subí: What if bus apps weren't painful?"
 date: 2024-06-01
 tags: [Tauri, TypeScript, Transit]
 ---

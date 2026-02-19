@@ -8,37 +8,25 @@ tags: [UX, Service Design, Marketplace]
 
 ## Overview
 
-At HometownLocal, I led the redesign of a demolition and construction rental web directory into a platform for home services. The question we kept asking: could we make booking a home service as easy as ordering a ride?
+HometownLocal started as a web directory for demolition and construction rentals. It had traffic. People found providers, but the connection ended there. Scheduling, communication, and billing all happened outside the site.
 
-## The challenge
+We inserted ourselves into the middle. Instead of pointing users at providers and walking away, we built a platform that handled the transaction from booking through payment.
 
-The home service industry, especially demolition and construction, had real problems. Service providers dealt with messy scheduling, poor communication, and billing headaches. We wanted to fix these specific pain points for both providers and homeowners.
+## Before and after
 
-## Our solution
+The old directory was a dead end. Users searched, clicked a phone number, and left. Providers got leads but no tools.
 
-We built a platform that covers the entire service lifecycle, from booking to billing.
+The new platform stays in the loop. Booking, scheduling, messaging, and invoicing all happen in one place. We gave providers a calendar, a Kanban board for job status, and route planning. We gave customers a single thread for each job. Every completed job triggers automatic billing.
 
-## Key features
+## What I did
 
-- **Onboarding:** A straightforward process for service providers and customers to join.
-- **Booking flow:** A matching system that connects customer needs with the right providers.
-- **Management tools:**
-  - Calendar view for scheduling
-  - Kanban board for job status
-  - Map view for route planning
-- **Route navigation:** Integrated GPS to help providers reach job sites.
-- **Messaging:** A channel for communication between customers and providers.
-- **Invoicing:** Automated billing that triggers when jobs complete.
+I researched pain points for providers and homeowners. Most complaints came down to the same thing: too many tools, none of them connected. We prototyped a unified flow and tested it with real providers. I worked with developers on scheduling logic and route optimization.
 
-## Development journey
-
-I researched the pain points of home service providers and their customers. We prototyped quickly and iterated on the design, focusing on simplicity. I worked closely with backend developers to integrate the scheduling and route optimization features.
-
-## Impact
+## Results
 
 METRICS:
 - **30%** increase in jobs completed per week
-- **5** integrated service tools
+- **5** integrated tools (calendar, Kanban, maps, messaging, invoicing)
 - **100%** booking-to-billing automation
 
 ---

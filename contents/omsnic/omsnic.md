@@ -10,20 +10,17 @@ tags: [UX, FinTech, Insurance]
 
 Applying for liability insurance is tedious for most people, but for Oral & Maxillofacial Surgeons, it was worse. The process involved **112 different forms**. Surgeons dropped off constantly.
 
-## Objective
+## Progressive disclosure
 
-To **turn 112 forms into one**, creating a **fast onboarding flow** for surgeons.
+We replaced the wall with a conversation. One question at a time.
 
-## My role
+The system validates each answer before moving forward. If a surgeon enters an invalid license number, they see the error immediately, not after submitting 30 fields. This keeps context tight and reduces cognitive load.
 
-I **led the UX design** to streamline this process. My goal was to **hide the complexity** of the insurance backend behind a simple, conversational interface.
+## Branching logic stays invisible
 
-## Making things happen
+Different states require different coverage types. A surgeon in California sees questions about earthquake liability. One in Florida sees hurricane-related questions. The branching happens behind the scenes. Users only see questions relevant to their situation.
 
-### The consolidation
-We didn't just digitize the forms; we **rethought the entire data collection process**.
-- **Conversational design:** We iterated on multiple ideas for a conversational quoting tool. Instead of a wall of inputs, we asked questions one by one, allowing surgeons to provide information naturally.
-- **User testing:** We put prototypes in front of surgeons early. Their feedback shaped the language and flow to match how they actually think about their practice—not how the insurance company's database was structured.
+We tested prototypes with surgeons early. Their feedback shaped the language to match how they think about their practice, not how the insurance database is structured.
 
 ## Results
 
@@ -32,9 +29,7 @@ METRICS:
 - **90%** reduction in application time
 - **100%** digital experience
 
-## Reflection
-
-By focusing on how surgeons actually wanted to provide information, we turned a frustrating process into something they could finish in minutes.
+The process that took hours now takes minutes.
 
 ---
 

@@ -20,20 +20,25 @@ Digitize essential banking services and onboard hundreds of thousands of new use
 
 ## My role
 
-I led Bancor's UX as the owner of Bancon, the home banking app. I designed the crisis features and a new design system so that first-time digital users could actually use the platform.
+I led Bancor's UX as the owner of Bancon, the home banking app. I designed the crisis features and built a new design system so that first-time digital users could actually use the platform.
 
 ## What we did
 
 ### Round-the-clock response
+
 We had to rethink systems and cut anything non-essential. Years of digital progress needed to happen in a week.
 
-- **Rapid onboarding:** Traditional onboarding was too slow. We worked with backend to create "logical accounts" for unbanked citizens without the usual paperwork. This let us open ~380,000 new accounts remotely.
-- **Project "Peperina":** I proposed and convinced management to fast-track a new design system. We called it "Peperina." It unified the look and feel across web and mobile with reusable components that held up under the deadline pressure.
-- **Credit card tracking:** I designed a feature to track credit card shipments and request delivery to a different address. Customers stuck in quarantine couldn't receive cards at their registered address, so this solved a real problem.
+Traditional onboarding was too slow. We worked with backend to create "logical accounts" for unbanked citizens without the usual paperwork. This let us open ~380,000 new accounts remotely.
+
+I designed a feature to track credit card shipments and request delivery to a different address. Customers stuck in quarantine couldn't receive cards at their registered address.
+
+### Peperina: the design system
+
+I proposed and convinced management to fast-track a design system called Peperina. With 15 developers shipping features simultaneously under deadline pressure, we needed a way to keep the interface consistent without constant coordination.
+
+Peperina provided reusable components across web and mobile. Developers could grab what they needed and build. The system held up because every component was tested and documented. When someone added a new screen, it looked like it belonged.
 
 ## Results
-
-The numbers after the crisis:
 
 METRICS:
 - **418%** increase in app transactions
@@ -45,7 +50,7 @@ METRICS:
 
 The urgency created a kind of bond in the team. We were exhausted but focused on one thing: getting relief to people who needed it. We chose speed over rigor, with calculated risks.
 
-This experience showed something interesting. Once people were forced to try digital banking, many of them kept using it. Bancor jumped ahead in digital adoption by years.
+Once people were forced to try digital banking, many of them kept using it. Bancor jumped ahead in digital adoption by years.
 
 ---
 

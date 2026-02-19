@@ -8,30 +8,27 @@ tags: [Product Design, E-commerce, Space Tech]
 
 ## Overview
 
-At VENG, I led the concept work for an e-commerce platform selling satellite imagery. The starting question was simple: what if buying a satellite image was as easy as buying a book online?
+VENG operates the SAOCOM satellites, a constellation that captures Earth imagery around the clock in any weather. Getting that data meant going through agencies and paperwork. Researchers and analysts who could use the images rarely had access.
 
-## The challenge
+We built an e-commerce platform to change that. Users browse a map, filter by date and resolution, preview images, and pay online. For areas not in the catalog, they can submit a tasking request for new captures.
 
-SAOCOM is a constellation of two high-resolution satellites that can observe Earth's surface 24/7, regardless of weather. But getting this data meant working through specialized organizations and complicated request processes. Most people who could use these images—researchers, planners, analysts—had no practical way to access them.
+## What we shipped
 
-## What we built
+This was a working product, not a prototype. Users could:
 
-An e-commerce platform where users search, request, and purchase images from the SAOCOM 1A and B satellites.
+- Search an archive by location, date, and cloud cover
+- Preview low-resolution imagery before purchase
+- Buy and download high-resolution files
+- Request new satellite passes for custom areas
 
-The interface includes a map for selecting areas of interest, filters for date and resolution, low-resolution previews before purchase, a system for requesting images of areas not in the catalog, and payment integration.
+I worked with the VENG team to understand the satellites' technical constraints and translated those into interface decisions. SAR imagery is unfamiliar to most users, so the design leaned on familiar e-commerce patterns: search, preview, add to cart, checkout.
 
-## How we worked
-
-I collaborated with the VENG team to understand the satellites' capabilities and constraints. The main design challenge was making complex satellite data usable for people without a remote sensing background.
-
-## Impact
+## Results
 
 METRICS:
 - **2** SAOCOM satellites integrated
 - **24/7** all-weather imaging access
-- **New markets** opened for researchers and planners
-
-The platform brought satellite imagery to environmental researchers, urban planners, and others who previously couldn't access it directly.
+- New buyer segments: environmental researchers, urban planners, agri-tech firms
 
 ---
 
