@@ -4,13 +4,13 @@ date: 2018-01-01
 tags: [Product Design, Innovation, Real-time Data]
 ---
 
-[View on AppAdvice](https://appadvice.com/app/vlic/1176938054)
+[View archive](https://web.archive.org/web/20180119002350/https://vlic.tv/)
 
 ## Overview
 
-Infoxel Media Labs ran a 24/7 archive of media broadcasts for ad tracking. The system captured everything, but all that data just sat in expensive storage.
+Infoxel Media Labs ran a 24/7 archive of TV and radio broadcasts. The data existed for one purpose: verifying that ads actually aired. Expensive storage, a single use case.
 
-I came in as a Product Designer to figure out what else we could do with it. Could this archive become something more than an ad-tracking tool?
+I came in to ask what else we could do with the archive. If we already had the infrastructure to capture, store, and search broadcast media, what other products could come out of it?
 
 ## My role
 
@@ -26,20 +26,18 @@ We started with web dashboards, but they weren't immediate enough. User intervie
 
 ### Welo: live TV clipping
 
-Newsrooms had to wait for engineers to pull footage, often missing the window for viral moments.
+Newsrooms waited on engineers to pull footage. By the time they got clips, the window for social sharing had closed.
 
-We built a "live DVR" with a timeline interface. Users dragged handles to set start and end points on a live stream. Server-side video processing made it feel instant on the phone. Each week, we invited journalists to try it. Their feedback helped us cut the time from "clip" to "tweet" down to seconds.
+We built a live DVR interface. Users dragged handles on a timeline to mark start and end points, then exported clips to share. Server-side processing kept the phone-side experience fast. Weekly sessions with journalists helped us cut export time to seconds.
 
 ## Results
 
 METRICS:
 - **2** new products launched (Vlic, Welo)
-- **Real-time** monitoring vs day-after
+- Real-time monitoring vs day-after reporting
 - **#1** in LatAm media intelligence
 
-## Reflection
-
-Running weekly hackathons let us go from idea to validated prototype in days. We tested features quickly and dropped the ones that didn't work. The approach became how the company tried new ideas going forward.
+Weekly prototyping sessions let us move from idea to test in days. We dropped features that did not work and doubled down on the ones that did. The approach became the company's standard for trying new ideas.
 
 ---
 

@@ -6,28 +6,29 @@ tags: [UX, Data Visualization, SaaS]
 
 ## Overview
 
-TopicFlower started as a **visualization tool** that displayed social media topics as a "flower." Each petal represented a topic, sized by engagement. It looked good and helped brands see what resonated.
+TopicFlower displayed social media topics as a flower. Each petal represented a topic, sized by engagement. Clients liked the visual, but "that's cool" doesn't renew contracts.
 
-But as the market matured, **looking good wasn't enough**. Brands **wanted deeper analytics and actionable insights**. The flower was a great conversation starter, but data-driven teams needed more.
+As the market matured, brands wanted numbers they could act on. The flower was a conversation starter. Data-driven teams needed more.
 
 ## Objective
 
-To **transform a visual novelty into an analytics platform** without losing the identity that made TopicFlower distinctive.
+Transform a visual novelty into an analytics platform without losing the identity that made TopicFlower distinctive.
 
 ## My role
 
-I was brought in to **redesign the app's usability and product strategy**. My job was to **connect** the visual model to the hard data that social media managers needed to prove ROI.
+I redesigned the app's usability and product strategy. The task was to connect the visual model to the hard data that social media managers needed to prove ROI.
 
-## Making things happen
+## The shift from art to analytics
 
-### From art to analytics
 Early TopicFlower was all form, little function. Users struggled to extract concrete numbers from the flower model.
-- **The redesign:** We introduced a new dashboard that **prioritized metrics**. We answered the "Who, What, When, Where" of engagement immediately, using the flower as a supporting visual rather than the only interface.
-- **Actionable features:** We added a content calendar and scheduling tools. This shifted the platform from a place you *checked* to a **place you *worked***.
-- **Competitive benchmarking:** We built tools to compare performance against competitors, turning interaction data into strategic guidance.
 
-### Tech and implementation
-Upgrading from a visual tool to a platform required a major overhaul. We used the Nebular Design System (Angular) to build a consistent, modern interface. I worked closely with developers to make the new data visualizations performant and responsive.
+The redesign introduced a dashboard that prioritized metrics. We answered the "Who, What, When, Where" of engagement immediately. The flower became a supporting visual rather than the only interface.
+
+We added a content calendar and scheduling tools. This shifted the platform from a place you checked to a place you worked. We also built competitive benchmarking to compare performance against competitors, turning interaction data into strategic guidance.
+
+## Tech and implementation
+
+Upgrading from a visual tool to a platform required a major overhaul. We used the Nebular Design System (Angular) to build a consistent interface. I worked closely with developers to make the new data visualizations performant and responsive.
 
 ## Results
 
@@ -38,7 +39,7 @@ METRICS:
 
 ## Reflection
 
-The flower visualization still works as a hook, but now there's real analysis underneath it. Teams can actually make decisions based on the data, not just admire it.
+The flower visualization still works as a hook, but now there's real analysis underneath it. Teams can make decisions based on the data, not just admire it.
 
 ---
 

@@ -1,7 +1,51 @@
 #!/bin/bash
 
-# LineAndForm (L+F) - A Simple Portfolio Generator
-# https://github.com/sryo/lineandform
+# ◯┃ LineAndForm (L+F)
+# A Simple Portfolio Generator.
+
+# What is LineAndForm?
+# LineAndForm is a simple, mostly self-contained bash script that generates an interactive
+# HTML portfolio from my content. It's designed for myself, but available to other
+# creators who want a quick way to showcase their work online.
+
+# Why LineAndForm?
+# - Because updating my portfolio manually was tedious
+# - Because I can
+
+# What makes LineAndForm special:
+# 1. It's simple: Just organize your content in folders, run the script, and you have a portfolio.
+# 2. It's mostly self-contained: One bash script does it all (with a config file and assets).
+
+# How to use LineAndForm:
+# 1. Configure:
+#    - Edit 'config.cfg' to set your title, output filename, and other options.
+#    - Ensure 'styles.css' and 'script.js' are present.
+
+# 2. Set up your content:
+#    - Create a 'contents/' directory (or whatever you set in config).
+#    - Inside, make a folder for each main section of your portfolio.
+#    - In each section folder:
+#      a) Add a .md (Markdown) file with your content. Start it with '# Title' or frontmatter.
+#      b) Optionally, add an image file (.jpg, .png, or .svg) for the section cover.
+#    - For projects or sub-galleries:
+#      a) Create a 'gallery' folder inside any section folder.
+#      b) In the 'gallery' folder, make a subfolder for each project.
+#      c) In each project folder, add a .md file and an image file.
+#    - To add a video or other embed, include a line starting with 'EMBED:' in your .md file.
+
+# 3. Run the script:
+#    - Open a terminal in the folder containing this script.
+#    - Run the command: ./build.sh (or bash build.sh)
+#    - To use the self-destruct option (if enabled in config), run: ./build.sh -d
+
+# 3. View your portfolio:
+#    - Open the generated 'works.html' file in a web browser.
+
+# License:
+# THE UNRESTRICTED BUT RESPONSIBLY SHARED, ALTERED AND DISTRIBUTED SOFTWARE WITHOUT WARRANTIES AND WITH THE ABSENCE OF LIABILITY FOR ANY UNINTENDED CONSEQUENCES LICENSE (VERSION 1.0, AUGUST 4, 2023)
+#
+# Use it, change it, share it - but keep it under this license. No promises, no liability. Enjoy.
+
 
 # Load Configuration
 if [ -f "config.cfg" ]; then
@@ -76,6 +120,11 @@ extract_tags() {
     echo "$tags" | tr -d '[]' | sed 's/, */,/g'
 }
 
+extract_order() {
+    local file=$1
+    extract_frontmatter_field "$file" "order"
+}
+
 strip_frontmatter() {
     local file=$1
     if [[ $(head -n 1 "$file") == "---" ]]; then
@@ -119,6 +168,9 @@ parse_markdown() {
     line=$(echo "$line" | sed 's/\*\*\([^*]*\)\*\*/<strong>\1<\/strong>/g' 2>/dev/null)
     line=$(echo "$line" | sed 's/\*\([^*]*\)\*/<em>\1<\/em>/g' 2>/dev/null)
 
+    # Images (must come before links)
+    line=$(echo "$line" | sed 's/!\[\([^]]*\)\](\([^)]*\))/<img src="\2" alt="\1" loading="lazy" \/>/g' 2>/dev/null)
+
     # Links
     line=$(echo "$line" | sed 's/\[\([^]]*\)\](\([^)]*\))/<a href="\2">\1<\/a>/g' 2>/dev/null)
 
@@ -140,6 +192,7 @@ render_markdown_content() {
     local in_paragraph=false
     local in_list=false
     local in_metrics=false
+    local in_code_block=false
     local first_line=true
 
     while IFS= read -r line || [ -n "$line" ]; do
@@ -149,6 +202,35 @@ render_markdown_content() {
             continue
         fi
         first_line=false
+
+        # Handle fenced code blocks
+        if [[ "$line" == '```'* ]]; then
+            if $in_code_block; then
+                content+="</code></pre>"
+                in_code_block=false
+            else
+                if $in_paragraph; then
+                    content+="</p>"
+                    in_paragraph=false
+                fi
+                if $in_list; then
+                    content+="</ul>"
+                    in_list=false
+                fi
+                content+="<pre><code>"
+                in_code_block=true
+            fi
+            continue
+        fi
+
+        if $in_code_block; then
+            local escaped_line="${line//&/&amp;}"
+            escaped_line="${escaped_line//</&lt;}"
+            escaped_line="${escaped_line//>/&gt;}"
+            content+="$escaped_line
+"
+            continue
+        fi
 
         # Handle METRICS block
         if [[ "$line" == "METRICS:" ]]; then
@@ -225,6 +307,9 @@ render_markdown_content() {
     done < <(strip_frontmatter "$file")
 
     # Close any open tags
+    if $in_code_block; then
+        content+="</code></pre>"
+    fi
     if $in_metrics; then
         content+="</div>"
     fi
@@ -248,8 +333,15 @@ render_case_study_header() {
     echo "  <div class=\"meta\">"
 
     if [ -n "$date" ]; then
-        # Format date nicely (force English locale)
-        local formatted_date=$(LC_TIME=C date -j -f "%Y-%m-%d" "$date" "+%B %Y" 2>/dev/null || echo "$date")
+        # Parse YYYY-MM-DD and format as "Month YYYY"
+        local year=${date%%-*}
+        local month_num=${date#*-}
+        month_num=${month_num%%-*}
+        month_num=${month_num#0}  # Remove leading zero
+
+        local months=("" "January" "February" "March" "April" "May" "June"
+                      "July" "August" "September" "October" "November" "December")
+        local formatted_date="${months[$month_num]} ${year}"
         echo "    <time datetime=\"$date\">$formatted_date</time>"
     fi
 
@@ -273,7 +365,16 @@ process_gallery() {
     for item in "$gallery_dir"/*; do
         if [ -d "$item" ]; then
             local item_content=$(find "$item" -maxdepth 1 -type f -iname \*.md | head -n 1)
-            local item_image=$(find "$item" -maxdepth 1 -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.svg \) | head -n 1)
+            local item_image=""
+            for ext in svg png jpg; do
+                if [ -f "$item/icon.$ext" ]; then
+                    item_image="$item/icon.$ext"
+                    break
+                fi
+            done
+            if [ -z "$item_image" ]; then
+                item_image=$(find "$item" -maxdepth 1 -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.svg \) | head -n 1)
+            fi
 
             if [ -f "$item_content" ]; then
                 local title=$(extract_title "$item_content")
@@ -306,7 +407,17 @@ process_section_item() {
     local title=$(extract_title "$content_file")
     echo "  > Processing section: $title" >&2
 
-    local image_file=$(find "$folder" -maxdepth 1 -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.svg \) | head -n 1)
+    local image_file=""
+    # Prefer icon.svg/png/jpg, fall back to any image
+    for ext in svg png jpg; do
+        if [ -f "$folder/icon.$ext" ]; then
+            image_file="$folder/icon.$ext"
+            break
+        fi
+    done
+    if [ -z "$image_file" ]; then
+        image_file=$(find "$folder" -maxdepth 1 -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.svg \) | head -n 1)
+    fi
     local item_id="item-$section_id"
     local gallery_id="gallery-$section_id"
 
@@ -352,12 +463,25 @@ mkdir -p "$temp_dir/items" "$temp_dir/galleries"
 
 # Process sections
 echo "Building sections..."
-i=0
+
+# Collect folders with their order values
+declare -a folder_order=()
 for folder in "$CONTENT_DIR"*/; do
+    content_file=$(find "$folder" -maxdepth 1 -type f -iname \*.md | head -n 1)
+    if [ -f "$content_file" ]; then
+        order=$(extract_order "$content_file")
+        [ -z "$order" ] && order=9999
+        folder_order+=("$order:$folder")
+    fi
+done
+
+# Sort by order number and process
+i=0
+while IFS=: read -r order folder; do
     process_section_item "$folder" "$i" > "$temp_dir/items/$i.html"
     process_section_gallery "$folder" "$i" > "$temp_dir/galleries/$i.html"
     ((i++))
-done
+done < <(printf '%s\n' "${folder_order[@]}" | sort -t: -k1 -n)
 
 # Assemble final HTML
 echo "Assembling $OUTPUT_FILE..."
