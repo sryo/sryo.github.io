@@ -1,243 +1,381 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<title>Mateo Yadarola &mdash; UX</title>
-	<meta name="description" content="Mateo Yadarola: Diseñador UX. Portfolio y contacto.">
-	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-	<meta name="theme-color" content="#FFFFFF">
-	<link rel="canonical" href="https://yadarola.com.ar">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Mateo Yadarola — Product Designer</title>
+  <meta name="description" content="I design systems that work, not just screens that look good. Lead Product Designer specialized in Fintech, AI, and Design Systems.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#333333">
+  <link rel="canonical" href="https://yadarola.com.ar">
 
-	<!-- Open Graph / Facebook -->
-	<meta property="og:type" content="website">
-	<meta property="og:url" content="https://yadarola.com.ar/">
-	<meta property="og:title" content="Mateo Yadarola — UX">
-	<meta property="og:description"
-		content="Hola, soy Mateo Yadarola, un Diseñador UX con una tendencia a hacer muchas preguntas.">
-	<meta property="og:image" content="https://yadarola.com.ar/assets/og-image.jpg">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yadarola.com.ar/">
+  <meta property="og:title" content="Mateo Yadarola — Product Designer">
+  <meta property="og:description" content="I design systems that work, not just screens that look good.">
 
-	<!-- Twitter -->
-	<meta property="twitter:card" content="summary_large_image">
-	<meta property="twitter:url" content="https://yadarola.com.ar/">
-	<meta property="twitter:title" content="Mateo Yadarola — UX">
-	<meta property="twitter:description"
-		content="Hola, soy Mateo Yadarola, un Diseñador UX con una tendencia a hacer muchas preguntas.">
-	<meta property="twitter:image" content="https://yadarola.com.ar/assets/og-image.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
-	<style>
-		:root {
-			--scheme-bg: #fff;
-			--scheme-shadow: #000;
-		}
+  <style>
+    :root {
+      --scheme-bg: #333;
+      --scheme-shadow: #000;
+            --text-color: #ffffff;
+            --spacing: 4vw;
+    }
 
-		body {
-			width: 100%;
-			height: 100%;
-			touch-action: none;
-			-webkit-text-size-adjust: 100%;
-			font-family: -apple-system, system-ui, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, Helvetica Neue, Arial;
-			cursor: default;
-			overflow: hidden;
-			background-color: var(--scheme-bg);
-		}
+    body {
+      width: 100%;
+      min-height: 100vh;
+      touch-action: pan-y;
+      -webkit-text-size-adjust: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      cursor: default;
+      overflow-x: hidden;
+            overflow-y: auto;
+      background-color: var(--scheme-bg);
+            color: var(--text-color);
+            transition: background-color 0.5s ease;
+    }
 
-		a,
-		a:hover {
-			color: inherit;
-			text-decoration-thickness: 0.12em;
-			position: relative;
-		}
+        h1, h2, h3, p, a, span {
+            text-shadow: 1px 1px 0px var(--scheme-shadow);
+        }
 
-		header.bio {
-			font-weight: 600;
-			position: fixed;
-			font-size: clamp(40px, 5vw, 80px);
-			line-height: 1em;
-			width: clamp(390px, 80vw, 1200px);
-			z-index: 1;
-			text-wrap: balance;
-			padding: 5vw;
-			box-sizing: border-box;
-			color: var(--scheme-bg);
-		}
+    a {
+      color: inherit;
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+            text-underline-offset: 4px;
+      position: relative;
+            cursor: pointer;
+    }
+        a:hover { opacity: 0.7; }
 
-		header.bio h1,
-		header.bio p:not(.other) {
-			font-size: 1em;
-			margin: 0;
-			line-height: 1em;
-			display: contents;
-		}
+        /* --- LAYOUT --- */
+    .container {
+      max-width: 1000px;
+            margin: 0 auto;
+            padding: var(--spacing);
+            padding-bottom: 150px;
+            position: relative;
+            z-index: 2;
+    }
 
-		header.bio .links,
-		header.bio .other {
-			margin-top: 1em;
-			font-size: .35em;
-			line-height: 1em;
-		}
+        /* --- HEADER --- */
+    header {
+      margin-bottom: 80px;
+    }
 
-		header.bio .links ul {
-			list-style: none;
-			padding: 0;
-			margin: 0;
-		}
+    h1 {
+            font-family: 'Archivo Black', sans-serif;
+      font-size: clamp(40px, 8vw, 90px);
+      line-height: 0.9em;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+    }
 
-		header.bio .links ul li {
-			display: inline;
-			margin-right: 0.5em;
-		}
+        .lead {
+            font-size: clamp(24px, 4vw, 40px);
+            font-weight: 800;
+            line-height: 1.1;
+            max-width: 25ch;
+            margin-bottom: 40px;
+        }
 
-		header.bio .links ul li:not(:last-child)::after {
-			content: "|";
-			margin-left: 0.5em;
-		}
+    .links ul {
+      list-style: none;
+      padding: 0;
+            font-weight: 700;
+            font-size: 1.1em;
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+    }
 
-		.icon {
-			position: absolute;
-			transform-origin: top left;
-			white-space: nowrap;
-			color: transparent;
-			text-shadow: 0 0 var(--scheme-shadow);
-		}
-	</style>
+        /* --- SECTIONS --- */
+        section { margin-bottom: 100px; }
+
+        h2 {
+            font-family: 'Inter', monospace;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-bottom: 4px solid var(--text-color);
+            padding-bottom: 16px;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 0 var(--scheme-shadow);
+        }
+
+        /* --- GRIDS --- */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+        }
+
+        .principle-card h3 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+        .principle-card p { font-size: 16px; font-weight: 500; opacity: 0.9; line-height: 1.4; }
+
+        /* --- SPREADSHEET LIST --- */
+        .job-row {
+            padding: 24px 0;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .job-title {
+            font-size: clamp(18px, 3vw, 24px);
+            font-weight: 800;
+            display: block;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        
+        .job-meta {
+            font-family: 'Inter', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- EMOJI INTERACTION --- */
+    .icon {
+      position: absolute;
+            z-index: 0;
+      transform-origin: top left;
+      white-space: nowrap;
+            pointer-events: none;
+            opacity: 1;
+    }
+  </style>
 </head>
 
 <body>
-	<header class="bio h-card h-resume">
-		<h1>Hola, soy <a href="https://www.linkedin.com/in/myadarola/" aria-label="Perfil de LinkedIn de Mateo Yadarola"
-				class="u-url p-name">Mateo Yadarola</a></h1><!--
-		-->
-		<p class="p-note">, un Diseñador UX con una tendencia a hacer muchas preguntas. Me motiva poner sobre la mesa
-			hasta las peores ideas y empujar pixeles con un&nbsp;propósito.</p>
-		<nav class="links">
-			<ul>
-				<li><a href="works.html" aria-label="Mi Portfolio" class="u-url">Portfolio</a></li>
-				<li><a href="https://www.figma.com/@sryo" aria-label="Mi perfil de Figma" class="u-url">Figma</a></li>
-				<li><a href="https://github.com/sryo" aria-label="Mi perfil de GitHub" class="u-url">GitHub</a></li>
-				<li><a href="https://read.cv/sryo" aria-label="Mi CV en Read.cv" class="u-url">Read.cv</a></li>
-			</ul>
-		</nav>
-		<p class="other">¿Te gustaría que trabajemos juntos? <a href="https://contact.yadarola.com.ar/"
-				aria-label="Formulario para oportunidades de trabajo">Escribime</a>.</p>
-		<p class="other">¿Estás buscando un <a
-				href="https://paper.dropbox.com/doc/Mentoreo-MenteeMentor--B_CPIw0tT31kwlE2HBPgKoS7Ag-c5lyQ5Ad9d9ff3QfiIIxd"
-				aria-label="Manual de mentor-mentee">mentor</a>, querés hablar de lo que estás haciendo o simplemente
-			desahogarte un rato? Buscá un espacio en <a href="https://calendar.app.google/2oCmcWsNkdEQZhBF7"
-				class="u-url">mi calendario</a>; estoy seguro de que podemos colaborar.</p>
-	</header>
+  <div class="container">
+    
+        <header>
+            <h1>Mateo Yadarola</h1>
+            <p class="lead">I design systems that work, not just screens that look good.</p>
+            <nav class="links">
+                <ul>
+                    <li><a href="mailto:mateo@yadarola.com.ar">Email</a></li>
+                    <li><a href="https://www.linkedin.com/in/myadarola/" target="_blank">LinkedIn</a></li>
+                    <li><a href="https://github.com/sryo" target="_blank">GitHub</a></li>
+                </ul>
+            </nav>
+    </header>
 
-	<script async>
-		// --- Helper Functions ---
+        <section>
+            <h2>My Principles</h2>
+            <div class="grid-2">
+                <div class="principle-card">
+                    <h3>Efficiency over Aesthetics.</h3>
+                    <p>Pretty flows are useless if they don't solve the user's problem fast.</p>
+                </div>
+                <div class="principle-card">
+                    <h3>Code is a Design Tool.</h3>
+                    <p>Understanding the code allows me to design feasible, scalable solutions.</p>
+                </div>
+                <div class="principle-card">
+                    <h3>Transparency is Key.</h3>
+                    <p>I show clearly what I did, what I inherited, and what the team achieved.</p>
+                </div>
+                <div class="principle-card">
+                    <h3>Data over Opinion.</h3>
+                    <p>Like a good spreadsheet, design is grounded in facts and research.</p>
+                </div>
+            </div>
+        </section>
 
-		function randomInt(min, max) {
-			return Math.floor(Math.random() * (max - min + 1) + min);
-		}
+        <section>
+            <h2>The Backstory</h2>
+            <div style="font-size: 1.2em; font-weight: 600; line-height: 1.5; max-width: 700px;">
+                <p style="margin-bottom: 1em;">I started in 2002 driven by growth, not just pixels. My career began in the trenches of SEO and conversion optimization, learning early that design is fundamentally a business tool.</p>
+                <p>Over the last two decades, I evolved from managing distributed teams for US startups to architecting massive financial systems. I don't just "do UX"—I build the engines that make products scalable, using code as my second language and logic as my north star.</p>
+            </div>
+        </section>
 
-		function getRandomHSL() {
-			const h = randomInt(0, 359);
-			const s = randomInt(50, 90);
-			const l = randomInt(40, 60);
-			return [h, s, l];
-		}
+        <section>
+            <h2>The Track Record</h2>
+            
+            <div class="job-row">
+                <span class="job-title">Automating complex investment logic via AI workflows</span>
+                <div class="job-meta">NDA — 2024 to Present</div>
+            </div>
 
-		function getComplementaryHSL(h, s, l) {
-			const offset = randomInt(40, 320);
-			const comp = (h + offset) % 360;
-			return [comp, s, l];
-		}
+            <div class="job-row">
+                <span class="job-title">Engineered high-density tools for agents & accessible apps for users</span>
+                <div class="job-meta">Continental Finance (via Allata) — 2022 to 2024</div>
+            </div>
 
-		function toHSLString(h, s, l) {
-			return `hsl(${h}, ${s}%, ${l}%)`;
-		}
+            <div class="job-row">
+                <span class="job-title">Unified diverse analytics tools into a single visual language</span>
+                <div class="job-meta">EY Helix (via Cognizant) — 2021 to 2022</div>
+            </div>
 
-		function updateFavicon(emoji, color) {
-			const faviconData = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='${color}'><rect width='100' height='100' fill='${color}'/><text y='.9em' font-size='90'>${emoji}</text></svg>`;
-			const link = document.querySelector("link[rel~='icon']");
-			if (!link) {
-				const newLink = document.createElement('link');
-				newLink.rel = 'icon';
-				newLink.href = 'data:image/svg+xml,' + encodeURIComponent(faviconData);
-				document.head.appendChild(newLink);
-			} else {
-				link.href = 'data:image/svg+xml,' + encodeURIComponent(faviconData);
-			}
-		}
+            <div class="job-row">
+                <span class="job-title">Orchestrated the Service Design overhaul that doubled users</span>
+                <div class="job-meta">BANCOR — 2020 to 2021</div>
+            </div>
 
-		// --- Main Logic ---
+            <div class="job-row">
+                <span class="job-title">Condensed 100+ forms into a single conversational chatbot</span>
+                <div class="job-meta">OMSNIC (via Darwoft) — 2019 to 2020</div>
+            </div>
 
-		document.addEventListener('DOMContentLoaded', () => {
-			// Set random color scheme
-			const [h, s, l] = getRandomHSL();
-			const [hComp, sComp, lComp] = getComplementaryHSL(h, s, l);
-			const bgColor = toHSLString(h, s, l);
-			const shadowColor = toHSLString(hComp, sComp, lComp);
+            <div class="job-row">
+                <span class="job-title">Scaled digital subscriptions from 0 to 10,000+ in 6 months</span>
+                <div class="job-meta">La Voz del Interior — 2017 to 2019</div>
+            </div>
 
-			document.documentElement.style.setProperty('--scheme-bg', bgColor);
-			document.documentElement.style.setProperty('--scheme-shadow', shadowColor);
+            <div class="job-row">
+                <span class="job-title">Transformed static media archives into real-time intelligence</span>
+                <div class="job-meta">Infoxel — 2016 to 2017</div>
+            </div>
 
-			const themeColorMeta = document.querySelector("meta[name='theme-color']");
-			if (themeColorMeta) themeColorMeta.content = bgColor;
+            <div class="job-row">
+                <span class="job-title">Designed interfaces for drones, satellites & embedded hardware</span>
+                <div class="job-meta">Taller Technologies — 2015 to 2016</div>
+            </div>
 
-			// Emoji themes
-			const themes = [
-				['🎨', '📱', '🌟', '🥦', '👽'],
-				['✏️', '💻', '🦈', '🪐', '🍺', '☕', '👾'],
-				['🖌️', '🧠', '🌱', '🥰', '🚲'],
-				['📐', '🛰️', '🐶', '😎', '🏡'],
-				['🖋️', '🤖', '🦅', '🦄', '🎉', '🍆']
-			];
+            <div class="job-row">
+                <span class="job-title">Led a distributed team of 20 designers for global clients</span>
+                <div class="job-meta">Agilent (via Taller Tech) — 2009 to 2015</div>
+            </div>
 
-			const emojis = themes[Math.floor(Math.random() * themes.length)];
+            <div class="job-row">
+                <span class="job-title">Managed digital growth strategies for 5+ countries</span>
+                <div class="job-meta">COINED — 2002 to 2009</div>
+            </div>
+        </section>
 
-			// Interaction logic
-			let moved = 0, count = 0;
+        <section>
+            <h2>Core Expertise</h2>
+            <div style="font-family: 'Inter', monospace; font-size: 1.1em; line-height: 1.8;">
+                <p><strong>Strategy:</strong> Design Systems / Design Ops / Fintech / Data Visualization / Mentorship / AI Workflows</p>
+                <p><strong>Technical:</strong> Figma / HTML & CSS / Lua Scripting / Remote Workshops / CRO</p>
+            </div>
+        </section>
 
-			function handleEvent(e) {
-				let x, y;
-				if (e.type === 'mousemove') {
-					x = e.pageX;
-					y = e.pageY;
-				} else if (e.type === 'touchmove' || e.type === 'touchstart') {
-					const touch = e.touches[0] || e.changedTouches[0];
-					x = touch.pageX;
-					y = touch.pageY;
-				}
+  </div>
 
-				if (++moved >= 2) {
-					create(x, y, emojis);
-					moved = 0;
-				}
-				e.preventDefault();
-			}
+  <script async>
+    // --- Helper Functions ---
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
 
-			document.addEventListener('mousemove', handleEvent);
-			document.addEventListener('touchmove', handleEvent, { passive: false });
-			document.addEventListener('touchstart', handleEvent, { passive: false });
+    function getRandomHSL() {
+      const h = randomInt(0, 359);
+      const s = randomInt(50, 90); // Vibrant Saturation
+      const l = randomInt(40, 55); // Slightly darker Lightness to ensure White text pops
+      return [h, s, l];
+    }
 
-			const create = (x, y, emojis) => {
-				const text = emojis[randomInt(0, emojis.length - 1)];
-				const symbol = document.createElement('div');
-				symbol.className = 'icon';
-				symbol.setAttribute('aria-hidden', 'true');
-				symbol.style.left = `${x}px`;
-				symbol.style.top = `${y}px`;
-				symbol.style.fontSize = `${randomInt(50, 200)}px`;
-				symbol.style.transform = `rotate(${randomInt(0, 360)}deg) translate(-50%, -50%) translateZ(0)`;
-				symbol.innerHTML = text;
-				document.body.appendChild(symbol);
+    function getComplementaryHSL(h, s, l) {
+      const offset = randomInt(150, 210); // Complementary hue
+      const comp = (h + offset) % 360;
+      return [comp, s, l - 20]; // Darker shadow
+    }
 
-				if (count++ > 2000) {
-					const firstIcon = document.querySelector('.icon');
-					if (firstIcon) firstIcon.remove();
-				}
-			};
+    function toHSLString(h, s, l) {
+      return `hsl(${h}, ${s}%, ${l}%)`;
+    }
 
-			const chosenEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-			updateFavicon(chosenEmoji, bgColor.trim());
-		});
-	</script>
+    function updateFavicon(emoji, color) {
+      const faviconData = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='${color}'><rect width='100' height='100' fill='${color}'/><text y='.9em' font-size='90'>${emoji}</text></svg>`;
+      const link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        const newLink = document.createElement('link');
+        newLink.rel = 'icon';
+        newLink.href = 'data:image/svg+xml,' + encodeURIComponent(faviconData);
+        document.head.appendChild(newLink);
+      } else {
+        link.href = 'data:image/svg+xml,' + encodeURIComponent(faviconData);
+      }
+    }
+
+    // --- Main Logic ---
+    document.addEventListener('DOMContentLoaded', () => {
+      const [h, s, l] = getRandomHSL();
+      const [hComp, sComp, lComp] = getComplementaryHSL(h, s, l);
+      const bgColor = toHSLString(h, s, l);
+      const shadowColor = toHSLString(hComp, sComp, 20); // Very dark shadow for contrast
+
+      document.documentElement.style.setProperty('--scheme-bg', bgColor);
+      document.documentElement.style.setProperty('--scheme-shadow', shadowColor);
+
+      const themeColorMeta = document.querySelector("meta[name='theme-color']");
+      if (themeColorMeta) themeColorMeta.content = bgColor;
+
+      // Emoji themes
+      const themes = [
+        ['🎨', '📱', '🌟', '🥦', '👽'],
+        ['✏️', '💻', '🦈', '🪐', '🍺', '☕', '👾'],
+        ['🖌️', '🧠', '🌱', '🚲'],
+        ['📐', '🛰️', '🤖', '🦄', '😎', '🏡']
+      ];
+
+      const emojis = themes[Math.floor(Math.random() * themes.length)];
+
+      // Interaction logic
+      let moved = 0, count = 0;
+
+      function handleEvent(e) {
+        let x, y;
+        if (e.type === 'mousemove') {
+          x = e.pageX;
+          y = e.pageY;
+        } else if (e.type === 'touchmove' || e.type === 'touchstart') {
+          const touch = e.touches[0] || e.changedTouches[0];
+          x = touch.pageX;
+          y = touch.pageY;
+        }
+
+        if (++moved >= 5) { // Sensitivity
+          create(x, y, emojis);
+          moved = 0;
+        }
+      }
+
+      document.addEventListener('mousemove', handleEvent);
+      document.addEventListener('touchmove', handleEvent, { passive: true });
+      document.addEventListener('touchstart', handleEvent, { passive: true });
+
+      const create = (x, y, emojis) => {
+        const text = emojis[randomInt(0, emojis.length - 1)];
+        const symbol = document.createElement('div');
+        symbol.className = 'icon';
+        symbol.setAttribute('aria-hidden', 'true');
+        symbol.style.left = `${x}px`;
+        symbol.style.top = `${y}px`;
+        symbol.style.fontSize = `${randomInt(40, 180)}px`;
+        symbol.style.transform = `rotate(${randomInt(0, 360)}deg) translate(-50%, -50%)`;
+        symbol.innerHTML = text;
+        document.body.appendChild(symbol);
+
+        // Cleanup to prevent lag
+        if (count++ > 50) {
+          const firstIcon = document.querySelector('.icon');
+          if (firstIcon) firstIcon.remove();
+        }
+                
+                // Fade out
+                setTimeout(() => {
+                    symbol.style.transition = "opacity 2.5s ease-out";
+                    symbol.style.opacity = "0";
+                    setTimeout(() => symbol.remove(), 2500);
+                }, 100);
+      };
+
+      const chosenEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+      updateFavicon(chosenEmoji, bgColor.trim());
+    });
+  </script>
 </body>
-
 </html>

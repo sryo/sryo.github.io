@@ -4,7 +4,7 @@ date: 2024-07-01
 tags: [Swift, iOS, Camera, Vision]
 ---
 
-In Spanish, "recordar" (to remember) comes from "re-cordis", to pass through the heart again. Trueframe takes that literally.
+In Spanish, "recordar" (to remember) comes from "re-cordis", to pass through the heart again. [Trueframe](https://github.com/sryo/Trueframe) takes that literally.
 
 Hold your phone to your chest and cover the proximity sensor. The app starts capturing photos automatically, a burst of moments while you're present in the scene instead of behind a screen. When you lower the phone, it analyzes the shots using Vision framework and keeps only the good ones. The filter isn't a feature. It's permission to not worry. Blurry frames, closed eyes, bad lighting, filtered out before they hit your camera roll.
 
