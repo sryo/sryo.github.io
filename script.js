@@ -2,6 +2,7 @@ const checkboxButtons = document.querySelectorAll('input[type="checkbox"]');
 const items = document.querySelectorAll(".item");
 const galleries = document.querySelectorAll(".gallery");
 const svg = document.getElementById("lineContainer");
+const supportsOffsetPath = CSS.supports("offset-path", 'path("M 0 0")');
 
 const MAX_PATHS = 10;
 const LINE_COLORS = [
@@ -16,6 +17,11 @@ let lastHoveredItem = items[0];
 function closeAllGalleries() {
     checkboxButtons.forEach(cb => cb.checked = false);
     galleries.forEach(g => g.classList.remove("active"));
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("view")) {
+        url.searchParams.delete("view");
+        window.history.pushState({}, "", url);
+    }
 }
 
 function openGallery(itemId) {
@@ -179,21 +185,40 @@ items.forEach((item) => {
     });
 });
 
+function computeArcRadius(x, y) {
+    const chordLength = Math.sqrt(x * x + y * y);
+    return chordLength * 0.55;
+}
+
 function layoutItems(stagger = false) {
     const itemCount = items.length;
     const radius = Math.min(window.innerWidth, window.innerHeight) * 0.35;
     const startAngle = -Math.PI / 2;
 
+    // First pass: set offset-path (or translate fallback) for each item
     items.forEach((item, index) => {
         const angle = startAngle + (2 * Math.PI * index) / itemCount;
         const x = Math.cos(angle) * radius;
         const y = Math.sin(angle) * radius;
 
+        if (supportsOffsetPath) {
+            const arcRadius = computeArcRadius(x, y);
+            item.style.offsetPath =
+                `path("M 0 0 A ${arcRadius.toFixed(2)} ${arcRadius.toFixed(2)} 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)}")`;
+        } else {
+            item.style.translate = `${x}px ${y}px`;
+        }
+    });
+
+    // Reflow so the browser registers offset-distance: 0% with the new paths
+    document.body.offsetHeight;
+
+    // Second pass: trigger the transition to offset-distance: 100%
+    items.forEach((item, index) => {
         if (stagger) {
             item.style.transitionDelay = `${index * 50}ms`;
-            setTimeout(() => item.style.transitionDelay = "0ms", 600 + index * 50);
+            setTimeout(() => item.style.transitionDelay = "0ms", 900 + index * 50);
         }
-        item.style.translate = `${x}px ${y}px`;
         item.classList.add("visible");
     });
 }
