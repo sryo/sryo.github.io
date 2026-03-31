@@ -16,7 +16,7 @@ We worked around the clock. The goal was simple: get people their money. If we f
 
 ## Objective
 
-Digitize essential banking services and onboard hundreds of thousands of new users in days, not months.
+Digitize essential banking services and onboard hundreds of thousands of new users in days.
 
 ## My role
 

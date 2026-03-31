@@ -185,24 +185,18 @@ items.forEach((item) => {
     });
 });
 
-function computeArcRadius(x, y) {
-    const chordLength = Math.sqrt(x * x + y * y);
-    return chordLength * 0.55;
-}
-
 function layoutItems(stagger = false) {
     const itemCount = items.length;
     const radius = Math.min(window.innerWidth, window.innerHeight) * 0.35;
     const startAngle = -Math.PI / 2;
+    const arcRadius = radius * 0.55;
 
-    // First pass: set offset-path (or translate fallback) for each item
     items.forEach((item, index) => {
         const angle = startAngle + (2 * Math.PI * index) / itemCount;
         const x = Math.cos(angle) * radius;
         const y = Math.sin(angle) * radius;
 
         if (supportsOffsetPath) {
-            const arcRadius = computeArcRadius(x, y);
             item.style.offsetPath =
                 `path("M 0 0 A ${arcRadius.toFixed(2)} ${arcRadius.toFixed(2)} 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)}")`;
         } else {
@@ -210,17 +204,19 @@ function layoutItems(stagger = false) {
         }
     });
 
-    // Reflow so the browser registers offset-distance: 0% with the new paths
-    document.body.offsetHeight;
-
-    // Second pass: trigger the transition to offset-distance: 100%
-    items.forEach((item, index) => {
-        if (stagger) {
+    if (stagger) {
+        // Reflow so the browser registers offset-distance: 0% before transitioning to 100%
+        document.body.offsetHeight;
+        items.forEach((item, index) => {
             item.style.transitionDelay = `${index * 50}ms`;
-            setTimeout(() => item.style.transitionDelay = "0ms", 900 + index * 50);
-        }
-        item.classList.add("visible");
-    });
+            item.classList.add("visible");
+        });
+        setTimeout(() => {
+            items.forEach(item => item.style.transitionDelay = "0ms");
+        }, 900 + (itemCount - 1) * 50);
+    } else {
+        items.forEach(item => item.classList.add("visible"));
+    }
 }
 
 function debounce(func, wait) {
