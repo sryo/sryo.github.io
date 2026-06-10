@@ -1,381 +1,445 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>Mateo Yadarola — Product Designer</title>
-  <meta name="description" content="I design systems that work, not just screens that look good. Lead Product Designer specialized in Fintech, AI, and Design Systems.">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#333333">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mateo Yadarola, Product Designer</title>
+  <meta name="description" content="Product designer. Twenty years across design systems, fintech, design ops, data visualization and AI workflows. Making interfaces since before it was a job.">
   <link rel="canonical" href="https://yadarola.com.ar">
 
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://yadarola.com.ar/">
-  <meta property="og:title" content="Mateo Yadarola — Product Designer">
-  <meta property="og:description" content="I design systems that work, not just screens that look good.">
+  <meta property="og:url" content="https://yadarola.com.ar">
+  <meta property="og:title" content="Mateo Yadarola, Product Designer">
+  <meta property="og:description" content="Designer is the job title. What I actually do is ask uncomfortable questions until something gets simpler.">
+  <meta property="og:image" content="https://yadarola.com.ar/og.png">
+  <meta name="twitter:card" content="summary_large_image">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#0064E6">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Mateo Yadarola",
+    "jobTitle": "Product Designer",
+    "url": "https://yadarola.com.ar",
+    "email": "mailto:mateo@yadarola.com.ar",
+    "sameAs": [
+      "https://github.com/sryo",
+      "https://www.linkedin.com/in/myadarola/",
+      "https://www.figma.com/@sryo",
+      "https://www.deviantart.com/sryo"
+    ],
+    "knowsAbout": ["Design systems", "Fintech", "Design ops", "Data visualization", "AI workflows", "Conversion optimization"]
+  }
+  </script>
+
+  <script>
+    // One saturated color per visit, set before first paint. Every swatch keeps
+    // white text above 4.5:1, so any pick is legible by construction.
+    const PALETTE = {
+      '#0064E6': 'chicago blue',
+      '#CC3D33': 'rust',
+      '#1F7A40': 'terminal green',
+      '#9333EA': 'trillian purple',
+      '#D6219C': 'flickr pink',
+      '#C2410C': 'vlc orange',
+      '#0E7490': 'win95 teal',
+      '#7C3AED': 'winamp purple'
+    };
+    const SWATCHES = Object.keys(PALETTE);
+    const VISIT = SWATCHES[Math.floor(Math.random() * SWATCHES.length)];
+    document.documentElement.style.setProperty('--bg', VISIT);
+    document.documentElement.classList.add('js');
+  </script>
 
   <style>
-    :root {
-      --scheme-bg: #333;
-      --scheme-shadow: #000;
-            --text-color: #ffffff;
-            --spacing: 4vw;
+    @font-face {
+      font-family: 'InterVariable';
+      src: url('fonts/InterVariable.woff2') format('woff2');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
     }
+    @font-face {
+      font-family: 'Inter-fallback';
+      src: local('Helvetica Neue'), local('Arial');
+      size-adjust: 107%;
+    }
+
+    :root { --bg: #0064E6; }
+
+    * { box-sizing: border-box; margin: 0; }
 
     body {
-      width: 100%;
-      min-height: 100vh;
-      touch-action: pan-y;
-      -webkit-text-size-adjust: 100%;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      cursor: default;
-      overflow-x: hidden;
-            overflow-y: auto;
-      background-color: var(--scheme-bg);
-            color: var(--text-color);
-            transition: background-color 0.5s ease;
+      background: var(--bg);
+      color: #fff;
+      font-family: 'InterVariable', 'Inter-fallback', system-ui, sans-serif;
+      font-optical-sizing: auto;
+      font-size: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
+      line-height: 1.5;
+      padding: clamp(1.5rem, 6vw, 5rem) clamp(1.25rem, 6vw, 4rem) clamp(4rem, 10vw, 8rem);
     }
 
-        h1, h2, h3, p, a, span {
-            text-shadow: 1px 1px 0px var(--scheme-shadow);
-        }
+    .page { max-width: 54rem; margin: 0 auto; }
+
+    ::selection { background: #fff; color: var(--bg); }
 
     a {
       color: inherit;
       text-decoration: underline;
       text-decoration-thickness: 2px;
-            text-underline-offset: 4px;
+      text-underline-offset: 4px;
+    }
+    a:hover { text-decoration-thickness: 4px; }
+    /* A captured link sits on the white cursor shape, so it flips to the page color. */
+    a.captured {
+      color: var(--bg);
       position: relative;
-            cursor: pointer;
+      z-index: 11;
     }
-        a:hover { opacity: 0.7; }
-
-        /* --- LAYOUT --- */
-    .container {
-      max-width: 1000px;
-            margin: 0 auto;
-            padding: var(--spacing);
-            padding-bottom: 150px;
-            position: relative;
-            z-index: 2;
-    }
-
-        /* --- HEADER --- */
-    header {
-      margin-bottom: 80px;
-    }
+    :focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
 
     h1 {
-            font-family: 'Archivo Black', sans-serif;
-      font-size: clamp(40px, 8vw, 90px);
-      line-height: 0.9em;
-            margin-bottom: 24px;
-            text-transform: uppercase;
+      font-size: clamp(3rem, 10vw, 6.5rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1;
     }
 
-        .lead {
-            font-size: clamp(24px, 4vw, 40px);
-            font-weight: 800;
-            line-height: 1.1;
-            max-width: 25ch;
-            margin-bottom: 40px;
-        }
+    h2 {
+      font-size: clamp(1.75rem, 4.5vw, 2.75rem);
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 1.25em;
+      text-wrap: balance;
+    }
 
+    p, li { max-width: 34em; }
+
+    section, footer { margin-top: clamp(6rem, 14vw, 11rem); }
+
+    .lead {
+      font-size: clamp(1.5rem, 1.1rem + 2.2vw, 2.5rem);
+      font-weight: 650;
+      letter-spacing: -0.015em;
+      line-height: 1.25;
+      text-wrap: balance;
+      margin-top: 1.5em;
+    }
+
+    .intro { margin-bottom: 2em; }
+
+    .links { margin-top: 2.5em; }
     .links ul {
       list-style: none;
       padding: 0;
-            font-weight: 700;
-            font-size: 1.1em;
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5em 1.5em;
     }
 
-        /* --- SECTIONS --- */
-        section { margin-bottom: 100px; }
+    .list { list-style: none; padding: 0; }
+    .list li + li { margin-top: 1.1em; }
+    .list strong { font-weight: 700; }
 
-        h2 {
-            font-family: 'Inter', monospace;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            border-bottom: 4px solid var(--text-color);
-            padding-bottom: 16px;
-            margin-bottom: 40px;
-            box-shadow: 0 2px 0 var(--scheme-shadow);
-        }
+    .more { margin-top: 2em; }
 
-        /* --- GRIDS --- */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 40px;
-        }
+    .colophon { margin-top: 4em; font-size: 0.8em; }
 
-        .principle-card h3 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-        .principle-card p { font-size: 16px; font-weight: 500; opacity: 0.9; line-height: 1.4; }
-
-        /* --- SPREADSHEET LIST --- */
-        .job-row {
-            padding: 24px 0;
-            border-bottom: 2px solid rgba(255,255,255,0.3);
-        }
-        
-        .job-title {
-            font-size: clamp(18px, 3vw, 24px);
-            font-weight: 800;
-            display: block;
-            margin-bottom: 8px;
-            line-height: 1.2;
-        }
-        
-        .job-meta {
-            font-family: 'Inter', monospace;
-            font-size: 14px;
-            font-weight: 600;
-            opacity: 0.8;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* --- EMOJI INTERACTION --- */
-    .icon {
-      position: absolute;
-            z-index: 0;
-      transform-origin: top left;
-      white-space: nowrap;
-            pointer-events: none;
-            opacity: 1;
+    /* The arrow cursor. Only on fine pointers, with JS, and with motion allowed. */
+    .cursor {
+      display: none;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0; /* revealed on first pointer or focus input */
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+    }
+    @media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+      html.js, html.js body, html.js a { cursor: none; }
+      html.js .cursor { display: block; }
+    }
+    /* Touch has no cursor shape, so the catch flash paints its own pill. */
+    @media (pointer: coarse) {
+      a.captured { background: #fff; box-shadow: 0 0 0 6px #fff; border-radius: 2px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    
-        <header>
-            <h1>Mateo Yadarola</h1>
-            <p class="lead">I design systems that work, not just screens that look good.</p>
-            <nav class="links">
-                <ul>
-                    <li><a href="mailto:mateo@yadarola.com.ar">Email</a></li>
-                    <li><a href="https://www.linkedin.com/in/myadarola/" target="_blank">LinkedIn</a></li>
-                    <li><a href="https://github.com/sryo" target="_blank">GitHub</a></li>
-                </ul>
-            </nav>
+  <div class="page">
+
+    <header>
+      <h1>Mateo Yadarola</h1>
+      <p class="lead">Designer is the job title. What I actually do is ask uncomfortable questions until something gets simpler.</p>
+      <p class="lead">I've been making interfaces since before it was a job. Most of what's below exists to stay curious.</p>
+      <nav class="links" aria-label="Contact">
+        <ul>
+          <li><a href="mailto:mateo@yadarola.com.ar">Email</a></li>
+          <li><a href="https://www.linkedin.com/in/myadarola/">LinkedIn</a></li>
+          <li><a href="https://github.com/sryo">GitHub</a></li>
+          <li><a href="https://www.figma.com/@sryo">Figma</a></li>
+        </ul>
+      </nav>
     </header>
 
-        <section>
-            <h2>My Principles</h2>
-            <div class="grid-2">
-                <div class="principle-card">
-                    <h3>Efficiency over Aesthetics.</h3>
-                    <p>Pretty flows are useless if they don't solve the user's problem fast.</p>
-                </div>
-                <div class="principle-card">
-                    <h3>Code is a Design Tool.</h3>
-                    <p>Understanding the code allows me to design feasible, scalable solutions.</p>
-                </div>
-                <div class="principle-card">
-                    <h3>Transparency is Key.</h3>
-                    <p>I show clearly what I did, what I inherited, and what the team achieved.</p>
-                </div>
-                <div class="principle-card">
-                    <h3>Data over Opinion.</h3>
-                    <p>Like a good spreadsheet, design is grounded in facts and research.</p>
-                </div>
-            </div>
-        </section>
+    <main>
+      <section aria-labelledby="pay">
+        <h2 id="pay">Things I shipped for pay</h2>
+        <ul class="list">
+          <li>Branches closed in March. The bank had to fit in a pocket. Bancor, 2020.</li>
+          <!-- what do you design first for someone who has never had a bank account? -->
+          <li>A 115-year-old paper asked readers what news was worth. La Voz del Interior, 2017.</li>
+          <!-- print paid for the newsroom for a century. What happens when it stops? -->
+          <li>A surgeon's hour costs more than paperwork. 112 forms became one conversation. OMSNIC, 2019.</li>
+          <!-- forms speak database. What would they sound like speaking surgeon? -->
+          <li>Designers who never shared a room, sounding like one team. Agilent, 2009 to 2015.</li>
+          <!-- what does a design team actually need a room for? -->
+        </ul>
+        <p class="more">Since 2002: SEO and conversion work, drones and satellites, a decade of fintech. Currently automating investment logic with AI.</p>
+        <p class="more"><a href="https://www.linkedin.com/in/myadarola/">Full record on LinkedIn →</a></p>
+      </section>
 
-        <section>
-            <h2>The Backstory</h2>
-            <div style="font-size: 1.2em; font-weight: 600; line-height: 1.5; max-width: 700px;">
-                <p style="margin-bottom: 1em;">I started in 2002 driven by growth, not just pixels. My career began in the trenches of SEO and conversion optimization, learning early that design is fundamentally a business tool.</p>
-                <p>Over the last two decades, I evolved from managing distributed teams for US startups to architecting massive financial systems. I don't just "do UX"—I build the engines that make products scalable, using code as my second language and logic as my north star.</p>
-            </div>
-        </section>
+      <section aria-labelledby="tools">
+        <h2 id="tools">Tools I built</h2>
+        <ul class="list">
+          <li><a href="https://sryo.github.io/Posta/">Posta</a>. A desktop Gmail client built around cards: each card is a saved search, and the inbox becomes a board.</li>
+          <!-- email processing is parallel. Why is the inbox one list? -->
+          <li><a href="https://github.com/sryo/figma-cdp">Figma-CDP</a>. A Claude Code skill that updates Figma to match your code, so the canvas stops describing what it used to be.</li>
+          <!-- what's a design file worth once it stops being true? -->
+          <li><a href="https://github.com/sryo/Trueframe">Trueframe</a>. Hold your phone to your chest and it captures while you stay in the scene, keeping only the good frames.</li>
+          <!-- who's living the moment while you frame it? -->
+          <li><a href="https://sryo.github.io/murmur/">Murmur</a>. Voice chat, but weirder.</li>
+          <!-- why does saying something out loud need an account? -->
+          <li><a href="https://sryo.github.io/whenThen/">When</a>. Movies find you instead.</li>
+          <!-- the feed knows when it lands. Why are you the one checking? -->
+          <li><a href="https://www.figma.com/community/plugin/1284214046492867185/anchorify">Anchorify</a> and <a href="https://www.figma.com/community/plugin/1285425464785405153/word-hugger">Word Hugger</a>. Two Figma plugins the community uses more than I do.</li>
+          <!-- why do plugins stop one step short of useful? -->
+        </ul>
+      </section>
 
-        <section>
-            <h2>The Track Record</h2>
-            
-            <div class="job-row">
-                <span class="job-title">Automating complex investment logic via AI workflows</span>
-                <div class="job-meta">NDA — 2024 to Present</div>
-            </div>
+      <section aria-labelledby="annoyances">
+        <h2 id="annoyances">Annoyances I fixed</h2>
+        <p class="intro">Most of my job is noticing what everyone agreed not to mention. These are the small ones.</p>
+        <ul class="list">
+          <li><a href="https://github.com/sryo/Spoons">Spoons</a>. A folder of things macOS does wrong, and the Hammerspoon scripts that fix them. Fourteen so far.</li>
+          <!-- why live with a default you can script away? -->
+          <li><a href="https://sryo.github.io/ChronoMouse/">ChronoMouse</a>. Shows the time next to the cursor, where I'm already looking.</li>
+          <!-- why does the clock sit in the corner you never look at? -->
+          <li><a href="https://github.com/sryo/GmailTidy">GmailTidy</a>. An inbox that learns from what you ignore.</li>
+          <!-- your inbox watches you all day. Why hasn't it learned anything? -->
+          <li><a href="https://github.com/sryo/AppTidy">AppTidy</a>. Forgotten apps close themselves.</li>
+          <!-- the window is gone, the app isn't. Who is it staying open for? -->
+          <li><a href="https://github.com/sryo/AirNod">AirNod</a>. Look where you're going.</li>
+          <!-- the sensors are already on your head. Why is the mouse still in your hand? -->
+        </ul>
+        <p class="more"><a href="https://github.com/sryo">The rest is on GitHub →</a></p>
+      </section>
 
-            <div class="job-row">
-                <span class="job-title">Engineered high-density tools for agents & accessible apps for users</span>
-                <div class="job-meta">Continental Finance (via Allata) — 2022 to 2024</div>
-            </div>
+      <section aria-labelledby="desktops">
+        <h2 id="desktops">Desktops I themed</h2>
+        <p class="intro">Before product design had a name I knew, I was skinning LiteStep on DeviantArt. Pixel fonts, two-color wallpapers, a Windows machine pretending it wasn't one.</p>
+        <ul class="list">
+          <li><a href="https://www.deviantart.com/sryo/art/rust-20070618-57813855">rust</a>. Pre-aged on purpose. It will never look outdated.</li>
+          <!-- plastic and glass wear out. What would an interface that wears in look like? -->
+          <li><a href="https://www.deviantart.com/sryo/art/orb-nano200801-mockup-73492628">orb</a>. Start existed because people didn't know where to begin. This put the whole desktop behind one circle.</li>
+          <!-- why is the UI at the edge of the screen if I'm all the way over here? -->
+          <li><a href="https://www.deviantart.com/sryo/art/Iris2-20150307-518541361">Iris2</a>. The comeback nobody requested. Unfinished, like all good hobbies.</li>
+          <!-- what's left of a desktop when there's nothing to navigate? -->
+        </ul>
+        <p class="more"><a href="https://www.deviantart.com/sryo/gallery">The gallery is still up →</a></p>
+      </section>
 
-            <div class="job-row">
-                <span class="job-title">Unified diverse analytics tools into a single visual language</span>
-                <div class="job-meta">EY Helix (via Cognizant) — 2021 to 2022</div>
-            </div>
+      <section aria-labelledby="questions">
+        <h2 id="questions">Questions I'm chewing on</h2>
+        <ul class="list">
+          <li><a href="https://github.com/sryo/avis">What if "this one" wasn't ambiguous?</a></li>
+          <!-- if the machine can see the page, why are we describing it? -->
+          <li><a href="https://github.com/sryo/coro">What if the terminal had a top-down view?</a></li>
+          <!-- terminals show one task at a time. Since when does work? -->
+          <li><a href="https://github.com/sryo/dirpad">What if you could swipe to navigate the terminal?</a></li>
+          <!-- the trackpad has more bandwidth than four arrow keys. Why waste it? -->
+          <li><a href="https://github.com/sryo/Fin">What if receipts scanned themselves?</a></li>
+          <!-- budgeting apps die when the typing starts. Why is entry still manual? -->
+          <li><a href="https://github.com/sryo/scriptables">What if icons are the problem?</a></li>
+          <!-- a verb says what happens next. What does an icon say? -->
+          <li><a href="https://github.com/sryo/subi-app">What if bus apps weren't painful?</a></li>
+          <!-- same data underneath. How much of a bad app is just bad presentation? -->
+          <li>What if sending money felt like using a calculator?</li>
+          <!-- why do banks make you pick an account before the amount? -->
+          <li>What if you could bring your own tab bar?</li>
+          <!-- the browser hosts your tabs. Who said it owns them? -->
+        </ul>
+        <p class="more">Some have answers already. Some don't yet.</p>
+      </section>
+    </main>
 
-            <div class="job-row">
-                <span class="job-title">Orchestrated the Service Design overhaul that doubled users</span>
-                <div class="job-meta">BANCOR — 2020 to 2021</div>
-            </div>
+    <footer>
+      <h2>Between roles. Talk to me.</h2>
+      <p>Full-time or consulting. Email is fastest.</p>
+      <nav class="links" aria-label="Contact links">
+        <ul>
+          <li><a href="mailto:mateo@yadarola.com.ar">Email</a></li>
+          <li><a href="https://www.linkedin.com/in/myadarola/">LinkedIn</a></li>
+          <li><a href="https://github.com/sryo">GitHub</a></li>
+          <li><a href="https://www.figma.com/@sryo">Figma</a></li>
+        </ul>
+      </nav>
+      <p class="colophon">Hand-written HTML. No framework, no build step, one font. View source.</p>
 
-            <div class="job-row">
-                <span class="job-title">Condensed 100+ forms into a single conversational chatbot</span>
-                <div class="job-meta">OMSNIC (via Darwoft) — 2019 to 2020</div>
-            </div>
-
-            <div class="job-row">
-                <span class="job-title">Scaled digital subscriptions from 0 to 10,000+ in 6 months</span>
-                <div class="job-meta">La Voz del Interior — 2017 to 2019</div>
-            </div>
-
-            <div class="job-row">
-                <span class="job-title">Transformed static media archives into real-time intelligence</span>
-                <div class="job-meta">Infoxel — 2016 to 2017</div>
-            </div>
-
-            <div class="job-row">
-                <span class="job-title">Designed interfaces for drones, satellites & embedded hardware</span>
-                <div class="job-meta">Taller Technologies — 2015 to 2016</div>
-            </div>
-
-            <div class="job-row">
-                <span class="job-title">Led a distributed team of 20 designers for global clients</span>
-                <div class="job-meta">Agilent (via Taller Tech) — 2009 to 2015</div>
-            </div>
-
-            <div class="job-row">
-                <span class="job-title">Managed digital growth strategies for 5+ countries</span>
-                <div class="job-meta">COINED — 2002 to 2009</div>
-            </div>
-        </section>
-
-        <section>
-            <h2>Core Expertise</h2>
-            <div style="font-family: 'Inter', monospace; font-size: 1.1em; line-height: 1.8;">
-                <p><strong>Strategy:</strong> Design Systems / Design Ops / Fintech / Data Visualization / Mentorship / AI Workflows</p>
-                <p><strong>Technical:</strong> Figma / HTML & CSS / Lua Scripting / Remote Workshops / CRO</p>
-            </div>
-        </section>
+      <!-- Why no build step? The page is the source. Anything between them is room for drift.
+        Why one font? Inter has all the weights. A second font is a decision I'd have to keep defending.
+        Why a random color? A page you visit twice shouldn't look identical twice.
+        Why white text only? One contrast rule beats eight color rules. A swatch passes 4.5:1 or it doesn't get in.
+        Why does the cursor chase links? Fitts said make targets bigger. These ones come to you. -->
+    </footer>
 
   </div>
 
-  <script async>
-    // --- Helper Functions ---
-    function randomInt(min, max) {
-      return Math.floor(Math.random() * (max - min + 1) + min);
-    }
+  <svg class="cursor" aria-hidden="true"><path fill="#fff" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>
 
-    function getRandomHSL() {
-      const h = randomInt(0, 359);
-      const s = randomInt(50, 90); // Vibrant Saturation
-      const l = randomInt(40, 55); // Slightly darker Lightness to ensure White text pops
-      return [h, s, l];
-    }
+  <script>
+    // Theme-color and favicon follow the visit's color.
+    document.querySelector('meta[name="theme-color"]').content = VISIT;
+    const ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+      + '<rect width="64" height="64" rx="14" fill="' + VISIT + '"/>'
+      + '<text x="32" y="43" font-family="Inter,system-ui,sans-serif" font-size="26" font-weight="700" fill="#fff" text-anchor="middle">MY</text></svg>';
+    document.querySelector('link[rel="icon"]').href = 'data:image/svg+xml,' + encodeURIComponent(ICON);
 
-    function getComplementaryHSL(h, s, l) {
-      const offset = randomInt(150, 210); // Complementary hue
-      const comp = (h + offset) % 360;
-      return [comp, s, l - 20]; // Darker shadow
-    }
+    // 1. Cache where every link lives, in page coordinates.
+    // 2. On every move, find the nearest link within reach.
+    // 3. Grow the arrow's eight points into a pill around it.
+    //    The link flips to the page color: it sits on white now.
+    // 4. While captured, a click anywhere belongs to the link.
+    const REACH = 80;
+    let anchors = [];
+    const cacheRects = () => {
+      anchors = [...document.querySelectorAll('a')].map(a => {
+        const r = a.getBoundingClientRect();
+        return { a, x: r.left + scrollX, y: r.top + scrollY, w: r.width, h: r.height };
+      });
+    };
 
-    function toHSLString(h, s, l) {
-      return `hsl(${h}, ${s}%, ${l}%)`;
-    }
-
-    function updateFavicon(emoji, color) {
-      const faviconData = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='${color}'><rect width='100' height='100' fill='${color}'/><text y='.9em' font-size='90'>${emoji}</text></svg>`;
-      const link = document.querySelector("link[rel~='icon']");
-      if (!link) {
-        const newLink = document.createElement('link');
-        newLink.rel = 'icon';
-        newLink.href = 'data:image/svg+xml,' + encodeURIComponent(faviconData);
-        document.head.appendChild(newLink);
-      } else {
-        link.href = 'data:image/svg+xml,' + encodeURIComponent(faviconData);
+    const nearest = (px, py) => {
+      let best = null, bestD = REACH;
+      for (const r of anchors) {
+        const dx = Math.max(r.x - px, 0, px - (r.x + r.w));
+        const dy = Math.max(r.y - py, 0, py - (r.y + r.h));
+        const d = Math.hypot(dx, dy);
+        if (d < bestD) { bestD = d; best = r; }
       }
+      return best;
+    };
+
+    const fine = matchMedia('(pointer: fine)').matches;
+    const motion = matchMedia('(prefers-reduced-motion: no-preference)').matches;
+
+    // Both input modes read the same rect cache.
+    if ((fine && motion) || !fine) {
+      cacheRects();
+      addEventListener('resize', cacheRects);
+      addEventListener('load', cacheRects);
+      if (document.fonts) document.fonts.ready.then(cacheRects);
     }
 
-    // --- Main Logic ---
-    document.addEventListener('DOMContentLoaded', () => {
-      const [h, s, l] = getRandomHSL();
-      const [hComp, sComp, lComp] = getComplementaryHSL(h, s, l);
-      const bgColor = toHSLString(h, s, l);
-      const shadowColor = toHSLString(hComp, sComp, 20); // Very dark shadow for contrast
+    if (fine && motion) {
+      const svg = document.querySelector('.cursor');
+      const path = svg.querySelector('path');
+      const sizeSvg = () => svg.setAttribute('viewBox', '0 0 ' + innerWidth + ' ' + innerHeight);
+      sizeSvg();
 
-      document.documentElement.style.setProperty('--scheme-bg', bgColor);
-      document.documentElement.style.setProperty('--scheme-shadow', shadowColor);
+      const pos = { x: innerWidth / 2, y: innerHeight / 2 };
+      let captured = null;
+      let lastD = '';
+      let running = false;
 
-      const themeColorMeta = document.querySelector("meta[name='theme-color']");
-      if (themeColorMeta) themeColorMeta.content = bgColor;
-
-      // Emoji themes
-      const themes = [
-        ['🎨', '📱', '🌟', '🥦', '👽'],
-        ['✏️', '💻', '🦈', '🪐', '🍺', '☕', '👾'],
-        ['🖌️', '🧠', '🌱', '🚲'],
-        ['📐', '🛰️', '🤖', '🦄', '😎', '🏡']
+      // The arrow outline as 8 points, tip first. Captured links get the same
+      // 8 points laid out as their bounding box, so the shapes interpolate.
+      const ARROW = [[0, 0], [0, 8.3], [0, 16.5], [4.4, 13.2], [7.5, 19.8], [10.3, 18.5], [7.2, 12.1], [12.6, 12.0]];
+      const boxPoints = (x, y, w, h) => [
+        [x, y], [x, y + h / 2], [x, y + h], [x + w / 2, y + h],
+        [x + w, y + h], [x + w, y + h / 2], [x + w, y], [x + w / 2, y]
       ];
+      const pts = ARROW.map(p => [p[0] + pos.x, p[1] + pos.y]);
 
-      const emojis = themes[Math.floor(Math.random() * themes.length)];
-
-      // Interaction logic
-      let moved = 0, count = 0;
-
-      function handleEvent(e) {
-        let x, y;
-        if (e.type === 'mousemove') {
-          x = e.pageX;
-          y = e.pageY;
-        } else if (e.type === 'touchmove' || e.type === 'touchstart') {
-          const touch = e.touches[0] || e.changedTouches[0];
-          x = touch.pageX;
-          y = touch.pageY;
-        }
-
-        if (++moved >= 5) { // Sensitivity
-          create(x, y, emojis);
-          moved = 0;
-        }
-      }
-
-      document.addEventListener('mousemove', handleEvent);
-      document.addEventListener('touchmove', handleEvent, { passive: true });
-      document.addEventListener('touchstart', handleEvent, { passive: true });
-
-      const create = (x, y, emojis) => {
-        const text = emojis[randomInt(0, emojis.length - 1)];
-        const symbol = document.createElement('div');
-        symbol.className = 'icon';
-        symbol.setAttribute('aria-hidden', 'true');
-        symbol.style.left = `${x}px`;
-        symbol.style.top = `${y}px`;
-        symbol.style.fontSize = `${randomInt(40, 180)}px`;
-        symbol.style.transform = `rotate(${randomInt(0, 360)}deg) translate(-50%, -50%)`;
-        symbol.innerHTML = text;
-        document.body.appendChild(symbol);
-
-        // Cleanup to prevent lag
-        if (count++ > 50) {
-          const firstIcon = document.querySelector('.icon');
-          if (firstIcon) firstIcon.remove();
-        }
-                
-                // Fade out
-                setTimeout(() => {
-                    symbol.style.transition = "opacity 2.5s ease-out";
-                    symbol.style.opacity = "0";
-                    setTimeout(() => symbol.remove(), 2500);
-                }, 100);
+      const setCaptured = (hit) => {
+        if (hit === captured) return;
+        if (captured) captured.a.classList.remove('captured');
+        captured = hit;
+        if (captured) captured.a.classList.add('captured');
       };
 
-      const chosenEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-      updateFavicon(chosenEmoji, bgColor.trim());
-    });
+      // The loop sleeps once the shape settles; input stirs it awake.
+      const frame = () => {
+        const t = captured
+          ? boxPoints(captured.x - scrollX - 6, captured.y - scrollY - 6, captured.w + 12, captured.h + 12)
+          : ARROW.map(p => [p[0] + pos.x, p[1] + pos.y]);
+        let moving = false;
+        for (let i = 0; i < 8; i++) {
+          pts[i][0] += (t[i][0] - pts[i][0]) * 0.25;
+          pts[i][1] += (t[i][1] - pts[i][1]) * 0.25;
+          if (Math.abs(t[i][0] - pts[i][0]) > 0.05 || Math.abs(t[i][1] - pts[i][1]) > 0.05) moving = true;
+        }
+        const d = 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L') + 'Z';
+        if (d !== lastD) { path.setAttribute('d', d); lastD = d; }
+        running = moving;
+        if (moving) requestAnimationFrame(frame);
+      };
+      const stir = () => {
+        if (!running) { running = true; requestAnimationFrame(frame); }
+      };
+      const wake = () => {
+        svg.style.opacity = 1;
+        stir();
+      };
+
+      addEventListener('resize', () => { sizeSvg(); stir(); });
+      addEventListener('scroll', stir, { passive: true });
+
+      addEventListener('pointermove', (e) => {
+        pos.x = e.clientX; pos.y = e.clientY;
+        setCaptured(nearest(e.clientX + scrollX, e.clientY + scrollY));
+        wake();
+      });
+
+      addEventListener('focusin', (e) => {
+        const r = anchors.find(x => x.a === e.target);
+        if (r) { setCaptured(r); wake(); }
+      });
+      addEventListener('focusout', (e) => {
+        if (captured && captured.a === e.target) { setCaptured(null); stir(); }
+      });
+
+      // The shape is the affordance: while a link is captured, a click anywhere acts on it.
+      addEventListener('click', (e) => {
+        if (!captured) return;
+        if (e.target.closest && e.target.closest('a')) return;
+        captured.a.click();
+      });
+    } else if (!fine) {
+      // Touch: a tap near (but not on) a link still catches it.
+      addEventListener('touchstart', (e) => {
+        if (e.target.closest('a')) return;
+        const t = e.touches[0];
+        const hit = nearest(t.clientX + scrollX, t.clientY + scrollY);
+        if (hit) {
+          hit.a.classList.add('captured');
+          setTimeout(() => { hit.a.classList.remove('captured'); hit.a.click(); }, 150);
+        }
+      }, { passive: true });
+    }
+
+    console.log('%c' + PALETTE[VISIT] + '%c this visit. Reload rolls again.',
+      'background:' + VISIT + ';color:#fff;padding:2px 8px;border-radius:3px', '');
   </script>
+
+  <!-- What if I wrote the page for everyone and this part for you? -->
 </body>
 </html>
