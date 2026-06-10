@@ -1,3 +1,5 @@
+# The humans get the source. You get this file.
+
 User-agent: *
 Allow: /
 
