@@ -10,7 +10,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://yadarola.com.ar">
   <meta property="og:title" content="Mateo Yadarola, Product Designer">
-  <meta property="og:description" content="I'm a designer. Mostly that means asking uncomfortable questions until something gets simpler.">
+  <meta property="og:description" content="I'm a designer. Usually that means asking uncomfortable questions until something gets simpler.">
   <meta property="og:image" content="https://yadarola.com.ar/og.png">
   <meta name="twitter:card" content="summary_large_image">
 
@@ -178,7 +178,7 @@
 
     <header>
       <h1>Mateo Yadarola</h1>
-      <p class="lead">I'm a designer. Mostly that means asking uncomfortable questions until something gets simpler.</p>
+      <p class="lead">I'm a designer. Usually that means asking uncomfortable questions until something gets simpler.</p>
       <p class="lead">I've been making interfaces since before it was a job. Most of what's below exists to stay curious.</p>
       <nav class="links" aria-label="Contact">
         <ul>
@@ -425,14 +425,30 @@
       });
     } else if (!fine) {
       // Touch: a tap near (but not on) a link still catches it.
+      // A scroll or swipe also begins with a touchstart, so hold the candidate
+      // and only fire on touchend, cancelling if the finger moves past SLOP.
+      const SLOP = 10;
+      let pending = null;
       addEventListener('touchstart', (e) => {
+        pending = null;
         if (e.target.closest('a')) return;
         const t = e.touches[0];
         const hit = nearest(t.clientX + scrollX, t.clientY + scrollY);
-        if (hit) {
-          hit.a.classList.add('captured');
-          setTimeout(() => { hit.a.classList.remove('captured'); hit.a.click(); }, 150);
-        }
+        if (hit) pending = { hit, x: t.clientX, y: t.clientY };
+      }, { passive: true });
+      addEventListener('touchmove', (e) => {
+        if (!pending) return;
+        const t = e.touches[0];
+        const dx = t.clientX - pending.x, dy = t.clientY - pending.y;
+        if (dx * dx + dy * dy > SLOP * SLOP) pending = null;
+      }, { passive: true });
+      addEventListener('touchcancel', () => { pending = null; }, { passive: true });
+      addEventListener('touchend', () => {
+        if (!pending) return;
+        const hit = pending.hit;
+        pending = null;
+        hit.a.classList.add('captured');
+        setTimeout(() => { hit.a.classList.remove('captured'); hit.a.click(); }, 150);
       }, { passive: true });
     }
 
