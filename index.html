@@ -357,8 +357,19 @@
 
       const pos = { x: innerWidth / 2, y: innerHeight / 2 };
       let captured = null;
+      let morphing = false; // true briefly after a capture change, so pill-in and pill-out both lerp
       let lastD = '';
       let running = false;
+
+      // Velocity drives two things: a small predictive lead (the arrow tracks the
+      // most recent position and a frame ahead, killing draw latency) and the
+      // stretch/tilt that makes a fast flick feel physical.
+      let vx = 0, vy = 0, lastMove = 0;
+      const LEAD = 14, MAX_LEAD = 16;          // ~1 frame ahead, capped px
+      const K_STRETCH = 0.22, MAX_STRETCH = 0.5;
+      const K_TILT = 0.10, MAX_TILT = 0.26;    // radians, ~15deg lean
+      const VEL_DECAY = 0.82, SPEED_EPS = 0.02;
+      const clampLead = (v) => Math.max(-MAX_LEAD, Math.min(MAX_LEAD, v * LEAD));
 
       // The arrow outline as 8 points, tip first. Captured links get the same
       // 8 points laid out as their bounding box, so the shapes interpolate.
@@ -369,8 +380,28 @@
       ];
       const pts = ARROW.map(p => [p[0] + pos.x, p[1] + pos.y]);
 
+      // Stretch a set of points along the motion axis and lean them into it, around
+      // a pivot. Both the free arrow and the captured pill carry the same momentum;
+      // at rest (speed ~0) this is the identity, so a still shape is unchanged.
+      const deform = (basePts, px, py, speed) => {
+        if (speed < SPEED_EPS) return basePts; // at rest the transform is the identity
+        const dir = Math.atan2(vy, vx);
+        const stretch = Math.min(speed * K_STRETCH, MAX_STRETCH);
+        const tilt = Math.max(-MAX_TILT, Math.min(MAX_TILT, vx * K_TILT));
+        const cD = Math.cos(dir), sD = Math.sin(dir), cT = Math.cos(tilt), sT = Math.sin(tilt);
+        const sx = 1 + stretch, sy = 1 - stretch * 0.25; // grow along motion, squash across
+        return basePts.map(([bx, by]) => {
+          const ax = bx - px, ay = by - py;
+          let x = ax * cD + ay * sD, y = -ax * sD + ay * cD; // align motion to X
+          x *= sx; y *= sy;
+          const rx = x * cD - y * sD, ry = x * sD + y * cD;  // rotate back
+          return [px + rx * cT - ry * sT, py + rx * sT + ry * cT]; // lean
+        });
+      };
+
       const setCaptured = (hit) => {
         if (hit === captured) return;
+        morphing = true;
         if (captured) captured.a.classList.remove('captured');
         captured = hit;
         if (captured) captured.a.classList.add('captured');
@@ -378,15 +409,28 @@
 
       // The loop sleeps once the shape settles; input stirs it awake.
       const frame = () => {
-        const t = captured
-          ? boxPoints(captured.x - scrollX - 6, captured.y - scrollY - 6, captured.w + 12, captured.h + 12)
-          : ARROW.map(p => [p[0] + pos.x, p[1] + pos.y]);
+        vx *= VEL_DECAY; vy *= VEL_DECAY; // relax the stretch once the pointer stops
+        const speed = Math.hypot(vx, vy);
+        let t;
+        if (captured) {
+          const bx = captured.x - scrollX - 6, by = captured.y - scrollY - 6;
+          const bw = captured.w + 12, bh = captured.h + 12;
+          t = deform(boxPoints(bx, by, bw, bh), bx + bw / 2, by + bh / 2, speed);
+        } else {
+          const tipX = pos.x + clampLead(vx), tipY = pos.y + clampLead(vy);
+          t = deform(ARROW.map(p => [tipX + p[0], tipY + p[1]]), tipX, tipY, speed);
+        }
+        // The pill morphs at 0.25; a free arrow snaps (no draw lag). The morph flag
+        // keeps the lerp through a pill-out so it slides back instead of popping.
+        const k = (captured || morphing) ? 0.25 : 1;
         let moving = false;
         for (let i = 0; i < 8; i++) {
-          pts[i][0] += (t[i][0] - pts[i][0]) * 0.25;
-          pts[i][1] += (t[i][1] - pts[i][1]) * 0.25;
+          pts[i][0] += (t[i][0] - pts[i][0]) * k;
+          pts[i][1] += (t[i][1] - pts[i][1]) * k;
           if (Math.abs(t[i][0] - pts[i][0]) > 0.05 || Math.abs(t[i][1] - pts[i][1]) > 0.05) moving = true;
         }
+        if (morphing && !moving) morphing = false;
+        if (speed > SPEED_EPS) moving = true; // run while the stretch relaxes
         const d = 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L') + 'Z';
         if (d !== lastD) { path.setAttribute('d', d); lastD = d; }
         running = moving;
@@ -404,6 +448,13 @@
       addEventListener('scroll', stir, { passive: true });
 
       addEventListener('pointermove', (e) => {
+        const now = performance.now();
+        const dt = now - lastMove;
+        if (dt > 0 && dt < 100) { // skip first move and long gaps (tab-out)
+          const nvx = (e.clientX - pos.x) / dt, nvy = (e.clientY - pos.y) / dt;
+          vx = vx * 0.7 + nvx * 0.3; vy = vy * 0.7 + nvy * 0.3;
+        }
+        lastMove = now;
         pos.x = e.clientX; pos.y = e.clientY;
         setCaptured(nearest(e.clientX + scrollX, e.clientY + scrollY));
         wake();
