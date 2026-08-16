@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>experiments · Mateo Yadarola</title>
+<link rel="icon" href="data:image/svg+xml,">
+
+<style>
+  html, body { margin: 0; height: 100%; background: #0a0a0a; overflow: hidden; }
+  svg { width: 100vw; height: 100vh; display: block; touch-action: none; user-select: none; cursor: crosshair; }
+  @media (hover: hover) and (pointer: fine) { svg, #panel a { cursor: none; } }
+  #panel {
+    position: fixed; left: 24px; bottom: 20px; max-width: 44ch;
+    font: 500 14px/1.45 InterVariable, Inter, system-ui, sans-serif;
+    text-wrap-style: balance;
+    pointer-events: none; opacity: 0.92;
+  }
+  #panel strong { font-weight: 700; letter-spacing: 0.06em; }
+  #panel a { pointer-events: auto; text-underline-offset: 3px; }
+</style>
+<svg id="scene" viewBox="0 0 1710 978" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Blur + hard threshold fuses nearby rings; a second blur + high threshold
+         thins the ink evenly (feMorphology would facet curves). Colors mix where
+         halos overlap. -->
+    <filter id="goo" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="linearRGB">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="15"/>
+      <feColorMatrix mode="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 80 -8"/>
+      <feGaussianBlur stdDeviation="8"/>
+      <feColorMatrix mode="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 50 -45"/>
+    </filter>
+  </defs>
+  <rect id="ground" x="0" y="0" width="1710" height="978"></rect>
+  <g id="ink" filter="url(#goo)" fill="none" stroke-width="8"></g>
+  <g id="labels" style="font: 700 34px InterVariable, Inter, system-ui, sans-serif; letter-spacing: 0.03em; pointer-events: none;"></g>
+  <g id="fx"></g>
+  <!-- Custom cursor. White under difference blend: visible over anything. -->
+  <g id="cursorLayer" pointer-events="none"
+     style="mix-blend-mode: difference; stroke: #fff; fill: none; stroke-width: 3; stroke-linecap: round;">
+    <path id="cursorGlyph" d=""/>
+    <rect id="cursorRing" width="0" height="0"/>
+  </g>
+</svg>
+<div id="panel"></div>
+<script>
+(() => {
+  'use strict';
+
+  const svg = document.getElementById('scene');
+  const inkGroup = document.getElementById('ink');
+  const labelsGroup = document.getElementById('labels');
+  const fxGroup = document.getElementById('fx');
+  const NS = 'http://www.w3.org/2000/svg';
+
+  // Drawn bubbles pull the next name off this queue.
+  const LABELS = [
+    'POSTA', 'FIGMA-CDP', 'TRUEFRAME', 'MURMUR', 'FONTE',
+    'ANCHORIFY', 'WORD-HUGGER', 'STACKS', 'CHRONOMOUSE',
+    'GMAILTIDY', 'APPTIDY', 'AIRNOD', 'AVIS', 'CORO',
+    'DIRPAD', 'FIN', 'SUBÍ', 'ZENTRATE',
+    'STACKD', 'PETRI', 'STOW', 'VA', 'LINEANDFORM', 'TUNTUN',
+  ];
+  // Shuffled per visit.
+  for (let i = LABELS.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [LABELS[i], LABELS[j]] = [LABELS[j], LABELS[i]];
+  }
+  let labelCursor = 0;
+  function nextLabel() {
+    return labelCursor < LABELS.length ? LABELS[labelCursor++] : null;
+  }
+
+  // Blurbs reuse the site's copy. A null url means the bubble never arms.
+  const PROJECTS = {
+    'POSTA': { url: 'https://sryo.github.io/Posta/', blurb: 'a desktop Gmail client built around cards: each card is a saved search, and the inbox becomes a board' },
+    'FIGMA-CDP': { url: 'https://github.com/sryo/figma-cdp', blurb: 'a Claude Code skill that updates Figma to match your code, so the canvas stops describing what it used to be' },
+    'TRUEFRAME': { url: 'https://github.com/sryo/Trueframe', blurb: 'hold your phone to your chest and it captures while you stay in the scene, keeping only the good frames' },
+    'MURMUR': { url: 'https://sryo.github.io/murmur/', blurb: 'voice chat, but weirder' },
+    'FONTE': { url: 'https://github.com/sryo/fonte', blurb: 'a torrent client run by agents; you say what you want, they handle the rest' },
+    'ANCHORIFY': { url: 'https://www.figma.com/community/plugin/1284214046492867185/anchorify', blurb: 'converts [text](url) markup into clickable hyperlinks in Figma' },
+    'WORD-HUGGER': { url: 'https://www.figma.com/community/plugin/1285425464785405153/word-hugger', blurb: 'fixes orphaned words, because every word deserves company' },
+    'STACKS': {
+      url: 'https://github.com/sryo/stackd-stacks',
+      blurb: 'the macOS fixes that outgrew Hammerspoon, rebuilt as stacks. It looks about to burst',
+      children: [
+        'FRAMEMASTER', 'WINDOWSCAPE', 'PALETTE', 'SIDESWIPE', 'UNDOCLOSE', 'AUTODMG',
+        'TIMETRAIL', 'NOTUNES', 'APPTIMEOUT', 'BAR', 'TTTAPS', 'OVERLAY-BORDER',
+        'CLOUDPAD', 'DIGUP', 'EDGEHOPPER', 'MUSE',
+      ],
+    },
+    'FRAMEMASTER': { url: 'https://github.com/sryo/stackd-stacks/tree/main/stacks/framemaster', blurb: 'the four most reachable spots on the screen shouldn’t sit empty' },
+    'WINDOWSCAPE': { url: 'https://github.com/sryo/stackd-stacks/tree/main/stacks/windowscape', blurb: 'windows that take care of themselves: open one, the others shrink' },
+    'PALETTE': { url: 'https://github.com/sryo/stackd-stacks/tree/main/stacks/palette', blurb: 'type a few letters and find any menu item, file, or app' },
+    'SIDESWIPE': { url: 'https://github.com/sryo/stackd-stacks/tree/main/stacks/sideswipe', blurb: 'brightness and volume on the trackpad edges' },
+    'UNDOCLOSE': { url: 'https://github.com/sryo/stackd-stacks/tree/main/stacks/undoclose', blurb: 'for the moments right after Cmd-Q when you wish you hadn’t' },
+    'AUTODMG': { url: 'https://github.com/sryo/stackd-stacks/tree/main/stacks/autodmg', blurb: 'drop a DMG in Downloads; it mounts, installs, and cleans up' },
+    'TIMETRAIL': { url: 'https://github.com/sryo/stackd-stacks/tree/main/stacks/timetrail', blurb: 'the hour orbits your cursor, pointing at the minute like a clock hand' },
+    'NOTUNES': { url: 'https://github.com/sryo/stackd-stacks/tree/main/stacks/notunes', blurb: 'kills Apple Music on sight and launches Spotify instead' },
+    'APPTIMEOUT': { url: 'https://github.com/sryo/stackd-stacks/tree/main/stacks/apptimeout', blurb: 'apps left windowless for five minutes get quietly closed' },
+    'BAR': { url: 'https://github.com/sryo/stackd-stacks/tree/main/stacks/bar', blurb: 'a status strip of small readouts: clock, battery, weather, rain, now playing' },
+    'TTTAPS': { url: 'https://github.com/sryo/stackd-stacks/tree/main/stacks/tttaps', blurb: 'recognizes multi-finger trackpad taps and drags, and tells the other stacks' },
+    'OVERLAY-BORDER': { url: 'https://github.com/sryo/stackd-stacks/tree/main/stacks/overlay-border', blurb: 'draws a border around the focused window so you never lose it' },
+    'CLOUDPAD': { url: 'https://github.com/sryo/stackd-stacks/tree/main/disabled/cloudpad', blurb: 'your phone as a keyboard, for the times it\'s closer than your real one' },
+    'DIGUP': { url: 'https://github.com/sryo/stackd-stacks/tree/main/disabled/digup', blurb: 'a local, searchable log of every pixel you\'ve seen' },
+    'EDGEHOPPER': { url: 'https://github.com/sryo/stackd-stacks/tree/main/disabled/edgehopper', blurb: 'push against any screen edge and the cursor warps to the opposite side' },
+    'MUSE': { url: 'https://github.com/sryo/stackd-stacks/tree/main/disabled/muse', blurb: 'adds AI to any input field' },
+    'CHRONOMOUSE': { url: 'https://sryo.github.io/ChronoMouse/', blurb: 'shows the time next to the cursor, where I\'m already looking' },
+    'GMAILTIDY': { url: 'https://github.com/sryo/GmailTidy', blurb: 'an inbox that learns from what you ignore' },
+    'APPTIDY': { url: 'https://github.com/sryo/AppTidy', blurb: 'forgotten apps close themselves' },
+    'AIRNOD': { url: 'https://github.com/sryo/AirNod', blurb: 'AirPods have motion sensors, your Mac has accessibility APIs; AirNod connects them' },
+    'AVIS': { url: 'https://github.com/sryo/avis', blurb: 'point at elements on a webpage and Claude reads the annotation in context' },
+    'CORO': { url: 'https://github.com/sryo/coro', blurb: 'each card is a Claude Code conversation in its own worktree, and you see all of them at once' },
+    'DIRPAD': { url: 'https://github.com/sryo/dirpad', blurb: 'maps trackpad gestures to arrow keys at the OS level' },
+    'FIN': { url: 'https://github.com/sryo/Fin', blurb: 'point your camera at a receipt and it extracts the total, merchant, and date on-device' },
+    'SUBÍ': { url: null, blurb: 'real-time arrivals and a readable map for Córdoba\'s buses' },
+    'ZENTRATE': { url: 'https://github.com/sryo/scriptables', blurb: 'home screen icons replaced with verbs, like a point-and-click adventure' },
+    'STACKD': { url: 'https://github.com/sryo/stackd', blurb: 'folders of HTML that become live pieces of your Mac desktop' },
+    'PETRI': { url: 'https://github.com/sryo/petri', blurb: 'runs risky agent work in a throwaway macOS VM; if it wedges, it resets' },
+    'STOW': { url: 'https://github.com/sryo/stow', blurb: 'a bookmark manager that attaches to any browser window as a sidebar' },
+    'VA': { url: null, note: 'coming soon', blurb: 'a calculator that happens to move money' },
+    'LINEANDFORM': { url: 'https://github.com/sryo/sryo.github.io/blob/master/build.sh', blurb: 'build.sh turns folders and files into a website; no databases, no pipelines, no excuses' },
+    'TUNTUN': { url: 'https://github.com/sryo/tuntun', blurb: 'a full iOS keyboard in a single line, a third the height; typing by feel' },
+  };
+
+  const panel = document.getElementById('panel');
+  let focusedLabel = null;
+
+  function armedShape(shape) {
+    if (!shape || !shape.label) return false;
+    const project = PROJECTS[shape.label];
+    return Boolean(project && project.url) && labelFits(shape);
+  }
+
+  function focusProject(shape) {
+    if (!shape || !shape.label || shape.label === focusedLabel) return;
+    const project = PROJECTS[shape.label];
+    if (!project) return;
+    focusedLabel = shape.label;
+    const parts = ['<strong>' + shape.label + '</strong>'];
+    if (project.blurb) parts.push(': ' + project.blurb);
+    if (project.url) {
+      const host = project.url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+      parts.push('<br><a href="' + project.url + '" target="_blank" rel="noopener" style="color:inherit">' + host + '</a>');
+    } else if (project.note) {
+      parts.push('<br>' + project.note);
+    }
+    panel.innerHTML = parts.join('');
+  }
+
+  // Label arc constants; the geometry lives in labelGeometry/labelArcPath.
+  const LABEL_ARC = 350 * Math.PI / 180;
+  const LABEL_INSET = 30;
+  const RIM_GRAB_BAND = 16;
+
+  const MAX_SHAPES = 32;
+  const FUSION_REACH = 50;
+  const SPRING_DURATION = 760;
+  const AMBIENT_INTERVAL = 1000 / 30;
+
+  // One swatch dealt per visit; ?swatch=name pins one. Every pair holds
+  // at least ~4.4:1 ink on ground.
+  const SWATCHES = [
+    { name: 'eraser',    ground: '#666666', ink: '#FFEDED', accent: '#000000' },
+    { name: 'bumblebee', ground: '#0A0A0A', ink: '#FDCB21', accent: '#D10566' },
+    { name: 'koi',       ground: '#0A0A0A', ink: '#FE6873', accent: '#D0F910' },
+    { name: 'moon',      ground: '#4028FF', ink: '#EBFFFC' },
+    { name: 'terrarium', ground: '#6FF5D0', ink: '#106E54' },
+    { name: 'seashell',  ground: '#FCD9CF', ink: '#070571' },
+    { name: 'glowstick', ground: '#360342', ink: '#E9F905' },
+    { name: 'candle',    ground: '#973849', ink: '#F7FBBC' },
+    { name: 'ember',     ground: '#994400', ink: '#00EEFF' },
+    { name: 'lilac',     ground: '#7202FC', ink: '#FDB0CE' },
+  ];
+  const swatchName = new URLSearchParams(location.search).get('swatch');
+  const theme = SWATCHES.find((s) => s.name === swatchName)
+    || SWATCHES[Math.floor(Math.random() * SWATCHES.length)];
+  theme.cycle = theme.accent
+    ? [theme.ink, theme.ink, theme.ink, theme.accent, theme.ink, theme.ink, theme.accent]
+    : [theme.ink];
+  document.body.style.background = theme.ground;
+  document.getElementById('ground').setAttribute('fill', theme.ground);
+  document.getElementById('panel').style.color = theme.ink;
+  console.log('%c' + theme.name + '%c dealt this visit. Reload reshuffles.',
+    'background:' + theme.ground + ';color:' + theme.ink + ';padding:2px 8px;border-radius:3px', '');
+  // Favicon follows the dealt swatch.
+  const ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+    + '<rect width="64" height="64" rx="14" fill="' + theme.ground + '"/>'
+    + '<circle cx="32" cy="32" r="16" fill="none" stroke="' + theme.ink + '" stroke-width="6"/></svg>';
+  document.querySelector('link[rel="icon"]').href = 'data:image/svg+xml,' + encodeURIComponent(ICON);
+
+  let nextId = 1;
+  let drawnCount = 0;
+  const shapes = [];
+  const elements = new Map();
+  let preview = null;
+  let previewEl = null;
+  let gesture = null;
+  let springs = [];
+  let pops = [];
+  let lastAmbientAt = 0;
+  const startedAt = performance.now();
+
+  function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+  function driftParams(index) {
+    const seed = (index + 1) * 47;
+    return {
+      ax: 5 + (seed % 6),
+      ay: 5 + ((seed * 3 + 2) % 6),
+      px: 16000 + ((seed * 137) % 11001),
+      py: 16000 + ((seed * 211 + 1703) % 11001),
+      phx: ((seed * 29) % 360) * Math.PI / 180,
+      phy: ((seed * 43 + 71) % 360) * Math.PI / 180,
+    };
+  }
+
+  // One droplet saying hello. Growing it plays TUTOR_STAGES.
+  shapes.push({
+    id: nextId++,
+    x: 855, y: 500, r: 58,
+    color: theme.ink,
+    label: 'HI',
+    tutor: true,
+    drift: driftParams(0),
+  });
+
+  function updateHint() {
+    if (focusedLabel !== null) return;
+    panel.innerHTML = drawnCount === 0
+      ? 'drag anywhere to see a project'
+      : 'grab a bubble’s edge and grow it until its name fits. click jiggles, holding pops';
+  }
+
+  function nextDrawColor() {
+    return theme.cycle[drawnCount % theme.cycle.length];
+  }
+
+  function toView(clientX, clientY) {
+    const p = svg.createSVGPoint();
+    p.x = clientX;
+    p.y = clientY;
+    return p.matrixTransform(svg.getScreenCTM().inverse());
+  }
+
+  function springValue(elapsed) {
+    const s = Math.max(0, elapsed - 48) / 1000;
+    return Math.exp(-6.5 * s) * Math.sin(23 * s);
+  }
+
+  // Damped-sine push on every neighbor within reach.
+  function buildResponses(source) {
+    const responses = new Map();
+    for (const shape of shapes) {
+      const dx = shape.x - source.x;
+      const dy = shape.y - source.y;
+      const dist = Math.hypot(dx, dy);
+      const gap = Math.max(0, dist - source.r - shape.r);
+      const reach = Math.max(110, source.r * 0.72) + FUSION_REACH;
+      const linear = clamp(1 - gap / reach, 0, 1);
+      const influence = linear * linear * (3 - 2 * linear);
+      if (influence <= 0) continue;
+      const angle = dist < 0.001
+        ? ((shape.id * 137.508) % 360) * Math.PI / 180
+        : Math.atan2(dy, dx);
+      const travel = Math.min(34, Math.max(10, source.r * 0.11)) * influence;
+      responses.set(shape.id, {
+        x: Math.cos(angle) * travel,
+        y: Math.sin(angle) * travel,
+        scale: 0.042 * influence,
+      });
+    }
+    return responses;
+  }
+
+  function visibleShape(shape, now) {
+    let x = shape.x, y = shape.y, r = shape.r;
+    if (shape.drift) {
+      const t = now - (shape.bornAt || startedAt);
+      const ramp = clamp(t / 2600, 0, 1);
+      x += Math.sin(t / shape.drift.px * Math.PI * 2 + shape.drift.phx) * shape.drift.ax * ramp;
+      y += Math.sin(t / shape.drift.py * Math.PI * 2 + shape.drift.phy) * shape.drift.ay * ramp;
+    }
+    for (const spring of springs) {
+      const elapsed = now - spring.startedAt;
+      if (elapsed >= SPRING_DURATION) continue;
+      const response = spring.responses.get(shape.id);
+      if (!response) continue;
+      const value = springValue(elapsed);
+      x += response.x * value;
+      y += response.y * value;
+      r *= Math.max(0.92, 1 + response.scale * value);
+    }
+    // Radius overshoot after a growth gesture releases.
+    if (shape.bounce) {
+      const elapsed = now - shape.bounce.startedAt;
+      if (elapsed < SPRING_DURATION) {
+        r *= 1 + springValue(elapsed) * shape.bounce.amp;
+      } else {
+        shape.bounce = null;
+      }
+    }
+    // Tremble near the burst threshold while being grown; settles after.
+    const strain = clamp((shape.r - (burstThreshold(shape) - 70)) / 70, 0, 1);
+    if (strain > 0 && shape.lastGrownAt) {
+      const sinceGrown = now - shape.lastGrownAt;
+      const envelope = Math.exp(-Math.max(0, sinceGrown - 80) / 300);
+      if (envelope > 0.02) r += Math.sin(now / 36) * 7 * strain * envelope;
+    }
+    return { x, y, r };
+  }
+
+  let bounceUntil = 0;
+
+  function startBounce(shape, amp) {
+    shape.bounce = { startedAt: performance.now(), amp: clamp(amp, 0.04, 0.18) };
+    bounceUntil = performance.now() + SPRING_DURATION;
+  }
+
+  // Uniform physics: too big bursts. Pods give earlier, releasing children.
+  function burstThreshold(shape) {
+    const project = shape.label ? PROJECTS[shape.label] : null;
+    return project && project.children ? 250 : 320;
+  }
+
+  function circleElement(id) {
+    let el = elements.get(id);
+    if (!el) {
+      el = document.createElementNS(NS, 'circle');
+      inkGroup.appendChild(el);
+      elements.set(id, el);
+    }
+    return el;
+  }
+
+  function removeElement(id) {
+    const el = elements.get(id);
+    if (el) el.remove();
+    elements.delete(id);
+    const label = labelElements.get(id);
+    if (label) {
+      label.path.remove();
+      label.text.remove();
+      labelElements.delete(id);
+    }
+  }
+
+  const labelElements = new Map();
+
+  // Strings measured once at 34px; widths scale linearly with font-size.
+  const measurer = document.createElementNS(NS, 'text');
+  measurer.setAttribute('visibility', 'hidden');
+  measurer.setAttribute('font-size', '34');
+  labelsGroup.appendChild(measurer);
+  const widthCache = new Map();
+  function nameWidth34(text) {
+    let width = widthCache.get(text);
+    if (width === undefined) {
+      measurer.textContent = text;
+      width = measurer.getComputedTextLength();
+      widthCache.set(text, width);
+    }
+    return width;
+  }
+
+  function labelElement(shape) {
+    let entry = labelElements.get(shape.id);
+    if (!entry) {
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('id', 'labelArc' + shape.id);
+      path.setAttribute('fill', 'none');
+      const text = document.createElementNS(NS, 'text');
+      const textPath = document.createElementNS(NS, 'textPath');
+      textPath.setAttribute('href', '#labelArc' + shape.id);
+      textPath.setAttribute('startOffset', '50%');
+      textPath.setAttribute('text-anchor', 'middle');
+      textPath.textContent = shape.label;
+      text.setAttribute('fill', shape.color);
+      text.appendChild(textPath);
+      labelsGroup.appendChild(path);
+      labelsGroup.appendChild(text);
+      entry = { path, text, textPath };
+      labelElements.set(shape.id, entry);
+    }
+    return entry;
+  }
+
+  // Stamp-style labels: seam at the top, text centered at the bottom, climbing
+  // both sides as the bubble grows. Type scales with radius below full size.
+  function labelGeometry(shape, v) {
+    return {
+      radius: v.r - LABEL_INSET,
+      fontSize: clamp((v.r - LABEL_INSET) * (34 / 55), 10, 34),
+    };
+  }
+
+  function labelArcPath(x, y, r) {
+    const half = LABEL_ARC / 2;
+    const a0 = Math.PI / 2 + half;
+    const a1 = Math.PI / 2 - half;
+    // Past 180° the large-arc flag is required or the browser draws a shorter arc.
+    const large = LABEL_ARC > Math.PI ? 1 : 0;
+    const sx = x + r * Math.cos(a0);
+    const sy = y + r * Math.sin(a0);
+    const ex = x + r * Math.cos(a1);
+    const ey = y + r * Math.sin(a1);
+    return 'M ' + sx.toFixed(2) + ' ' + sy.toFixed(2)
+      + ' A ' + r.toFixed(2) + ' ' + r.toFixed(2) + ' 0 ' + large + ' 0 '
+      + ex.toFixed(2) + ' ' + ey.toFixed(2);
+  }
+
+  function updateLabel(shape, v) {
+    if (!shape.label) return;
+    const entry = labelElement(shape);
+    entry.text.setAttribute('fill', shape.color);
+    const geom = labelGeometry(shape, v);
+    if (geom.fontSize < 10 || geom.radius < 12) {
+      entry.text.setAttribute('display', 'none');
+      return;
+    }
+    entry.text.removeAttribute('display');
+    entry.text.setAttribute('font-size', geom.fontSize.toFixed(1));
+    entry.path.setAttribute('d', labelArcPath(v.x, v.y, geom.radius));
+
+    const arcLength = geom.radius * LABEL_ARC;
+    const scale = geom.fontSize / 34;
+    const project = shape.tutor ? null : PROJECTS[shape.label];
+    let displayText;
+    if (shape.tutor) {
+      displayText = shape.label;
+    } else if (project && project.children && shape.r > burstThreshold(shape) - 35) {
+      // Near its burst threshold a pod stops naming itself and begs.
+      displayText = 'KEEP GROWING…';
+    } else {
+      // ↗ marks an armed bubble; labelFits reserves its width.
+      const full = shape.label + (armedShape(shape) ? ' ↗' : '');
+      if (nameWidth34(full) * scale <= arcLength) {
+        displayText = full;
+      } else {
+        // Estimate, then verify: wide glyphs overfill and SVG drops end glyphs.
+        const avgChar = nameWidth34(shape.label) * scale / shape.label.length;
+        let n = Math.min(shape.label.length, Math.max(1, Math.floor(arcLength / avgChar)));
+        while (n > 1 && nameWidth34(shape.label.slice(0, n) + '…') * scale > arcLength) n -= 1;
+        displayText = shape.label.slice(0, n) + '…';
+      }
+    }
+    if (entry.textPath.textContent !== displayText) entry.textPath.textContent = displayText;
+  }
+
+  // Growing HI is meeting Mateo. Radius-gated lines; lessons live in the hint.
+  const TUTOR_STAGES = [
+    [0, 'HI'],
+    [90, 'I’M MATEO'],
+    [140, 'I BUILD THINGS ON THE SIDE'],
+    [175, 'SOME USEFUL, SOME JUST WEIRD'],
+  ];
+  function tutorStage(r) {
+    let pick = TUTOR_STAGES[0][1];
+    for (const [minRadius, text] of TUTOR_STAGES) {
+      if (r >= minRadius) pick = text;
+    }
+    return pick;
+  }
+
+  // The radius where a full name fits and arms.
+  function readingRadius(label) {
+    return (nameWidth34(label) + 44) / LABEL_ARC + LABEL_INSET + 6;
+  }
+
+  // The viewBox region actually visible under slice.
+  function viewportBounds() {
+    const scale = Math.max(svg.clientWidth / 1710, svg.clientHeight / 978) || 1;
+    const vw = svg.clientWidth / scale;
+    const vh = svg.clientHeight / scale;
+    return {
+      minX: (1710 - vw) / 2, maxX: (1710 + vw) / 2,
+      minY: (978 - vh) / 2, maxY: (978 + vh) / 2,
+    };
+  }
+
+  function labelFits(shape) {
+    if (!shape.label) return true;
+    const arcRadius = shape.r - LABEL_INSET;
+    if (arcRadius < 55) return false;
+    // The 44 reserves room for " ↗" so arming can't flicker.
+    return nameWidth34(shape.label) + 44 <= arcRadius * LABEL_ARC;
+  }
+
+  function render(now) {
+    for (const shape of shapes) {
+      const v = visibleShape(shape, now);
+      if (shape.tutor) shape.label = tutorStage(shape.r);
+      const el = circleElement(shape.id);
+      el.setAttribute('cx', v.x.toFixed(2));
+      el.setAttribute('cy', v.y.toFixed(2));
+      el.setAttribute('r', Math.max(0.1, v.r).toFixed(2));
+      el.setAttribute('stroke', shape.color);
+      updateLabel(shape, v);
+    }
+    if (preview) {
+      if (!previewEl) {
+        previewEl = document.createElementNS(NS, 'circle');
+        inkGroup.appendChild(previewEl);
+      }
+      previewEl.setAttribute('cx', preview.x.toFixed(2));
+      previewEl.setAttribute('cy', preview.y.toFixed(2));
+      previewEl.setAttribute('r', Math.max(0.1, preview.r).toFixed(2));
+      previewEl.setAttribute('stroke', preview.color);
+      if (preview.labelState) {
+        Object.assign(preview.labelState, {
+          x: preview.x, y: preview.y, r: preview.r, color: preview.color,
+        });
+        updateLabel(preview.labelState, { x: preview.x, y: preview.y, r: preview.r });
+      }
+    } else if (previewEl) {
+      previewEl.remove();
+      previewEl = null;
+      removeElement('preview');
+    }
+    renderParticles(now);
+  }
+
+  function renderParticles(now) {
+    for (const pop of pops) {
+      const elapsed = now - pop.startedAt;
+      for (const particle of pop.particles) {
+        const progress = clamp((elapsed - particle.delay) / particle.duration, 0, 1);
+        if (progress <= 0) continue;
+        if (progress >= 1) {
+          if (particle.el) { particle.el.remove(); particle.el = null; }
+          continue;
+        }
+        if (!particle.el) {
+          particle.el = document.createElementNS(NS, 'rect');
+          particle.el.setAttribute('fill', pop.color);
+          fxGroup.appendChild(particle.el);
+        }
+        const release = 1 - Math.pow(1 - progress, 4);
+        const ox = pop.x + Math.cos(particle.angle) * pop.r;
+        const oy = pop.y + Math.sin(particle.angle) * pop.r;
+        const x = ox + Math.cos(particle.angle) * particle.travel * release;
+        const y = oy + Math.sin(particle.angle) * particle.travel * release
+          + particle.gravity * progress * progress;
+        const size = Math.max(0.6, particle.size * (1 - progress * 0.55));
+        particle.el.setAttribute('x', (x - size / 2).toFixed(1));
+        particle.el.setAttribute('y', (y - size / 2).toFixed(1));
+        particle.el.setAttribute('width', size.toFixed(1));
+        particle.el.setAttribute('height', size.toFixed(1));
+        particle.el.setAttribute('opacity',
+          (Math.min(1, (1 - progress) / 0.55) * particle.opacity).toFixed(2));
+      }
+    }
+  }
+
+  function makeParticles(source) {
+    const particles = [];
+    const count = clamp(Math.round(source.r * 0.5), 40, 110);
+    for (let i = 0; i < count; i += 1) {
+      const angle = i / count * Math.PI * 2 + (Math.random() - 0.5) * 0.05;
+      particles.push({
+        angle,
+        travel: 20 + Math.random() * Math.min(60, source.r * 0.3 + 18),
+        size: 1.4 + Math.random() * 3.2,
+        delay: 18 + Math.random() * 34,
+        duration: 180 + Math.random() * 120,
+        gravity: 4 + Math.random() * 10,
+        opacity: 0.62 + Math.random() * 0.36,
+        el: null,
+      });
+    }
+    return particles;
+  }
+
+  function findShapeAt(point) {
+    let match = null;
+    const now = performance.now();
+    for (const shape of shapes) {
+      const v = visibleShape(shape, now);
+      const distance = Math.hypot(point.x - v.x, point.y - v.y) - v.r;
+      if (distance > 14) continue;
+      const score = distance <= 0 ? Math.abs(distance) * 0.2 : distance;
+      if (!match || score < match.score) match = { id: shape.id, score };
+    }
+    return match ? match.id : null;
+  }
+
+  function springShape(id) {
+    const shape = shapes.find((s) => s.id === id);
+    if (!shape) return;
+    springs = springs.filter((s) => performance.now() - s.startedAt < SPRING_DURATION);
+    springs.push({ responses: buildResponses(shape), startedAt: performance.now() });
+  }
+
+  // A tap on an armed bubble springs it and opens the project immediately —
+  // with pop moved to press-and-hold, there is no double-click to wait for.
+  // New tab: the visitor's field survives the visit.
+  function handleTap(id) {
+    const shape = shapes.find((s) => s.id === id);
+    if (!shape) return;
+    focusProject(shape);
+    springShape(id);
+    if (armedShape(shape)) window.open(PROJECTS[shape.label].url, '_blank', 'noopener');
+  }
+
+  function popShape(id) {
+    const index = shapes.findIndex((s) => s.id === id);
+    if (index < 0) return;
+    const now = performance.now();
+    const shape = shapes[index];
+    const source = { ...visibleShape(shape, now), color: shape.color };
+    shapes.splice(index, 1);
+    removeElement(id);
+    // Popped projects requeue; pods don't, their children continue them.
+    const project = shape.label ? PROJECTS[shape.label] : null;
+    if (shape.label && !(project && project.children) && LABELS.indexOf(shape.label) >= 0) {
+      LABELS.push(shape.label);
+    }
+    springs.push({ responses: buildResponses({ id, ...source }), startedAt: now });
+    pops = pops.slice(-4);
+    pops.push({ ...source, particles: makeParticles(source), startedAt: now });
+
+    // A pod bursts into its members, scattered wherever there's room.
+    if (project && project.children) {
+      const room = Math.max(0, MAX_SHAPES - shapes.length);
+      // One of each label on the field, so a second burst can't duplicate.
+      const spawned = project.children
+        .filter((l) => !shapes.some((s) => s.label === l))
+        .slice(0, room);
+      const bounds = viewportBounds();
+      spawned.forEach((childLabel, i) => {
+        // Sized by name length, readable at birth.
+        const childR = clamp(readingRadius(childLabel) + 12, 58, 88);
+        // Golden-angle rejection sampling; first clear on-screen spot wins.
+        const startAngle = ((shape.id * 137.508) % 360) * Math.PI / 180 + i * 2.39996;
+        let x = source.x, y = source.y;
+        for (let t = 0; t < 60; t++) {
+          const ang = startAngle + t * 2.39996;
+          const dist = 150 + t * 22;
+          x = clamp(source.x + Math.cos(ang) * dist, bounds.minX + 60, bounds.maxX - 60);
+          y = clamp(source.y + Math.sin(ang) * dist, bounds.minY + 60, bounds.maxY - 60);
+          if (shapes.every((s) => Math.hypot(s.x - x, s.y - y) > s.r + childR + 26)) break;
+        }
+        shapes.push({
+          id: nextId,
+          x, y,
+          r: childR,
+          color: theme.accent && i % 4 === 3 ? theme.accent : theme.ink,
+          label: childLabel,
+          drift: driftParams(nextId),
+          bornAt: now,
+        });
+        nextId += 1;
+      });
+    }
+  }
+
+  // A grab on a bubble's rim resizes it, on its interior holds it, anywhere
+  // else draws a new one. Presses that never travel fall through to taps.
+  function findRimShape(point) {
+    let match = null;
+    const now = performance.now();
+    for (const shape of shapes) {
+      const v = visibleShape(shape, now);
+      const distance = Math.abs(Math.hypot(point.x - v.x, point.y - v.y) - v.r);
+      if (distance > RIM_GRAB_BAND) continue;
+      if (!match || distance < match.distance) match = { id: shape.id, distance };
+    }
+    return match ? match.id : null;
+  }
+
+  let resizeGesture = null;
+  // Hold inflates until burst; quick release taps, later release keeps the size.
+  let holdGesture = null;
+
+  function startDrawGesture(pointerId, start, startClient, fromCenter) {
+    gesture = { pointerId, start, startClient, fromCenter };
+    removeElement('preview');
+    preview = {
+      x: start.x, y: start.y, r: 0.001, color: nextDrawColor(),
+      // Queue is peeked for the preview, consumed on commit.
+      labelState: { id: 'preview', label: labelCursor < LABELS.length ? LABELS[labelCursor] : null },
+    };
+  }
+
+  svg.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    // First pointer wins: a second touch mid-gesture would overwrite state.
+    if (gesture || resizeGesture || holdGesture) return;
+    const start = toView(event.clientX, event.clientY);
+    const rimId = findRimShape(start);
+    if (rimId !== null) {
+      const shape = shapes.find((s) => s.id === rimId);
+      resizeGesture = {
+        pointerId: event.pointerId,
+        shapeId: rimId,
+        startClient: { x: event.clientX, y: event.clientY },
+        fitAtStart: labelFits(shape),
+        rewarded: false,
+      };
+    } else {
+      const innerId = findShapeAt(start);
+      if (innerId !== null) {
+        holdGesture = {
+          pointerId: event.pointerId,
+          shapeId: innerId,
+          start,
+          startClient: { x: event.clientX, y: event.clientY },
+          startedAt: performance.now(),
+          activated: false,
+        };
+      } else {
+        startDrawGesture(event.pointerId, start, { x: event.clientX, y: event.clientY }, event.altKey);
+      }
+    }
+    try { svg.setPointerCapture(event.pointerId); } catch (_) { /* synthetic pointer */ }
+  });
+
+  svg.addEventListener('pointermove', (event) => {
+    if (holdGesture && event.pointerId === holdGesture.pointerId) {
+      if (holdGesture.activated) return;
+      const travel = Math.hypot(
+        event.clientX - holdGesture.startClient.x,
+        event.clientY - holdGesture.startClient.y,
+      );
+      // Moving before activation becomes a draw from the original point.
+      if (travel > 8) {
+        const h = holdGesture;
+        holdGesture = null;
+        startDrawGesture(h.pointerId, h.start, h.startClient, event.altKey);
+      } else {
+        return;
+      }
+    }
+    if (resizeGesture && event.pointerId === resizeGesture.pointerId) {
+      const shape = shapes.find((s) => s.id === resizeGesture.shapeId);
+      if (!shape) { resizeGesture = null; return; }
+      const point = toView(event.clientX, event.clientY);
+      const now = performance.now();
+      const v = visibleShape(shape, now);
+      const prevR = shape.r;
+      const prevT = resizeGesture.lastMoveAt || performance.now();
+      shape.r = clamp(Math.hypot(point.x - v.x, point.y - v.y), 24, 640);
+      // Smoothed velocity sizes the release bounce.
+      const moveNow = performance.now();
+      const instVel = Math.abs(shape.r - prevR) / Math.max(0.008, (moveNow - prevT) / 1000);
+      resizeGesture.vel = (resizeGesture.vel || 0) * 0.7 + instVel * 0.3;
+      resizeGesture.lastMoveAt = moveNow;
+      shape.lastGrownAt = moveNow;
+      focusProject(shape);
+      // Too big bursts.
+      if (shape.r >= burstThreshold(shape)) {
+        resizeGesture = null;
+        popShape(shape.id);
+        return;
+      }
+      if (!resizeGesture.fitAtStart && !resizeGesture.rewarded && labelFits(shape)) {
+        resizeGesture.rewarded = true;
+        springShape(shape.id);
+      }
+      return;
+    }
+    if (!gesture || event.pointerId !== gesture.pointerId) return;
+    gesture.fromCenter = gesture.fromCenter || event.altKey;
+    const current = toView(event.clientX, event.clientY);
+    const dx = current.x - gesture.start.x;
+    const dy = current.y - gesture.start.y;
+    const color = preview ? preview.color : nextDrawColor();
+    const labelState = preview ? preview.labelState : null;
+    preview = gesture.fromCenter
+      ? { x: gesture.start.x, y: gesture.start.y, r: Math.hypot(dx, dy), color, labelState }
+      : { x: gesture.start.x + dx / 2, y: gesture.start.y + dy / 2, r: Math.hypot(dx, dy) / 2, color, labelState };
+    // The panel follows the bubble being drawn, not the last thing hovered.
+    if (labelState && labelState.label) focusProject(labelState);
+  });
+
+  svg.addEventListener('pointerup', (event) => {
+    if (holdGesture && event.pointerId === holdGesture.pointerId) {
+      const hold = holdGesture;
+      holdGesture = null;
+      // Quick press taps; release after inflation keeps the size, with a bounce.
+      if (!hold.activated) {
+        handleTap(hold.shapeId);
+      } else {
+        const shape = shapes.find((s) => s.id === hold.shapeId);
+        if (shape) startBounce(shape, (30 + shape.r * 1.15) / 2600);
+      }
+      return;
+    }
+    if (resizeGesture && event.pointerId === resizeGesture.pointerId) {
+      const completed = resizeGesture;
+      resizeGesture = null;
+      const travel = Math.hypot(
+        event.clientX - completed.startClient.x,
+        event.clientY - completed.startClient.y,
+      );
+      if (travel <= 8) {
+        handleTap(completed.shapeId);
+      } else {
+        const shape = shapes.find((s) => s.id === completed.shapeId);
+        if (shape) startBounce(shape, (completed.vel || 0) / 2600);
+      }
+      return;
+    }
+    if (!gesture || event.pointerId !== gesture.pointerId) return;
+    const completed = gesture;
+    gesture = null;
+    const committed = preview;
+    preview = null;
+    const travel = Math.hypot(
+      event.clientX - completed.startClient.x,
+      event.clientY - completed.startClient.y,
+    );
+    if (travel <= 8) {
+      const id = findShapeAt(toView(event.clientX, event.clientY));
+      if (id !== null) handleTap(id);
+      return;
+    }
+    if (committed && committed.r > 4 && shapes.length < MAX_SHAPES) {
+      const born = {
+        id: nextId,
+        x: committed.x,
+        y: committed.y,
+        r: committed.r,
+        color: committed.color,
+        label: nextLabel(),
+        drift: driftParams(nextId),
+        bornAt: performance.now(),
+        lastGrownAt: performance.now(),
+      };
+      shapes.push(born);
+      startBounce(born, 0.1);
+      nextId += 1;
+      drawnCount += 1;
+      updateHint();
+    }
+  });
+
+  svg.addEventListener('pointercancel', () => { gesture = null; preview = null; resizeGesture = null; holdGesture = null; });
+
+  // Window-level tracking so the cursor keeps moving over the panel link.
+  // Hovering a labeled bubble echoes its project into the panel.
+  let panelLinkHover = false;
+  panel.addEventListener('pointerover', (event) => {
+    panelLinkHover = Boolean(event.target.closest && event.target.closest('a'));
+  });
+  panel.addEventListener('pointerout', () => { panelLinkHover = false; });
+
+  window.addEventListener('pointermove', (event) => {
+    pointerView = toView(event.clientX, event.clientY);
+    cursorSeen = event.pointerType !== 'touch';
+    if (gesture || resizeGesture || holdGesture || panelLinkHover) return;
+    const overId = findShapeAt(pointerView);
+    if (overId !== null && findRimShape(pointerView) === null) {
+      const over = shapes.find((s) => s.id === overId);
+      if (over) focusProject(over);
+    }
+  }, { passive: true });
+
+  document.documentElement.addEventListener('mouseleave', () => { cursorSeen = false; });
+
+  // Cursor states: + over ground, radial arrows on rims, a rounded rect that
+  // wraps bubbles (circle) and the panel link (capsule). Reduced motion snaps.
+  const cursorLayer = document.getElementById('cursorLayer');
+  const cursorGlyph = document.getElementById('cursorGlyph');
+  const cursorRing = document.getElementById('cursorRing');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let pointerView = { x: 855, y: 489 };
+  let cursorSeen = false;
+  // One glyph built from eased numbers, so every state change is a morph.
+  const cursorSt = { x: 855, y: 489, rot: 0, armR: 9, armT: 9, head: 0, ringW: 0, ringH: 0 };
+
+  function updateCursor(now) {
+    if (!cursorSeen) {
+      cursorLayer.setAttribute('display', 'none');
+      return;
+    }
+    cursorLayer.removeAttribute('display');
+    let target = { x: pointerView.x, y: pointerView.y, rot: cursorSt.rot, armR: 9, armT: 9, head: 0, ringW: 0, ringH: 0 };
+    let ringArmed = false;
+    const arrowShapeId = resizeGesture ? resizeGesture.shapeId
+      : (!gesture && !holdGesture && !panelLinkHover ? findRimShape(pointerView) : null);
+    if (panelLinkHover) {
+      // A capsule snapped to the link. Fitts: the target comes to you.
+      const link = panel.querySelector('a');
+      if (link) {
+        const rect = link.getBoundingClientRect();
+        const tl = toView(rect.left, rect.top);
+        const br = toView(rect.right, rect.bottom);
+        target.x = (tl.x + br.x) / 2;
+        target.y = (tl.y + br.y) / 2;
+        target.rot = 0;
+        target.armR = 0;
+        target.armT = 0;
+        target.ringW = (br.x - tl.x) + 18;
+        target.ringH = (br.y - tl.y) + 12;
+      }
+    } else if (arrowShapeId !== null) {
+      const shape = shapes.find((s) => s.id === arrowShapeId);
+      if (shape) {
+        const vv = visibleShape(shape, now);
+        target.rot = Math.atan2(pointerView.y - vv.y, pointerView.x - vv.x);
+        target.armR = 15;
+        target.armT = 0;
+        target.head = 1;
+      }
+    } else if (!gesture) {
+      const overId = holdGesture ? holdGesture.shapeId : findShapeAt(pointerView);
+      if (overId !== null) {
+        const shape = shapes.find((s) => s.id === overId);
+        if (shape) {
+          const vv = visibleShape(shape, now);
+          const d = (vv.r + 8) * 2;
+          target = { x: vv.x, y: vv.y, rot: cursorSt.rot, armR: 0, armT: 0, head: 0, ringW: d, ringH: d };
+          ringArmed = armedShape(shape);
+        }
+      }
+    }
+    const ease = reduceMotion.matches ? 1 : 0.28;
+    cursorSt.x += (target.x - cursorSt.x) * ease;
+    cursorSt.y += (target.y - cursorSt.y) * ease;
+    const spin = ((target.rot - cursorSt.rot + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+    cursorSt.rot += spin * ease;
+    cursorSt.armR += (target.armR - cursorSt.armR) * ease;
+    cursorSt.armT += (target.armT - cursorSt.armT) * ease;
+    cursorSt.head += (target.head - cursorSt.head) * ease;
+    cursorSt.ringW += (target.ringW - cursorSt.ringW) * ease;
+    cursorSt.ringH += (target.ringH - cursorSt.ringH) * ease;
+
+    cursorLayer.setAttribute('transform',
+      'translate(' + cursorSt.x.toFixed(1) + ' ' + cursorSt.y.toFixed(1) + ')'
+      + ' rotate(' + (cursorSt.rot * 180 / Math.PI).toFixed(1) + ')');
+
+    // Geometry is visibility: too-short arms and too-small rings aren't drawn.
+    const a = cursorSt.armR;
+    const t = cursorSt.armT;
+    const h = cursorSt.head;
+    let dPath = '';
+    if (a > 0.5) dPath += 'M ' + (-a).toFixed(1) + ' 0 H ' + a.toFixed(1);
+    if (t > 0.5) dPath += ' M 0 ' + (-t).toFixed(1) + ' V ' + t.toFixed(1);
+    if (h > 0.05 && a > 0.5) {
+      const hx = (6 * h).toFixed(1);
+      const hy = (5 * h).toFixed(1);
+      dPath += ' M ' + (-a).toFixed(1) + ' 0 l ' + hx + ' -' + hy
+        + ' M ' + (-a).toFixed(1) + ' 0 l ' + hx + ' ' + hy
+        + ' M ' + a.toFixed(1) + ' 0 l -' + hx + ' -' + hy
+        + ' M ' + a.toFixed(1) + ' 0 l -' + hx + ' ' + hy;
+    }
+    cursorGlyph.setAttribute('d', dPath);
+    const rw = Math.max(0, cursorSt.ringW);
+    const rh = Math.max(0, cursorSt.ringH);
+    cursorRing.setAttribute('x', (-rw / 2).toFixed(1));
+    cursorRing.setAttribute('y', (-rh / 2).toFixed(1));
+    cursorRing.setAttribute('width', rw.toFixed(1));
+    cursorRing.setAttribute('height', rh.toFixed(1));
+    cursorRing.setAttribute('rx', (Math.min(rw, rh) / 2).toFixed(1));
+    cursorRing.setAttribute('display', Math.min(rw, rh) > 6 ? '' : 'none');
+    cursorRing.setAttribute('stroke-width', ringArmed ? '4.5' : '3');
+  }
+
+  let lastFrameAt = performance.now();
+
+  function step(now) {
+    springs = springs.filter((s) => now - s.startedAt < SPRING_DURATION);
+    pops = pops.filter((p) => now - p.startedAt < 500 || p.particles.some((pt) => pt.el));
+    const dt = Math.min(0.05, Math.max(0, (now - lastFrameAt) / 1000));
+    lastFrameAt = now;
+    // After 300ms a held bubble inflates on its own until burst or release.
+    if (holdGesture) {
+      const hold = holdGesture;
+      if (!hold.activated && now - hold.startedAt >= 300) {
+        hold.activated = true;
+        hold.activatedAt = now;
+      }
+      if (hold.activated) {
+        const shape = shapes.find((s) => s.id === hold.shapeId);
+        if (!shape) {
+          holdGesture = null;
+        } else {
+          // Compounding: the bigger it gets, the faster it swells.
+          shape.r += (30 + shape.r * 1.15) * dt;
+          shape.lastGrownAt = now;
+          focusProject(shape);
+          if (shape.r >= burstThreshold(shape)) {
+            holdGesture = null;
+            popShape(shape.id);
+          }
+        }
+      }
+    }
+    updateCursor(now);
+    const interactive = gesture || resizeGesture || holdGesture || springs.length || pops.length
+      || now < bounceUntil;
+    if (interactive || now - lastAmbientAt >= AMBIENT_INTERVAL) {
+      render(now);
+      if (!interactive) lastAmbientAt = now;
+    }
+  }
+
+  function frame(now) {
+    step(now);
+    requestAnimationFrame(frame);
+  }
+
+  // Console aperture: list shapes, place a labeled bubble, pop by id.
+  window.__bubblesDebug = Object.freeze({
+    shapes: () => shapes.map((s) => ({ id: s.id, label: s.label, r: Math.round(s.r) })),
+    place(label, x, y, r) {
+      if (shapes.length >= MAX_SHAPES) return null;
+      const shape = {
+        id: nextId++, x, y, r,
+        color: theme.ink, label,
+        drift: driftParams(nextId), bornAt: performance.now(),
+      };
+      shapes.push(shape);
+      return shape.id;
+    },
+    pop: popShape,
+    // One synchronous frame step, for when rAF is paused (hidden tab).
+    tick() {
+      step(performance.now());
+    },
+  });
+
+  updateHint();
+  render(performance.now());
+  requestAnimationFrame(frame);
+})();
+</script>
