@@ -3,6 +3,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>experiments · Mateo Yadarola</title>
+<meta name="description" content="Side projects as bubbles. Drag to draw one, grow it to read it, hold it to pop it.">
+<meta property="og:title" content="experiments · Mateo Yadarola">
+<meta property="og:description" content="Side projects as bubbles. Drag to draw one, grow it to read it, hold it to pop it.">
+<meta property="og:url" content="https://yadarola.com.ar/experiments/">
+<meta property="og:image" content="https://yadarola.com.ar/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0A0A0A">
 <link rel="icon" href="data:image/svg+xml,">
 
 <style>
@@ -40,7 +48,10 @@
   </defs>
   <rect id="ground" x="0" y="0" width="1710" height="978"></rect>
   <g id="ink" filter="url(#goo)" fill="none" stroke-width="8"></g>
-  <g id="labels" style="font: 700 34px InterVariable, Inter, system-ui, sans-serif; letter-spacing: 0.03em; pointer-events: none;"></g>
+  <g id="labels" style="font: 700 34px InterVariable, Inter, system-ui, sans-serif; letter-spacing: 0.03em; text-rendering: geometricPrecision; pointer-events: none;"></g>
+  <!-- rotateZ(.1deg) forces matrix compositing; without it the text layer
+       snaps to whole pixels while everything else moves sub-pixel. -->
+  <g id="blurbs" style="font: 500 15px InterVariable, Inter, system-ui, sans-serif; text-rendering: geometricPrecision; transform: rotateZ(.1deg); pointer-events: none;"></g>
   <g id="fx"></g>
   <!-- Custom cursor. White under difference blend: visible over anything. -->
   <g id="cursorLayer" pointer-events="none"
@@ -131,28 +142,17 @@
   };
 
   const panel = document.getElementById('panel');
-  let focusedLabel = null;
+  let armedOnce = false;
 
   function armedShape(shape) {
     if (!shape || !shape.label) return false;
     const project = PROJECTS[shape.label];
-    return Boolean(project && project.url) && labelFits(shape);
-  }
-
-  function focusProject(shape) {
-    if (!shape || !shape.label || shape.label === focusedLabel) return;
-    const project = PROJECTS[shape.label];
-    if (!project) return;
-    focusedLabel = shape.label;
-    const parts = ['<strong>' + shape.label + '</strong>'];
-    if (project.blurb) parts.push(': ' + project.blurb);
-    if (project.url) {
-      const host = project.url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
-      parts.push('<br><a href="' + project.url + '" target="_blank" rel="noopener" style="color:inherit">' + host + '</a>');
-    } else if (project.note) {
-      parts.push('<br>' + project.note);
+    const armed = Boolean(project && project.url) && labelFits(shape);
+    if (armed && !armedOnce) {
+      armedOnce = true;
+      updateHint();
     }
-    panel.innerHTML = parts.join('');
+    return armed;
   }
 
   // Label arc constants; the geometry lives in labelGeometry/labelArcPath.
@@ -195,6 +195,7 @@
     + '<rect width="64" height="64" rx="14" fill="' + theme.ground + '"/>'
     + '<circle cx="32" cy="32" r="16" fill="none" stroke="' + theme.ink + '" stroke-width="6"/></svg>';
   document.querySelector('link[rel="icon"]').href = 'data:image/svg+xml,' + encodeURIComponent(ICON);
+  document.querySelector('meta[name="theme-color"]').content = theme.ground;
 
   let nextId = 1;
   let drawnCount = 0;
@@ -232,11 +233,15 @@
     drift: driftParams(0),
   });
 
+  // The corner is the signature: who this is, and the way out. Hints ride
+  // beneath until the visitor has learned the gestures.
   function updateHint() {
-    if (focusedLabel !== null) return;
-    panel.innerHTML = drawnCount === 0
+    const hint = drawnCount === 0
       ? 'drag anywhere to see a project'
-      : 'grab a bubble’s edge and grow it until its name fits. click jiggles, holding pops';
+      : armedOnce ? '' : 'grab a bubble’s edge and grow it until its name fits. click jiggles, holding pops';
+    panel.innerHTML = '<strong>Mateo Yadarola</strong>. Side projects; the rest is at '
+      + '<a href="https://yadarola.com.ar" style="color:inherit">yadarola.com.ar</a>'
+      + (hint ? '<br>' + hint : '');
   }
 
   function nextDrawColor() {
@@ -493,6 +498,152 @@
     return nameWidth34(shape.label) + 44 <= arcRadius * LABEL_ARC;
   }
 
+  // The focused bubble carries its blurb inside, wrapped to the circle.
+  // Each line rides a straight textPath: path-laid glyphs move sub-pixel,
+  // transform-laid text pixel-snaps.
+  const blurbGroup = document.createElementNS(NS, 'g');
+  document.getElementById('blurbs').appendChild(blurbGroup);
+  const blurbLines = [];
+  const blurbSt = { opacity: 0, key: '' };
+  let blurbLayout = [];
+  const BLURB_FONT = 15;
+  const BLURB_LINE = 19;
+
+  function wrapBlurb(text, rIn) {
+    const words = text.split(' ');
+    const widthOf = (w) => nameWidth34(w) * BLURB_FONT / 34;
+    const spaceW = BLURB_FONT * 0.28;
+    const maxLines = Math.max(1, Math.floor((rIn * 2 - 14) / BLURB_LINE));
+    for (let count = 1; count <= maxLines; count += 1) {
+      const lines = [];
+      let idx = 0;
+      for (let i = 0; i < count && idx < words.length; i += 1) {
+        const y = (i - (count - 1) / 2) * BLURB_LINE + 5;
+        const half = Math.sqrt(Math.max(0, rIn * rIn - y * y)) - 8;
+        let line = words[idx];
+        let width = widthOf(words[idx]);
+        idx += 1;
+        while (idx < words.length && width + spaceW + widthOf(words[idx]) <= half * 2) {
+          width += spaceW + widthOf(words[idx]);
+          line += ' ' + words[idx];
+          idx += 1;
+        }
+        lines.push({ text: line, y, half });
+      }
+      if (idx >= words.length || count === maxLines) {
+        if (idx < words.length) lines[lines.length - 1].text += '…';
+        return lines;
+      }
+    }
+    return [{ text, y: 5, half: rIn }];
+  }
+
+  // The last line is the destination: a real anchor for right-click and copy.
+  const blurbLink = (() => {
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('id', 'blurbPathLink');
+    path.setAttribute('fill', 'none');
+    const a = document.createElementNS(NS, 'a');
+    a.setAttribute('rel', 'noopener');
+    a.setAttribute('target', '_blank');
+    const text = document.createElementNS(NS, 'text');
+    text.setAttribute('opacity', '0.75');
+    const textPath = document.createElementNS(NS, 'textPath');
+    textPath.setAttribute('href', '#blurbPathLink');
+    textPath.setAttribute('startOffset', '50%');
+    textPath.setAttribute('text-anchor', 'middle');
+    text.appendChild(textPath);
+    a.appendChild(text);
+    blurbGroup.appendChild(path);
+    blurbGroup.appendChild(a);
+    return { path, a, text, textPath };
+  })();
+  let blurbLinkLine = null;
+
+  function blurbLineElement(i) {
+    let entry = blurbLines[i];
+    if (!entry) {
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('id', 'blurbPath' + i);
+      path.setAttribute('fill', 'none');
+      const text = document.createElementNS(NS, 'text');
+      const textPath = document.createElementNS(NS, 'textPath');
+      textPath.setAttribute('href', '#blurbPath' + i);
+      textPath.setAttribute('startOffset', '50%');
+      textPath.setAttribute('text-anchor', 'middle');
+      text.appendChild(textPath);
+      blurbGroup.appendChild(path);
+      blurbGroup.appendChild(text);
+      entry = { path, text, textPath };
+      blurbLines[i] = entry;
+    }
+    return entry;
+  }
+
+  function renderBlurb(now) {
+    const id = holdGesture ? holdGesture.shapeId
+      : resizeGesture ? resizeGesture.shapeId : hoverShapeId;
+    const shape = id === null || id === undefined ? null : shapes.find((s) => s.id === id);
+    const project = shape && shape.label ? PROJECTS[shape.label] : null;
+    const v = shape ? visibleShape(shape, now) : null;
+    const rIn = v ? v.r * 0.72 : 0;
+    const show = Boolean(project && project.blurb && rIn > 34);
+    const ease = reduceMotion.matches ? 1 : 0.22;
+    blurbSt.opacity += ((show ? 1 : 0) - blurbSt.opacity) * ease;
+    if (blurbSt.opacity < 0.02) {
+      blurbGroup.setAttribute('display', 'none');
+      return;
+    }
+    blurbGroup.removeAttribute('display');
+    blurbGroup.setAttribute('opacity', blurbSt.opacity.toFixed(2));
+    if (!show) return;
+    const key = shape.label + '|' + Math.round(rIn / 9);
+    if (key !== blurbSt.key) {
+      blurbSt.key = key;
+      blurbLayout = wrapBlurb(project.blurb, rIn);
+      while (blurbLines.length > blurbLayout.length) {
+        const extra = blurbLines.pop();
+        extra.path.remove();
+        extra.text.remove();
+      }
+      blurbLayout.forEach((line, i) => {
+        blurbLineElement(i).textPath.textContent = line.text;
+      });
+      blurbLinkLine = null;
+      const tailText = project.url
+        ? project.url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
+        : project.note || '';
+      if (tailText) {
+        const y = blurbLayout[blurbLayout.length - 1].y + BLURB_LINE + 2;
+        const halfSq = rIn * rIn - y * y;
+        const width = nameWidth34(tailText) * BLURB_FONT / 34;
+        if (halfSq > 0 && width <= (Math.sqrt(halfSq) - 6) * 2) {
+          blurbLinkLine = { y, half: Math.sqrt(halfSq) - 6 };
+        }
+      }
+      blurbLink.textPath.textContent = blurbLinkLine ? tailText : '';
+      if (blurbLinkLine && project.url) {
+        blurbLink.a.setAttribute('href', project.url);
+        blurbLink.a.style.pointerEvents = 'auto';
+        blurbLink.text.setAttribute('text-decoration', 'underline');
+      } else {
+        blurbLink.a.removeAttribute('href');
+        blurbLink.a.style.pointerEvents = 'none';
+        blurbLink.text.setAttribute('text-decoration', 'none');
+      }
+    }
+    blurbGroup.setAttribute('fill', shape.color);
+    blurbLayout.forEach((line, i) => {
+      const entry = blurbLineElement(i);
+      entry.path.setAttribute('d', 'M ' + (v.x - line.half).toFixed(2) + ' ' + (v.y + line.y).toFixed(2)
+        + ' H ' + (v.x + line.half).toFixed(2));
+    });
+    blurbLink.path.setAttribute('d', blurbLinkLine
+      ? 'M ' + (v.x - blurbLinkLine.half).toFixed(2) + ' ' + (v.y + blurbLinkLine.y).toFixed(2)
+        + ' H ' + (v.x + blurbLinkLine.half).toFixed(2)
+      : '');
+  }
+
   function render(now) {
     for (const shape of shapes) {
       const v = visibleShape(shape, now);
@@ -524,6 +675,7 @@
       previewEl = null;
       removeElement('preview');
     }
+    renderBlurb(now);
     renderParticles(now);
   }
 
@@ -604,7 +756,6 @@
   function handleTap(id) {
     const shape = shapes.find((s) => s.id === id);
     if (!shape) return;
-    focusProject(shape);
     springShape(id);
     if (armedShape(shape)) window.open(PROJECTS[shape.label].url, '_blank', 'noopener');
   }
@@ -691,6 +842,8 @@
 
   svg.addEventListener('pointerdown', (event) => {
     if (event.button !== 0) return;
+    // Presses on anchors belong to the anchor.
+    if (event.target.closest && event.target.closest('a')) return;
     // First pointer wins: a second touch mid-gesture would overwrite state.
     if (gesture || resizeGesture || holdGesture) return;
     const start = toView(event.clientX, event.clientY);
@@ -753,7 +906,6 @@
       resizeGesture.vel = (resizeGesture.vel || 0) * 0.7 + instVel * 0.3;
       resizeGesture.lastMoveAt = moveNow;
       shape.lastGrownAt = moveNow;
-      focusProject(shape);
       // Too big bursts.
       if (shape.r >= burstThreshold(shape)) {
         resizeGesture = null;
@@ -776,8 +928,6 @@
     preview = gesture.fromCenter
       ? { x: gesture.start.x, y: gesture.start.y, r: Math.hypot(dx, dy), color, labelState }
       : { x: gesture.start.x + dx / 2, y: gesture.start.y + dy / 2, r: Math.hypot(dx, dy) / 2, color, labelState };
-    // The panel follows the bubble being drawn, not the last thing hovered.
-    if (labelState && labelState.label) focusProject(labelState);
   });
 
   svg.addEventListener('pointerup', (event) => {
@@ -844,23 +994,22 @@
 
   svg.addEventListener('pointercancel', () => { gesture = null; preview = null; resizeGesture = null; holdGesture = null; });
 
-  // Window-level tracking so the cursor keeps moving over the panel link.
-  // Hovering a labeled bubble echoes its project into the panel.
-  let panelLinkHover = false;
-  panel.addEventListener('pointerover', (event) => {
-    panelLinkHover = Boolean(event.target.closest && event.target.closest('a'));
+  // Window-level tracking so the cursor keeps moving over links. The capsule
+  // wraps any hovered anchor, panel or in-bubble.
+  let hoveredLink = null;
+  document.addEventListener('pointerover', (event) => {
+    hoveredLink = event.target.closest ? event.target.closest('a') : null;
   });
-  panel.addEventListener('pointerout', () => { panelLinkHover = false; });
+  document.addEventListener('pointerout', () => { hoveredLink = null; });
 
   window.addEventListener('pointermove', (event) => {
     pointerView = toView(event.clientX, event.clientY);
     cursorSeen = event.pointerType !== 'touch';
-    if (gesture || resizeGesture || holdGesture || panelLinkHover) return;
-    const overId = findShapeAt(pointerView);
-    if (overId !== null && findRimShape(pointerView) === null) {
-      const over = shapes.find((s) => s.id === overId);
-      if (over) focusProject(over);
+    if (gesture || resizeGesture || holdGesture) {
+      hoverShapeId = null;
+      return;
     }
+    hoverShapeId = findShapeAt(pointerView);
   }, { passive: true });
 
   document.documentElement.addEventListener('mouseleave', () => { cursorSeen = false; });
@@ -873,6 +1022,7 @@
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let pointerView = { x: 855, y: 489 };
   let cursorSeen = false;
+  let hoverShapeId = null;
   // One glyph built from eased numbers, so every state change is a morph.
   const cursorSt = { x: 855, y: 489, rot: 0, armR: 9, armT: 9, head: 0, ringW: 0, ringH: 0 };
 
@@ -885,22 +1035,19 @@
     let target = { x: pointerView.x, y: pointerView.y, rot: cursorSt.rot, armR: 9, armT: 9, head: 0, ringW: 0, ringH: 0 };
     let ringArmed = false;
     const arrowShapeId = resizeGesture ? resizeGesture.shapeId
-      : (!gesture && !holdGesture && !panelLinkHover ? findRimShape(pointerView) : null);
-    if (panelLinkHover) {
+      : (!gesture && !holdGesture && !hoveredLink ? findRimShape(pointerView) : null);
+    if (hoveredLink) {
       // A capsule snapped to the link. Fitts: the target comes to you.
-      const link = panel.querySelector('a');
-      if (link) {
-        const rect = link.getBoundingClientRect();
-        const tl = toView(rect.left, rect.top);
-        const br = toView(rect.right, rect.bottom);
-        target.x = (tl.x + br.x) / 2;
-        target.y = (tl.y + br.y) / 2;
-        target.rot = 0;
-        target.armR = 0;
-        target.armT = 0;
-        target.ringW = (br.x - tl.x) + 18;
-        target.ringH = (br.y - tl.y) + 12;
-      }
+      const rect = hoveredLink.getBoundingClientRect();
+      const tl = toView(rect.left, rect.top);
+      const br = toView(rect.right, rect.bottom);
+      target.x = (tl.x + br.x) / 2;
+      target.y = (tl.y + br.y) / 2;
+      target.rot = 0;
+      target.armR = 0;
+      target.armT = 0;
+      target.ringW = (br.x - tl.x) + 18;
+      target.ringH = (br.y - tl.y) + 12;
     } else if (arrowShapeId !== null) {
       const shape = shapes.find((s) => s.id === arrowShapeId);
       if (shape) {
@@ -986,7 +1133,6 @@
           // Compounding: the bigger it gets, the faster it swells.
           shape.r += (30 + shape.r * 1.15) * dt;
           shape.lastGrownAt = now;
-          focusProject(shape);
           if (shape.r >= burstThreshold(shape)) {
             holdGesture = null;
             popShape(shape.id);
