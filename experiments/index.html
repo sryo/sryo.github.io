@@ -335,175 +335,181 @@
     return project && project.children ? 250 : 320;
   }
 
-  // Sound is synthesized from the same numbers that drive the visuals: no
-  // files, no assets. Browsers only allow audio to start from a gesture, so
-  // the context is primed on pointerdown and the page is silent until touched.
-  let audio = null;
-  let noiseBuffer = null;
+  // Synthesized from the same numbers as the visuals. Browsers only start
+  // audio inside a gesture, so nothing plays until the first pointerdown.
+  const sound = (() => {
+    // Pairs read [at a droplet, at full size]. `over` is the radius that
+    // counts as full size for that sound.
+    const P = {
+      // Entering a bubble. Frequent, so it stays tiny.
+      tick: { hz: [880, 620], gain: 0.022, attack: 0.003, decay: 0.019, over: 260, floor: 0 },
+      // A drawn bubble becoming its own thing. Rises, where the pop falls.
+      blip: { hz: [860, 390], rise: 1.5, riseTime: 0.08, gain: 0.11, attack: 0.008, decay: 0.13, over: 260, floor: 0.05 },
+      // A rupture over a cavity thump.
+      pop: {
+        band: [3200, 900], bandTail: [400, 140], q: 1.4, burstGain: 0.34,
+        thump: [380, 80], thumpDrop: 0.5, thumpGain: 0.3, thumpAttack: 0.006,
+        decay: [0.05, 0.19], over: 320, floor: 0.08,
+      },
+      // Any bubble changing size, drawn, held or dragged.
+      growth: {
+        hz: [80, 195], gain: 0.028, fadeIn: 0.14, fadeOut: 0.09,
+        lowpass: 520, q: 0.6, wobbleHz: [4, 9], wobbleDepth: 0.019, strainBand: 70,
+      },
+    };
 
-  function audioContext() {
-    if (!audio) {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return null;
-      audio = new Ctx();
+    let live = null;
+    let noiseBuf = null;
+    let voice = null;
+
+    const lerp = (pair, k) => pair[0] + (pair[1] - pair[0]) * k;
+
+    // `external` renders into an OfflineAudioContext for tests. `onlyIfPrimed`
+    // keeps hover from creating a context before any gesture.
+    function ctx(external, onlyIfPrimed) {
+      if (external) return external;
+      if (onlyIfPrimed && !live) return null;
+      if (!live) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return null;
+        live = new Ctx();
+      }
+      if (live.state === 'suspended') live.resume();
+      return live;
     }
-    if (audio.state === 'suspended') audio.resume();
-    return audio;
-  }
 
-  function noiseSource(ctx) {
-    if (!noiseBuffer || noiseBuffer.sampleRate !== ctx.sampleRate) {
-      const n = Math.floor(ctx.sampleRate * 0.3);
-      noiseBuffer = ctx.createBuffer(1, n, ctx.sampleRate);
-      const data = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < n; i += 1) data[i] = Math.random() * 2 - 1;
+    function noiseSource(c) {
+      if (!noiseBuf || noiseBuf.sampleRate !== c.sampleRate) {
+        const n = Math.floor(c.sampleRate * 0.3);
+        noiseBuf = c.createBuffer(1, n, c.sampleRate);
+        const data = noiseBuf.getChannelData(0);
+        for (let i = 0; i < n; i += 1) data[i] = Math.random() * 2 - 1;
+      }
+      const src = c.createBufferSource();
+      src.buffer = noiseBuf;
+      return src;
     }
-    const src = ctx.createBufferSource();
-    src.buffer = noiseBuffer;
-    return src;
-  }
 
-  // Pop: a rupture (bandpassed noise) over a cavity thump (sine dropping an
-  // octave). Big bubbles pop deep and slow, droplets plip.
-  function playPop(radius, context) {
-    const ctx = context || audioContext();
-    if (!ctx) return;
-    const t = ctx.currentTime;
-    const size = clamp(radius / 320, 0.08, 1);
-    const decay = 0.05 + size * 0.14;
+    function envelope(c, t, peak, attack, decay) {
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + attack);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+      return g;
+    }
 
-    const burst = noiseSource(ctx);
-    const band = ctx.createBiquadFilter();
-    band.type = 'bandpass';
-    band.Q.value = 1.4;
-    band.frequency.setValueAtTime(3200 - size * 2300, t);
-    band.frequency.exponentialRampToValueAtTime(400 - size * 260, t + decay);
-    const burstGain = ctx.createGain();
-    burstGain.gain.setValueAtTime(0.34, t);
-    burstGain.gain.exponentialRampToValueAtTime(0.0001, t + decay * 0.7);
-    burst.connect(band).connect(burstGain).connect(ctx.destination);
-    burst.start(t);
-    burst.stop(t + decay);
+    // tick and blip differ only in their numbers.
+    function tone(spec, radius, external, onlyIfPrimed) {
+      const c = ctx(external, onlyIfPrimed);
+      if (!c) return;
+      const t = c.currentTime;
+      const size = clamp(radius / spec.over, spec.floor, 1);
+      const osc = c.createOscillator();
+      osc.type = 'sine';
+      const hz = lerp(spec.hz, size);
+      osc.frequency.setValueAtTime(hz, t);
+      if (spec.rise) osc.frequency.exponentialRampToValueAtTime(hz * spec.rise, t + spec.riseTime);
+      osc.connect(envelope(c, t, spec.gain, spec.attack, spec.decay)).connect(c.destination);
+      osc.start(t);
+      osc.stop(t + spec.decay + 0.02);
+    }
 
-    const thump = ctx.createOscillator();
-    thump.type = 'sine';
-    const thumpHz = 380 - size * 300;
-    thump.frequency.setValueAtTime(thumpHz, t);
-    thump.frequency.exponentialRampToValueAtTime(thumpHz * 0.5, t + decay);
-    const thumpGain = ctx.createGain();
-    thumpGain.gain.setValueAtTime(0.0001, t);
-    thumpGain.gain.exponentialRampToValueAtTime(0.3, t + 0.006);
-    thumpGain.gain.exponentialRampToValueAtTime(0.0001, t + decay);
-    thump.connect(thumpGain).connect(ctx.destination);
-    thump.start(t);
-    thump.stop(t + decay + 0.02);
-  }
+    function pop(radius, external) {
+      const c = ctx(external);
+      if (!c) return;
+      const s = P.pop;
+      const t = c.currentTime;
+      const size = clamp(radius / s.over, s.floor, 1);
+      const decay = lerp(s.decay, size);
 
-  // Inflation: a rubber tone that climbs with the radius, with a tremolo that
-  // deepens and quickens as the bubble nears its threshold. The strain value
-  // is the one the visual tremble uses, so you hear the burst coming.
-  let inflateVoice = null;
+      const burst = noiseSource(c);
+      const band = c.createBiquadFilter();
+      band.type = 'bandpass';
+      band.Q.value = s.q;
+      band.frequency.setValueAtTime(lerp(s.band, size), t);
+      band.frequency.exponentialRampToValueAtTime(lerp(s.bandTail, size), t + decay);
+      const burstGain = c.createGain();
+      burstGain.gain.setValueAtTime(s.burstGain, t);
+      burstGain.gain.exponentialRampToValueAtTime(0.0001, t + decay * 0.7);
+      burst.connect(band).connect(burstGain).connect(c.destination);
+      burst.start(t);
+      burst.stop(t + decay);
 
-  // Low and linear: a squared curve accelerated the pitch just as the radius
-  // was already accelerating, which read as an engine revving.
-  function inflateFreq(radius, threshold) {
-    const progress = clamp(radius / threshold, 0, 1);
-    return 80 + progress * 115;
-  }
+      const hz = lerp(s.thump, size);
+      const thump = c.createOscillator();
+      thump.type = 'sine';
+      thump.frequency.setValueAtTime(hz, t);
+      thump.frequency.exponentialRampToValueAtTime(hz * s.thumpDrop, t + decay);
+      thump.connect(envelope(c, t, s.thumpGain, s.thumpAttack, decay)).connect(c.destination);
+      thump.start(t);
+      thump.stop(t + decay + 0.02);
+    }
 
-  function startInflate(radius, threshold) {
-    const ctx = audioContext();
-    if (!ctx || inflateVoice) return;
-    const t = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    osc.type = 'triangle';
-    // Set the pitch before starting: an unset oscillator defaults to 440Hz,
-    // which is both wrong and piercing.
-    osc.frequency.setValueAtTime(inflateFreq(radius, threshold), t);
-    const tremolo = ctx.createOscillator();
-    tremolo.type = 'sine';
-    tremolo.frequency.value = 4;
-    const tremoloDepth = ctx.createGain();
-    tremoloDepth.gain.value = 0;
-    // A lowpass tames the triangle's harmonics. Keeping the triangle rather
-    // than a sine keeps it audible on laptop speakers, which roll off the low
-    // fundamentals this drone lives in.
-    const tone = ctx.createBiquadFilter();
-    tone.type = 'lowpass';
-    tone.frequency.value = 520;
-    tone.Q.value = 0.6;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.028, t + 0.14);
-    tremolo.connect(tremoloDepth).connect(gain.gain);
-    osc.connect(tone).connect(gain).connect(ctx.destination);
-    osc.start(t);
-    tremolo.start(t);
-    inflateVoice = { ctx, osc, gain, tremolo, tremoloDepth };
-  }
+    // The one sustained voice.
+    const growth = {
+      // Linear on purpose: a curve here accelerates the pitch while the radius
+      // is already accelerating, which reads as an engine revving.
+      hzAt: (radius, threshold) => lerp(P.growth.hz, clamp(radius / threshold, 0, 1)),
+      start(radius, threshold) {
+        const c = ctx();
+        if (!c || voice) return;
+        const g = P.growth;
+        const t = c.currentTime;
+        const osc = c.createOscillator();
+        osc.type = 'triangle';
+        // Pitch before start: an unset oscillator defaults to a piercing 440Hz.
+        osc.frequency.setValueAtTime(growth.hzAt(radius, threshold), t);
+        const wobble = c.createOscillator();
+        wobble.type = 'sine';
+        wobble.frequency.value = g.wobbleHz[0];
+        const wobbleDepth = c.createGain();
+        wobbleDepth.gain.value = 0;
+        // Triangle, not sine: laptop speakers roll off the low fundamentals
+        // this drone lives in, and its harmonics survive. The lowpass then
+        // takes the buzz back out.
+        const filter = c.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = g.lowpass;
+        filter.Q.value = g.q;
+        const gain = c.createGain();
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(g.gain, t + g.fadeIn);
+        wobble.connect(wobbleDepth).connect(gain.gain);
+        osc.connect(filter).connect(gain).connect(c.destination);
+        osc.start(t);
+        wobble.start(t);
+        voice = { c, osc, gain, wobble, wobbleDepth };
+      },
+      update(radius, threshold) {
+        if (!voice) return;
+        const g = P.growth;
+        const t = voice.c.currentTime;
+        const strain = clamp((radius - (threshold - g.strainBand)) / g.strainBand, 0, 1);
+        voice.osc.frequency.setTargetAtTime(growth.hzAt(radius, threshold), t, 0.05);
+        voice.wobble.frequency.setTargetAtTime(lerp(g.wobbleHz, strain), t, 0.08);
+        voice.wobbleDepth.gain.setTargetAtTime(strain * g.wobbleDepth, t, 0.08);
+      },
+      stop() {
+        if (!voice) return;
+        const { c, osc, gain, wobble } = voice;
+        const t = c.currentTime;
+        gain.gain.cancelScheduledValues(t);
+        gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), t);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + P.growth.fadeOut);
+        osc.stop(t + P.growth.fadeOut + 0.01);
+        wobble.stop(t + P.growth.fadeOut + 0.01);
+        voice = null;
+      },
+    };
 
-  function updateInflate(radius, threshold) {
-    if (!inflateVoice) return;
-    const { ctx, osc, tremolo, tremoloDepth } = inflateVoice;
-    const t = ctx.currentTime;
-    const strain = clamp((radius - (threshold - 70)) / 70, 0, 1);
-    osc.frequency.setTargetAtTime(inflateFreq(radius, threshold), t, 0.05);
-    tremolo.frequency.setTargetAtTime(4 + strain * 5, t, 0.08);
-    tremoloDepth.gain.setTargetAtTime(strain * 0.019, t, 0.08);
-  }
-
-  // Detach: the blip when a drawn bubble becomes its own thing. Rising, where
-  // the pop falls.
-  function playDetach(radius, context) {
-    const ctx = context || audioContext();
-    if (!ctx) return;
-    const t = ctx.currentTime;
-    const size = clamp(radius / 260, 0.05, 1);
-    const osc = ctx.createOscillator();
-    osc.type = 'sine';
-    const hz = 860 - size * 470;
-    osc.frequency.setValueAtTime(hz, t);
-    osc.frequency.exponentialRampToValueAtTime(hz * 1.5, t + 0.08);
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.11, t + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.15);
-  }
-
-  // Focus tick: a smaller, faster sibling of the detach blip, for moving onto
-  // a different bubble. Silent until a gesture has primed the context, so
-  // hovering alone never starts audio.
-  function playTick(radius, context) {
-    const ctx = context || (audio ? audioContext() : null);
-    if (!ctx) return;
-    const t = ctx.currentTime;
-    const size = clamp(radius / 260, 0, 1);
-    const osc = ctx.createOscillator();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880 - size * 260, t);
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.022, t + 0.003);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.019);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.025);
-  }
-
-  function stopInflate() {
-    if (!inflateVoice) return;
-    const { ctx, osc, gain, tremolo } = inflateVoice;
-    const t = ctx.currentTime;
-    gain.gain.cancelScheduledValues(t);
-    gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), t);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
-    osc.stop(t + 0.1);
-    tremolo.stop(t + 0.1);
-    inflateVoice = null;
-  }
+    return {
+      prime: () => ctx(),
+      tick: (radius, external) => tone(P.tick, radius, external, true),
+      blip: (radius, external) => tone(P.blip, radius, external),
+      pop,
+      growth,
+    };
+  })();
 
   function circleElement(id) {
     let el = elements.get(id);
@@ -946,7 +952,7 @@
     springs.push({ responses: buildResponses({ id, ...source }), startedAt: now });
     pops = pops.slice(-4);
     pops.push({ ...source, particles: makeParticles(source), startedAt: now });
-    playPop(source.r);
+    sound.pop(source.r);
 
     // A pod bursts into its members, scattered wherever there's room.
     if (project && project.children) {
@@ -1018,7 +1024,7 @@
     // First pointer wins: a second touch mid-gesture would overwrite state.
     if (gesture || resizeGesture || holdGesture) return;
     // Audio can only start inside a gesture.
-    audioContext();
+    sound.prime();
     const start = toView(event.clientX, event.clientY);
     const rimId = findRimShape(start);
     if (rimId !== null) {
@@ -1066,7 +1072,7 @@
     }
     if (resizeGesture && event.pointerId === resizeGesture.pointerId) {
       const shape = shapes.find((s) => s.id === resizeGesture.shapeId);
-      if (!shape) { resizeGesture = null; stopInflate(); return; }
+      if (!shape) { resizeGesture = null; sound.growth.stop(); return; }
       const point = toView(event.clientX, event.clientY);
       const now = performance.now();
       const v = visibleShape(shape, now);
@@ -1082,12 +1088,12 @@
       // Dragging a rim is the third way to grow a bubble, so it gets the same
       // drone. It starts on the first move, not the grab.
       const threshold = burstThreshold(shape);
-      startInflate(shape.r, threshold);
-      updateInflate(shape.r, threshold);
+      sound.growth.start(shape.r, threshold);
+      sound.growth.update(shape.r, threshold);
       // Too big bursts.
       if (shape.r >= threshold) {
         resizeGesture = null;
-        stopInflate();
+        sound.growth.stop();
         popShape(shape.id);
         return;
       }
@@ -1109,15 +1115,15 @@
       : { x: gesture.start.x + dx / 2, y: gesture.start.y + dy / 2, r: Math.hypot(dx, dy) / 2, color, labelState };
     // The drone begins on the first movement: a click that never becomes a
     // drag isn't a growth, so it stays silent.
-    startInflate(preview.r, 320);
-    updateInflate(preview.r, 320);
+    sound.growth.start(preview.r, 320);
+    sound.growth.update(preview.r, 320);
   });
 
   svg.addEventListener('pointerup', (event) => {
     if (holdGesture && event.pointerId === holdGesture.pointerId) {
       const hold = holdGesture;
       holdGesture = null;
-      stopInflate();
+      sound.growth.stop();
       // Quick press taps; release after inflation keeps the size, with a bounce.
       if (!hold.activated) {
         handleTap(hold.shapeId);
@@ -1130,7 +1136,7 @@
     if (resizeGesture && event.pointerId === resizeGesture.pointerId) {
       const completed = resizeGesture;
       resizeGesture = null;
-      stopInflate();
+      sound.growth.stop();
       const travel = Math.hypot(
         event.clientX - completed.startClient.x,
         event.clientY - completed.startClient.y,
@@ -1146,7 +1152,7 @@
     if (!gesture || event.pointerId !== gesture.pointerId) return;
     const completed = gesture;
     gesture = null;
-    stopInflate();
+    sound.growth.stop();
     const committed = preview;
     preview = null;
     const travel = Math.hypot(
@@ -1172,7 +1178,7 @@
       };
       shapes.push(born);
       startBounce(born, 0.1);
-      playDetach(born.r);
+      sound.blip(born.r);
       nextId += 1;
       drawnCount += 1;
       updateHint();
@@ -1181,7 +1187,7 @@
 
   svg.addEventListener('pointercancel', () => {
     gesture = null; preview = null; resizeGesture = null; holdGesture = null;
-    stopInflate();
+    sound.growth.stop();
   });
 
   // Window-level tracking so the cursor keeps moving over links. The capsule
@@ -1204,7 +1210,7 @@
       hoverShapeId = overId;
       if (overId !== null) {
         const entered = shapes.find((s) => s.id === overId);
-        if (entered) playTick(entered.r);
+        if (entered) sound.tick(entered.r);
       }
     }
   }, { passive: true });
@@ -1321,21 +1327,21 @@
       const shape = shapes.find((s) => s.id === hold.shapeId);
       if (!shape) {
         holdGesture = null;
-        stopInflate();
+        sound.growth.stop();
       } else {
         const threshold = burstThreshold(shape);
         if (!hold.activated && now - hold.startedAt >= 300) {
           hold.activated = true;
-          startInflate(shape.r, threshold);
+          sound.growth.start(shape.r, threshold);
         }
         if (hold.activated) {
           // Compounding: the bigger it gets, the faster it swells.
           shape.r += (30 + shape.r * 1.15) * dt;
           shape.lastGrownAt = now;
-          updateInflate(shape.r, threshold);
+          sound.growth.update(shape.r, threshold);
           if (shape.r >= threshold) {
             holdGesture = null;
-            stopInflate();
+            sound.growth.stop();
             popShape(shape.id);
           }
         }
@@ -1369,10 +1375,8 @@
       return shape.id;
     },
     pop: popShape,
-    // Both accept a context, so the recipes can be rendered offline and measured.
-    playPop,
-    playDetach,
-    playTick,
+    // Recipes take an optional context, so they render offline for measuring.
+    sound,
     // One synchronous frame step, for when rAF is paused (hidden tab).
     tick() {
       step(performance.now());
