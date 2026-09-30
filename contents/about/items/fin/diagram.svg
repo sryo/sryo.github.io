@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 232">
+  <title>Fin: a receipt image is read twice, by Vision OCR plus a regex parser and by the on-device Donut model, and the merged result prefills the form you confirm into the treemap</title>
+  <defs>
+    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="32" cy="120" r="24"/>
+    <path d="M56 120H72V40H80" marker-end="url(#head)"/>
+    <path d="M72 120V200H80" marker-end="url(#head)"/>
+    <rect x="88" y="16" width="144" height="48"/>
+    <rect x="88" y="176" width="144" height="48"/>
+    <path d="M232 40H256" marker-end="url(#head)"/>
+    <rect x="264" y="16" width="144" height="48"/>
+    <path d="M336 64V88" marker-end="url(#head)"/>
+    <path d="M232 200H336V152" marker-end="url(#head)"/>
+    <rect x="264" y="96" width="144" height="48"/>
+    <path d="M408 120H480" marker-end="url(#head)"/>
+    <circle cx="560" cy="40" r="24"/>
+    <path d="M560 64V88" marker-end="url(#head)"/>
+    <path d="M560 144V168" marker-end="url(#head)"/>
+    <rect x="488" y="176" width="144" height="48"/>
+  </g>
+  <rect x="488" y="96" width="144" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="32" y="160">Camera</text>
+    <text x="160" y="40">Vision OCR</text>
+    <text x="160" y="200">Donut on CoreML</text>
+    <text x="336" y="40">Regex parser</text>
+    <text x="336" y="120">Merge + category</text>
+    <text x="560" y="40">You</text>
+    <text class="knock" x="560" y="120">Fin</text>
+    <text x="560" y="200">Treemap</text>
+  </g>
+  <g fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text class="mute" x="444" y="108">prefilled</text>
+    <text class="mute" x="600" y="76">confirm</text>
+    <text class="mute" x="592" y="156">save</text>
+    <text class="mute" x="284" y="188">fields</text>
+  </g>
+</svg>
