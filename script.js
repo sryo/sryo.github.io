@@ -25,7 +25,8 @@ document.addEventListener("click", function (e) {
     f.src = a.href;
     f.loading = "lazy";
     f.className = "embed-live";
-    f.title = "Figma prototype";
+    var h = a.closest(".item") && a.closest(".item").querySelector("h3");
+    f.title = h ? h.textContent.trim() + " prototype" : "Figma prototype";
     f.allowFullscreen = true;
     a.replaceWith(f);
 });

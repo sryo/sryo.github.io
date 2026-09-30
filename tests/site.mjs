@@ -391,13 +391,68 @@ test('ledger and About describe themselves', async ({ page, path }) => {
   }
 }, p => p === '/works.html' || p === '/work/about/');
 
+test('first focusable is the skip link', async ({ page }) => {
+  const first = await page.evaluate(() => {
+    const el = document.querySelector('a[href], button, input, select, textarea, iframe, [tabindex]:not([tabindex="-1"])');
+    return el ? el.outerHTML.slice(0, 80) : '';
+  });
+  if (!/^<a class="skip" href="#main-content"/.test(first)) throw new Error(`first focusable is ${first}`);
+  await page.focus('a.skip');
+  const visible = await page.$eval('a.skip', a => a.getBoundingClientRect().width > 1 && a.getBoundingClientRect().height > 1);
+  await page.evaluate(() => document.activeElement.blur());
+  if (!visible) throw new Error('skip link stays hidden on focus');
+}, PORTFOLIO);
+
+test('InterVariable is preloaded', async ({ page }) => {
+  const ok = await page.$$eval('link[rel="preload"][as="font"][type="font/woff2"][crossorigin]', ls => ls.some(l => l.href.endsWith('/fonts/InterVariable.woff2')));
+  if (!ok) throw new Error('no font preload for InterVariable.woff2');
+}, PORTFOLIO);
+
+test('a loaded prototype is titled after its project', async ({ page }) => {
+  const facade = page.locator('.item a.embed-facade').first();
+  const h3 = (await facade.evaluate(a => a.closest('.item').querySelector('h3').textContent)).trim();
+  await facade.click();
+  const title = await page.$eval('iframe.embed-live', f => f.title);
+  await page.reload();
+  if (title !== `${h3} prototype`) throw new Error(`iframe title "${title}", want "${h3} prototype"`);
+}, p => p === '/work/about/');
+
+test('pager ends lead back to All work', async ({ page }) => {
+  const r = await page.$eval('.pn', n => ({ empty: [...n.children].filter(c => c.tagName === 'SPAN' && !c.textContent.trim()).length,
+    all: !!n.querySelector('a[href*="works.html"]') }));
+  if (r.empty) throw new Error('empty slot in the pager');
+  if (!r.all) throw new Error('no link to works.html in the pager');
+}, p => p === '/work/omsnic/' || p === '/work/hometown/');
+
+test('pager links show the target case\'s ledger line', async ({ page, base }) => {
+  const ledger = await (await page.request.get(`${base}/works.html`)).text();
+  const links = await page.$$eval('.pn a[rel]', as => as.map(a => ({ slug: a.getAttribute('href').split('/')[1], line: a.querySelector('.pn-line')?.textContent.trim() })));
+  if (!links.length) throw new Error('no pager links');
+  for (const l of links) {
+    const row = ledger.match(new RegExp(`href="work/${l.slug}/".*?<span class="line">([^<]*)</span>`));
+    const want = row?.[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    if (!l.line || l.line !== want) throw new Error(`${l.slug}: pager line "${l.line}", ledger "${want}"`);
+  }
+}, CASE);
+
+test('static server answers 404 for a missing path', async ({ base, vp }) => {
+  if (vp !== 'desktop') return;
+  const res = await fetch(`${base}/nope`).catch(e => ({ status: e.message }));
+  if (res.status !== 404) throw new Error(`/nope answered ${res.status}`);
+  const again = await fetch(`${base}/works.html`).catch(e => ({ status: e.message }));
+  if (again.status !== 200) throw new Error(`server down after /nope: ${again.status}`);
+}, p => p === '/works.html');
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
 const server = createServer(async (req, res) => {
   const path = resolve(ROOT, '.' + decodeURIComponent(new URL(req.url, 'http://x').pathname).replace(/\/$/, '/index.html'));
-  try { res.writeHead(200, { 'content-type': TYPES[extname(path)] || 'application/octet-stream' }); res.end(await readFile(path)); }
-  catch { res.writeHead(404); res.end(); }
+  let body;
+  try { body = await readFile(path); }
+  catch { res.writeHead(404); res.end(); return; }
+  res.writeHead(200, { 'content-type': TYPES[extname(path)] || 'application/octet-stream' });
+  res.end(body);
 }).listen(0);
 const BASE = `http://localhost:${server.address().port}`;
 
@@ -413,6 +468,11 @@ for (const [vp, size] of Object.entries(VIEWPORTS)) {
     page.on('pageerror', e => errors.push(e.message));
     await page.goto(`${BASE}${path}`, { waitUntil: 'load' });
     const name = path === '/' ? 'index' : path.replace(/^\/|\/$/g, '').replace(/\//g, '-').replace(/\.html$/, '');
+    // Lazy images below the fold would shoot as blanks: load them first.
+    await page.evaluate(() => Promise.all([...document.images].map(img => {
+      img.loading = 'eager';
+      return img.complete ? null : new Promise(r => { img.onload = img.onerror = r; });
+    })));
     await page.screenshot({ path: resolve(SHOTS, `${name}-${vp}.png`), fullPage: true });
     for (const t of tests.filter(t => t.only(path))) {
       try { await t.fn({ page, errors, vp, base: BASE, path }); console.log(`  ✓ [${vp}] ${path} ${t.name}`); }

@@ -900,6 +900,10 @@ EOF
     <meta name="twitter:image" content="$SITE_URL/og.png">
 EOF
     fi
+    # The one font file: fetched with the HTML, not after the CSS parses.
+    if [ -f "$OUT_DIR/fonts/InterVariable.woff2" ]; then
+        echo "    <link rel=\"preload\" href=\"${root}fonts/InterVariable.woff2\" as=\"font\" type=\"font/woff2\" crossorigin>"
+    fi
     if [ -f "$OUT_DIR/favicon.svg" ]; then
         echo "    <link rel=\"icon\" href=\"${root}favicon.svg\" type=\"image/svg+xml\">"
     fi
@@ -917,26 +921,30 @@ EOF
 }
 
 # Pager for case pages. Follows the ledger's sorted list: prev is the row
-# above (newer), next the row below (older). No wrap-around.
+# above (newer), next the row below (older), each with its ledger line.
+# No wrap-around: an end slot leads back to the ledger instead.
 render_prev_next() {
     local idx=$1
     local count=${#sorted_folders[@]}
-    local other
+    local slug other
+    slug=$(basename "${sorted_folders[$idx]}")
 
     echo "<nav class=\"pn\" aria-label=\"More work\">"
     if [ "$idx" -gt 0 ]; then
         other=${sorted_folders[$((idx - 1))]}
         load_fm "$other"
-        printf '  <a rel="prev" href="../%s/"><span class="label">&larr; Newer, %s</span> <span class="pn-name">%s</span></a>\n' \
-            "$(basename "$other")" "${fm_date%%-*}" "$(html_escape "$fm_label")"
+        printf '  <a rel="prev" href="../%s/"><span class="label">&larr; Newer, %s</span> <span class="pn-name">%s</span> <span class="pn-line">%s</span></a>\n' \
+            "$(basename "$other")" "${fm_date%%-*}" "$(html_escape "$fm_label")" "$(html_escape "$fm_summary")"
     else
-        echo "  <span></span>"
+        printf '  <a class="pn-all" href="../../works.html#%s"><span class="label">Start of the list</span> <span class="pn-name">&larr; All work</span></a>\n' "$slug"
     fi
     if [ "$idx" -lt $((count - 1)) ]; then
         other=${sorted_folders[$((idx + 1))]}
         load_fm "$other"
-        printf '  <a rel="next" href="../%s/"><span class="label">Older, %s &rarr;</span> <span class="pn-name">%s</span></a>\n' \
-            "$(basename "$other")" "${fm_date%%-*}" "$(html_escape "$fm_label")"
+        printf '  <a rel="next" href="../%s/"><span class="label">Older, %s &rarr;</span> <span class="pn-name">%s</span> <span class="pn-line">%s</span></a>\n' \
+            "$(basename "$other")" "${fm_date%%-*}" "$(html_escape "$fm_label")" "$(html_escape "$fm_summary")"
+    else
+        printf '  <a class="pn-all pn-end" href="../../works.html#%s"><span class="label">End of the list</span> <span class="pn-name">&larr; All work</span></a>\n' "$slug"
     fi
     echo "</nav>"
 }
@@ -971,6 +979,7 @@ write_case_page() {
     page_head "$fm_title / $AUTHOR" "${fm_summary:-$fm_title}" "work/$slug/" "../../" "$fm_title" article
     cat <<EOF
 <body>
+<a class="skip" href="#main-content">Skip to content</a>
 <nav class="mast"><a class="back" href="../../works.html#$slug">&larr; All work</a>$position</nav>
 <main id="main-content">
 EOF
@@ -1074,6 +1083,7 @@ echo "<html lang=\"en\">"
 ledger_lead=$(profile_lead)
 page_head "$TITLE" "${ledger_lead:-$TITLE - Portfolio}" "$(basename "$OUTPUT_FILE")" ""
 echo "<body>"
+echo '<a class="skip" href="#main-content">Skip to content</a>'
 echo "<main id=\"main-content\">"
 render_intro "$oldest" "$newest"
 render_group client "Client work" "Role" "${sorted_folders[@]}"

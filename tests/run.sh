@@ -170,6 +170,12 @@ sentinel_in works.html "ledger canonical" '<link rel="canonical" href="https://e
 sentinel_in work/03-metrics/index.html "rel=prev to newer neighbour" 'rel="prev" href="../01-tags/"'
 sentinel_in work/03-metrics/index.html "rel=next to older neighbour" 'rel="next" href="../04-noorder/"'
 sentinel_in work/03-metrics/index.html "back link to its row"        'href="../../works.html#03-metrics"'
+sentinel_in work/03-metrics/index.html "pager shows the target's ledger line" '<span class="pn-name">Tags &amp; &lt;Co&gt;</span> <span class="pn-line">Tags &amp; &lt;escapes&gt; in one line</span>'
+sentinel_in work/01-tags/index.html    "first page leads back to All work" '<a class="pn-all" href="../../works.html#01-tags">'
+sentinel_in work/05-twin-b/index.html  "last page leads back to All work"  '<a class="pn-all pn-end" href="../../works.html#05-twin-b">'
+absent_in   work/01-tags/index.html    "no empty pager slot"         '<span></span>'
+sentinel_in work/01-tags/index.html    "skip link on case pages"     '<a class="skip" href="#main-content">Skip to content</a>'
+sentinel_in works.html                 "skip link on the ledger"     '<a class="skip" href="#main-content">Skip to content</a>'
 absent_in   work/01-tags/index.html    "first page has no prev"      'rel="prev"'
 absent_in   work/05-twin-b/index.html  "last page has no next"       'rel="next"'
 
