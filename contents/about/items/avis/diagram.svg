@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 216">
+  <title>Avis: Claude Code runs the /avis skill, which mounts a toolbar on the page through perch; you pin notes, they persist in localStorage, and the agent reads them back with summary()</title>
+  <defs>
+    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="48" cy="96" r="24"/>
+    <path d="M72 96H112" marker-end="url(#head)"/>
+    <rect x="120" y="72" width="128" height="48"/>
+    <path d="M248 96H288" marker-end="url(#head)"/>
+    <circle cx="320" cy="96" r="24"/>
+    <path d="M344 96H392" stroke-dasharray="4 4" marker-end="url(#head)"/>
+    <circle cx="600" cy="96" r="24"/>
+    <path d="M576 96H536" marker-end="url(#head)"/>
+    <path d="M464 120V152" marker-end="url(#head)"/>
+    <rect x="400" y="160" width="128" height="48"/>
+    <path d="M464 72V32H48V64" stroke-dasharray="4 4" marker-end="url(#head)"/>
+  </g>
+  <rect x="400" y="72" width="128" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="48" y="136">Claude Code</text>
+    <text x="184" y="96">SKILL.md</text>
+    <text x="320" y="96">perch</text>
+    <text class="knock" x="464" y="96">toolbar.js</text>
+    <text x="600" y="96">You</text>
+    <text x="464" y="184">localStorage</text>
+  </g>
+  <g fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text class="mute" x="92" y="80">/avis</text>
+    <text class="mute" x="368" y="80">eval_js</text>
+    <text class="mute" x="556" y="80">pins</text>
+    <text class="mute" x="504" y="136">saves</text>
+    <text class="mute" x="256" y="20">notes back via summary()</text>
+  </g>
+</svg>
