@@ -861,6 +861,8 @@ async function reducedMotionProblems(page, name) {
     if (!r.svgShown) bad.push('diagram hidden under reduced motion');
     return bad;
   } finally {
+    // Reload restores the scroll position: leave the page at the top.
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await page.reload();
   }
@@ -958,6 +960,99 @@ test('Valora toy falls back to the diagram under reduced motion', async ({ page,
   const bad = await reducedMotionProblems(page, 'review-gate');
   if (bad.length) throw new Error(bad.join('; '));
 }, p => p === '/work/valora/');
+
+// ── Motion (motion.js) ─────────────────────────────────────
+// Parity pull: near the pointer, the spec glyph's shapes drift apart on a
+// canvas that XORs them (globalCompositeOperation "xor"), so overlaps stay
+// holes in every frame. The <img> keeps its place and its transition name.
+// R, the reach of the pull, is 1.5 glyph widths from the glyph's centre.
+async function parityProbe(page) {
+  return page.evaluate(async () => {
+    const g = document.querySelector('.spec .glyph'), img = g.querySelector('img'), c = g.querySelector('canvas.parity');
+    if (!c) return { canvas: false, img: getComputedStyle(img).opacity };
+    const shown = getComputedStyle(c).display !== 'none' && getComputedStyle(c).visibility !== 'hidden';
+    // The img drawn at the canvas's size and offset: at rest the two match.
+    const ref = document.createElement('canvas'); ref.width = c.width; ref.height = c.height;
+    const box = g.getBoundingClientRect(), cb = c.getBoundingClientRect(), k = c.width / cb.width;
+    const r = ref.getContext('2d');
+    const im = new Image(); im.src = img.src; await im.decode();
+    r.drawImage(im, (box.left - cb.left) * k, (box.top - cb.top) * k, box.width * k, box.height * k);
+    const a = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, b = r.getImageData(0, 0, c.width, c.height).data;
+    let diff = 0, n = 0, dark = 0, opaque = 0;
+    for (let i = 3; i < a.length; i += 4) {
+      diff += Math.abs(a[i] - b[i]); n += Math.max(a[i], b[i]) > 0 ? 1 : 0;
+      if (a[i] === 255) { opaque++; dark += Math.max(a[i - 3], a[i - 2], a[i - 1]) < 60 ? 1 : 0; }
+    }
+    return { canvas: true, shown, diff: diff / 255 / Math.max(1, n), dark: dark / Math.max(1, opaque),
+      img: getComputedStyle(img).opacity, vt: g.style.viewTransitionName, canvasVt: getComputedStyle(c).viewTransitionName };
+  });
+}
+
+test('parity pull: the glyph comes apart near the pointer and keeps its holes', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const box = await page.locator('.spec .glyph').boundingBox();
+  const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+  await page.mouse.move(cx + box.width * 1.47, cy);
+  await page.waitForTimeout(300);
+  let r = await parityProbe(page);
+  if (!r.canvas || !r.shown) throw new Error('no parity canvas at the edge of the reach');
+  if (r.img !== '0') throw new Error('img still shown under the canvas');
+  if (r.diff > 0.06) throw new Error(`at rest the canvas differs from the glyph by ${r.diff.toFixed(3)}: holes lost`);
+  if (r.canvasVt !== 'none' || !r.vt.startsWith('g-')) throw new Error(`transition names: glyph "${r.vt}", canvas "${r.canvasVt}"`);
+  await page.mouse.move(cx + 4, cy + 3, { steps: 4 });
+  await page.waitForTimeout(500);
+  r = await parityProbe(page);
+  if (!(r.diff > 0.1)) throw new Error(`shapes did not move apart (diff ${r.diff.toFixed(3)})`);
+  await page.mouse.move(cx + box.width * 6, cy + box.width * 4, { steps: 4 });
+  await page.waitForTimeout(1800);
+  r = await parityProbe(page);
+  if (r.canvas && r.shown) throw new Error('canvas still shown after the pointer left');
+  if (r.img !== '1') throw new Error(`img opacity ${r.img} after the pointer left`);
+  // Leaving the page: the canvas goes before the outgoing snapshot.
+  await page.mouse.move(cx, cy);
+  await page.waitForTimeout(200);
+  await page.evaluate(() => window.dispatchEvent(new Event('pageswap')));
+  r = await parityProbe(page);
+  if (r.canvas || r.img !== '1') throw new Error('canvas left in place on pageswap');
+  await page.mouse.move(0, 0);
+}, p => p === '/work/continental/' || p === '/work/lineandform/');
+
+test('parity pull inks white in dark mode', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  await page.emulateMedia({ colorScheme: 'dark' });
+  try {
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const box = await page.locator('.spec .glyph').boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForTimeout(400);
+    const r = await parityProbe(page);
+    if (!r.canvas) throw new Error('no parity canvas');
+    // Ink is white (the accent outline aside): no black pixels left.
+    if (r.dark > 0.01) throw new Error(`${(r.dark * 100).toFixed(0)}% of the ink is black`);
+  } finally {
+    await page.mouse.move(0, 0);
+    await page.emulateMedia({ colorScheme: 'light' });
+  }
+}, p => p === '/work/continental/');
+
+test('parity pull stays off under reduced motion', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.reload();
+  try {
+    const box = await page.locator('.spec .glyph').boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForTimeout(300);
+    const r = await parityProbe(page);
+    if (r.canvas) throw new Error('parity canvas under reduced motion');
+  } finally {
+    await page.mouse.move(0, 0);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.reload();
+  }
+}, p => p === '/work/continental/');
 
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.

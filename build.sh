@@ -21,6 +21,7 @@
 #    - Edit 'config.cfg' to set your title, output filename, and other options.
 #    - SITE_URL builds canonical and og: links; AUTHOR signs page titles.
 #    - Ensure 'styles.css' is present. 'script.js' is optional: inlined when non-empty.
+#      'motion.js' is optional too: linked, deferred, from every page.
 
 # 2. Set up your content:
 #    - Create a 'contents/' directory (or whatever you set in config).
@@ -1139,6 +1140,11 @@ EOF
     # content, in the head so the accent is set before first paint.
     if [ -s "$JS_FILE" ]; then
         printf '    <script>\n%s\n    </script>\n' "$(cat "$JS_FILE")"
+    fi
+    # motion.js: the page's motion (parity pull, tether, flow pulse), one
+    # deferred file for every page, so it stays out of the inlined head.
+    if [ -f "$OUT_DIR/motion.js" ]; then
+        echo "    <script src=\"${root}motion.js\" defer></script>"
     fi
     echo "</head>"
 }

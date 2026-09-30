@@ -32,3 +32,12 @@ document.addEventListener("click", function (e) {
     f.allowFullscreen = true;
     a.replaceWith(f);
 });
+
+// An arriving view transition (a glyph flying in from its row): marked on
+// <html> while it runs, so motion.js lays nothing over the glyph mid-flight.
+window.addEventListener("pagereveal", function (e) {
+    if (!e.viewTransition) return;
+    var root = document.documentElement;
+    root.setAttribute("data-vt", "");
+    e.viewTransition.finished.finally(function () { root.removeAttribute("data-vt"); });
+});

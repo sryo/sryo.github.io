@@ -325,6 +325,11 @@ absent_in   $P "no XML prolog inlined"    '<?xml'
 absent_in   $P "no SVG comment inlined"   'diagram comment'
 absent_in   $P "DIAGRAM line not in the body" 'DIAGRAM:'
 
+# motion.js (parity pull, tether, flow pulse): one deferred file for every
+# page, linked from the head when it exists at the site root.
+sentinel_in work/01-tags/index.html "motion.js deferred on case pages" '<script src="../../motion.js" defer></script>'
+sentinel_in works.html "motion.js deferred on the ledger" '<script src="motion.js" defer></script>'
+
 # Toys: a TOY: line right after a DIAGRAM: line mounts toys/<name>.js in
 # that figure. The SVG stays as the no-JS and reduced-motion state.
 P=work/01-tags/index.html
