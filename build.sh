@@ -525,6 +525,21 @@ derive_line() {
     if [[ "$title" == *": "* ]]; then printf '%s' "${title#*: }"; else printf '%s' "$title"; fi
 }
 
+# A side project's own site or repo: link: from frontmatter, else the first
+# body link whose text is the project's label. Empty when neither exists.
+project_link() {
+    local folder=$1 label=$2 match text
+    if [ -n "$fm_link" ]; then printf '%s' "$fm_link"; return; fi
+    while IFS= read -r match; do
+        text=${match#\[}; text=${text%%\]*}
+        if [ "$text" = "$label" ]; then
+            match=${match#*\(}
+            printf '%s' "${match%\)}"
+            return
+        fi
+    done < <(strip_frontmatter "$folder/_.md" | grep -o '\[[^]]*\]([^)]*)')
+}
+
 # Side projects show a platform in the last column: the first tag that
 # names one. Empty when none does.
 derive_medium() {
@@ -556,7 +571,7 @@ render_ledger_row() {
 
     echo "  > Processing: $fm_label" >&2
 
-    printf '<li id="%s"%s><a class="row" href="%s">' "$slug" "$repeat" "$href"
+    printf '<li id="%s"%s><a class="row" href="%s">' "$slug" "$repeat" "$(html_escape "$href")"
     printf '<time class="yr" datetime="%s">%s</time>' "$fm_date" "$year"
     printf '<span class="glyph">'
     if [ -n "$image_file" ] && [ -f "$image_file" ]; then
@@ -589,7 +604,8 @@ render_group() {
             href="work/$(basename "$folder")/"
             last=$fm_role
         else
-            href="work/$(basename "$profile")/#$(basename "$folder")"
+            href=$(project_link "$folder" "$fm_label")
+            [ -z "$href" ] && href="work/$(basename "$profile")/#$(basename "$folder")"
             last=${fm_role:-$(derive_medium "$fm_tags")}
         fi
         render_ledger_row "$folder" "$href" "$last" "$prev_year"
@@ -628,7 +644,7 @@ render_intro() {
 render_items() {
     local dir=$1
     local heading=$2
-    local item slug image_file body question
+    local item slug image_file body question link
     local -a items=()
     while IFS= read -r item; do
         items+=("$item")
@@ -651,7 +667,12 @@ render_items() {
         elif [ "$fm_title" != "$fm_label" ]; then
             question=$fm_title
         fi
-        printf '<h3>%s</h3>\n' "$(html_escape "$fm_label")"
+        link=$(project_link "$item" "$fm_label")
+        if [ -n "$link" ]; then
+            printf '<h3><a href="%s">%s</a></h3>\n' "$(html_escape "$link")" "$(html_escape "$fm_label")"
+        else
+            printf '<h3>%s</h3>\n' "$(html_escape "$fm_label")"
+        fi
         printf '<p class="item-meta"><time datetime="%s">%s</time> %s</p>\n' \
             "$fm_date" "${fm_date%%-*}" "$(html_escape "$question")"
         printf '%s\n</article>\n' "$body"

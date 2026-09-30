@@ -208,6 +208,12 @@ h1 {
 .row .line { grid-area: line; }
 .row .role { grid-area: role; font-size: 13px; line-height: 20px; color: var(--mute); }
 
+.row[href^="http"] .name::after {
+    content: " ↗";
+    font-weight: 400;
+    color: var(--mute);
+}
+
 .repeat .yr {
     visibility: hidden;
 }

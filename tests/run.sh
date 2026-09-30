@@ -178,22 +178,24 @@ sentinel_in works.html "ledger header: About link"     'href="work/02-gallery/"'
 sentinel_in works.html "ledger header: year span"      'Work, 2021&ndash;2024'
 sentinel_in works.html "client group"                  '<h2 id="g-client">Client work</h2>'
 sentinel_in works.html "side group"                    '<h2 id="g-side">Side projects</h2>'
-sentinel_in works.html "side row to its About section" 'class="row" href="work/02-gallery/#proj-a"'
+sentinel_in works.html "side row to its live site"     'class="row" href="https://example.com/a"'
+sentinel_in works.html "side row without a link to About" 'class="row" href="work/02-gallery/#proj-b"'
+sentinel_in $P "About item names link to the project"  '<h3><a href="https://example.com/a">Project A</a></h3>'
 sentinel_in $P "About page keeps the full body"        "Open to what's next."
 sentinel_in $P "About page anchors each item"          'id="proj-a"'
 absent_in   $P "About page has no pager"               'rel="next"'
 
 # Side rows (and About sections): proj-a (2024-08-01) before proj-b (2024-05-01).
-pos_a=$(grep -n 'href="work/02-gallery/#proj-a"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)
-pos_b=$(grep -n 'href="work/02-gallery/#proj-b"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)
+pos_a=$(grep -n '<li id="proj-a"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)
+pos_b=$(grep -n '<li id="proj-b"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)
 if [ -n "$pos_a" ] && [ -n "$pos_b" ] && [ "$pos_a" -lt "$pos_b" ]; then
     pass "side rows sorted date desc (A before B)"
 else
     fail "side row sort: A=$pos_a B=$pos_b"
 fi
 GALLERY="$FIXTURE_DIR/$P"
-pos_a=$(grep -n '<h3>Project A</h3>' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
-pos_b=$(grep -n '<h3>Project B</h3>' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
+pos_a=$(grep -n 'id="proj-a"' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
+pos_b=$(grep -n 'id="proj-b"' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
 if [ -n "$pos_a" ] && [ -n "$pos_b" ] && [ "$pos_a" -lt "$pos_b" ]; then
     pass "About items sorted date desc (A before B)"
 else
