@@ -127,6 +127,16 @@ sentinel_in work/01-tags/index.html    "h1 escaped"               'First &amp; &
 sentinel_in work/03-metrics/index.html "stray --- preserved"      'A paragraph after the divider should still render.'
 sentinel_in work/02-gallery/index.html "item SVG inlined"         'data:image/svg+xml;base64,'
 
+# Page head: canonical and OG built from SITE_URL, title escaped.
+P=work/01-tags/index.html
+sentinel_in $P "canonical URL"   '<link rel="canonical" href="https://example.test/work/01-tags/">'
+sentinel_in $P "og:url"          '<meta property="og:url" content="https://example.test/work/01-tags/">'
+sentinel_in $P "og:image"        '<meta property="og:image" content="https://example.test/og.png">'
+sentinel_in $P "title escaped"   '<title>First &amp; &lt;Special&gt; / Test Author</title>'
+sentinel_in $P "og:title escaped" '<meta property="og:title" content="First &amp; &lt;Special&gt;">'
+sentinel_in $P "styles inlined"  '/* test stub */'
+sentinel_in works.html "ledger canonical" '<link rel="canonical" href="https://example.test/works.html">'
+
 # Items on a case page: proj-a (2024-08-01) before proj-b (2024-05-01).
 GALLERY="$FIXTURE_DIR/work/02-gallery/index.html"
 pos_a=$(grep -n '<h3>Project A</h3>' "$GALLERY" | head -n 1 | cut -d: -f1 || true)

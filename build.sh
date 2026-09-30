@@ -66,6 +66,11 @@ else
     SELF_DESTRUCT=false
 fi
 
+# Optional: SITE_URL builds canonical and og: URLs (skipped when empty);
+# AUTHOR signs page titles.
+SITE_URL=${SITE_URL%/}
+AUTHOR=${AUTHOR:-$TITLE}
+
 DEFAULT_ORDER=9999
 
 # Field separator for parse_frontmatter. Not whitespace, so `read` keeps
@@ -433,6 +438,51 @@ render_ledger_row() {
     printf '</a></li>\n'
 }
 
+# Shared <head> for the ledger and the case pages. `root` is the relative
+# path back to the site root ("" or "../../"), so assets resolve from
+# any depth, even over file://. `path` is the page's URL below SITE_URL.
+page_head() {
+    local title=$1
+    local description=$2
+    local path=$3
+    local root=$4
+    local og_title=${5:-$1}
+    local og_type=${6:-website}
+    local url="$SITE_URL/$path"
+    local css
+    css=$(cat "$CSS_FILE")
+    css=${css//url(\"fonts\//url(\"${root}fonts\/}
+
+    cat <<EOF
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$(html_escape "$title")</title>
+    <meta name="description" content="$(html_escape "$description")">
+EOF
+    if [ -n "$SITE_URL" ]; then
+        cat <<EOF
+    <link rel="canonical" href="$url">
+    <meta property="og:type" content="$og_type">
+    <meta property="og:site_name" content="$(html_escape "$AUTHOR")">
+    <meta property="og:title" content="$(html_escape "$og_title")">
+    <meta property="og:description" content="$(html_escape "$description")">
+    <meta property="og:url" content="$url">
+    <meta property="og:image" content="$SITE_URL/og.png">
+    <meta name="twitter:card" content="summary_large_image">
+EOF
+    fi
+    if [ -f "$OUT_DIR/favicon.svg" ]; then
+        echo "    <link rel=\"icon\" href=\"${root}favicon.svg\" type=\"image/svg+xml\">"
+    fi
+    cat <<EOF
+    <style>
+    $css
+    </style>
+</head>
+EOF
+}
+
 # One standalone page per section, at work/<slug>/index.html.
 write_case_page() {
     local slug=$1
@@ -441,20 +491,15 @@ write_case_page() {
     local date=$4
     local tags=$5
     local content_file="$folder/_.md"
-    local safe_title body
-    safe_title=$(html_escape "$title")
+    local body
     body=$(render_markdown_content "$content_file")
 
     mkdir -p "$WORK_DIR/$slug"
     {
+    echo "<!DOCTYPE html>"
+    echo "<html lang=\"en\">"
+    page_head "$title / $AUTHOR" "$title" "work/$slug/" "../../" "$title" article
     cat <<EOF
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>$safe_title</title>
-</head>
 <body>
 <main id="main-content">
 EOF
@@ -529,18 +574,10 @@ done
 echo "Assembling $OUTPUT_FILE..."
 
 {
+echo "<!DOCTYPE html>"
+echo "<html lang=\"en\">"
+page_head "$TITLE" "$TITLE - Portfolio" "$(basename "$OUTPUT_FILE")" ""
 cat <<EOF
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="$TITLE - Portfolio">
-    <title>$TITLE</title>
-    <style>
-    $(cat "$CSS_FILE")
-    </style>
-</head>
 <body>
 <main id="main-content">
 <ol class="ledger">
