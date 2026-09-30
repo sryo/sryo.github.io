@@ -43,6 +43,9 @@
 #      heading becomes the Link, a 'CTA:' line becomes the closing row above
 #      the pager, and <!-- comments --> never render.
 #    - To add a video or other embed, include a line starting with 'EMBED:' in your .md file.
+#    - A lone '![alt](screen.png "caption")' line is a captioned screen, and a
+#      'DIAGRAM: diagram.svg "caption"' line inlines a diagram; both resolve
+#      from the .md's folder.
 
 # 3. Run the script:
 #    - Open a terminal in the folder containing this script.
@@ -324,6 +327,54 @@ render_screen() {
         "$(html_escape "${caption:-$alt}")"
 }
 
+# A "DIAGRAM: file.svg "caption"" line: the SVG inlined (so it inherits
+# the page's font and currentColor, and dark mode works) in a captioned
+# figure. The file resolves from the markdown file's folder. Drops the
+# XML prolog and comments, adds role="img", and warns when the file is
+# missing, the caption is, or the drawing is off-spec: no viewBox, a
+# <style>/<script>/<image>/<foreignObject>, or a fill or stroke other
+# than currentColor or none.
+render_diagram() {
+    local spec=$1 name caption path svg why=""
+    local warn=true
+    [ "$mode" = metrics ] && warn=false
+    name=${spec%% *}
+    caption=""
+    if [[ "$spec" =~ ^[^[:space:]]+[[:space:]]+\"(.*)\"[[:space:]]*$ ]]; then caption=${BASH_REMATCH[1]}; fi
+    case "$name" in
+        "$CONTENT_DIR"*) path=$name ;;
+        *) path="$(dirname "$file")/$name" ;;
+    esac
+    if [ ! -f "$path" ]; then
+        $warn && echo "warn: $file: diagram $name not found" >&2
+        return 0
+    fi
+    $warn && [ -z "$caption" ] && echo "warn: $file: diagram without caption" >&2
+    svg=$(sed -e 's/<?xml[^>]*?>//' "$path" | awk '
+        { line = $0
+          while (1) {
+              if (inc) { i = index(line, "-->"); if (!i) { line = ""; break }; line = substr(line, i + 3); inc = 0 }
+              i = index(line, "<!--"); if (!i) break
+              rest = substr(line, i + 4); j = index(rest, "-->")
+              if (j) line = substr(line, 1, i - 1) substr(rest, j + 3)
+              else { line = substr(line, 1, i - 1); inc = 1 }
+          }
+          if (line ~ /[^[:space:]]/) print line }')
+    if $warn; then
+        if [[ "$svg" =~ \<(style|script|image|foreignObject) ]]; then
+            why="<${BASH_REMATCH[1]}"
+        elif [[ "$svg" != *"viewBox="* ]]; then
+            why="no viewBox"
+        else
+            why=$(printf '%s' "$svg" | grep -oE '(fill|stroke)="[^"]*"' \
+                | grep -vE '="(currentColor|none)"' | head -n 1 | sed -E 's/="/ /; s/"$//' || true)
+        fi
+        [ -z "$why" ] || echo "warn: $file: $name off-spec ($why)" >&2
+    fi
+    [[ "$svg" == *"<svg role="* ]] || svg=${svg/<svg /<svg role=\"img\" }
+    printf '<figure class="diagram">%s<figcaption>%s</figcaption></figure>' "$svg" "$(html_escape "$caption")"
+}
+
 
 # ─────────────────────────────────────────────────────────────
 # Transform — markdown → HTML
@@ -518,6 +569,16 @@ render_markdown_content() {
         if [ "$mode" = "page" ] && ! $hoisted && [ -z "$part_label" ] \
             && [[ "$line" =~ $link_re ]]; then
             hoisted=true
+            continue
+        fi
+
+        # A DIAGRAM: line inlines its SVG in a captioned figure.
+        if [[ "$line" == "DIAGRAM:"* ]]; then
+            if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
+            if $in_list; then content+="</ul>"; in_list=false; fi
+            after=${line#DIAGRAM:}
+            after=${after#"${after%%[![:space:]]*}"}
+            content+=$(render_diagram "$after")
             continue
         fi
 

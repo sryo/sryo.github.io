@@ -507,6 +507,32 @@ h1 {
     max-width: min(100%, 320px);
 }
 
+.body figure.diagram {
+    overflow-x: auto;
+}
+
+.body figure.diagram svg {
+    display: block;
+    width: 100%;
+    min-width: 560px;
+    height: auto;
+    color: var(--ink);
+    overflow: visible;
+}
+
+.diagram svg * {
+    vector-effect: non-scaling-stroke;
+}
+
+.diagram .knock {
+    fill: var(--paper);
+    font-weight: 600;
+}
+
+.diagram .mute {
+    fill: var(--mute);
+}
+
 .body figcaption {
     margin-top: 8px;
     font-size: 13px;

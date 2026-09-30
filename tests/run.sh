@@ -129,7 +129,15 @@ build_warns "more than 3 screens flagged" "warn: $A/_.md: more than 3 screens" \
 build_warns "screen without alt flagged" "warn: $A/_.md: image without alt" \
     "printf '\\n![](screen-2.png)\\n' >> $A/_.md && sed -i '/shot.jpg/d' $A/_.md"
 
-echo "Build warnings..."
+build_warns "missing diagram flagged" "warn: $A/_.md: diagram nope.svg not found" \
+    "sed -i 's/DIAGRAM: diagram.svg/DIAGRAM: nope.svg/' $A/_.md"
+build_warns "diagram without caption flagged" "warn: $A/_.md: diagram without caption" \
+    "sed -i 's/^DIAGRAM: diagram.svg.*/DIAGRAM: diagram.svg/' $A/_.md"
+build_warns "off-spec diagram flagged" "warn: $A/_.md: diagram.svg off-spec (fill #f00)" \
+    "sed -i 's/fill=\"currentColor\"/fill=\"#f00\"/' $A/diagram.svg"
+build_warns "diagram with <style> flagged" "warn: $A/_.md: diagram.svg off-spec (<style)" \
+    "sed -i 's|<defs>|<style>text{}</style><defs>|' $A/diagram.svg"
+
 warned() {
     local desc=$1 pattern=$2
     case "$BUILD_ERR" in
@@ -300,6 +308,14 @@ sentinel_in $P "JPEG size read"           'shot.jpg" alt="A small dark photo" lo
 sentinel_in $P "inline image stays inline" 'inline <img src="https://example.com/img.png" alt="alt text" loading="lazy" />'
 sentinel_in work/04-noorder/index.html "contents/ path kept as is" '<figure class="screen"><img src="../../contents/04-noorder/figure.png" alt="A relative image" loading="lazy"><figcaption>A relative image</figcaption></figure>'
 warned "missing screen flagged" 'warn: contents/04-noorder/_.md: contents/04-noorder/figure.png not found'
+
+# Diagrams: DIAGRAM: file "caption" inlines the SVG in a captioned figure.
+sentinel_in $P "diagram inlined in a figure" '<figure class="diagram"><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160">'
+sentinel_in $P "diagram keeps its knockout label" '<text class="knock" x="320" y="80">build.sh</text>'
+sentinel_in $P "diagram caption"          '</svg><figcaption>Markdown in, pages out</figcaption></figure>'
+absent_in   $P "no XML prolog inlined"    '<?xml'
+absent_in   $P "no SVG comment inlined"   'diagram comment'
+absent_in   $P "DIAGRAM line not in the body" 'DIAGRAM:'
 
 # Side rows (and About sections): proj-a (2025-08-01) before proj-b (2024-05-01).
 pos_a=$(grep -n '<li id="proj-a"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)

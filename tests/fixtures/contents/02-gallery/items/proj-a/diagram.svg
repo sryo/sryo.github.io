@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- diagram comment: source build.sh -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160">
+  <title>LineAndForm: folders of markdown go through one bash script and come out as a ledger plus one page per project</title>
+  <defs>
+    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <rect x="8" y="56" width="160" height="48"/>
+    <path d="M168 80H232" marker-end="url(#head)"/>
+    <path d="M400 80H432V40H464" marker-end="url(#head)"/>
+    <path d="M432 80V120H464" marker-end="url(#head)"/>
+    <rect x="472" y="16" width="160" height="48"/>
+    <rect x="472" y="96" width="160" height="48"/>
+  </g>
+  <rect x="240" y="56" width="160" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="88" y="80">contents/*/_.md</text>
+    <text class="knock" x="320" y="80">build.sh</text>
+    <text x="552" y="40">works.html</text>
+    <text x="552" y="120">work/&lt;slug&gt;/</text>
+  </g>
+</svg>

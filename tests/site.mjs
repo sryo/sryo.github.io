@@ -519,6 +519,96 @@ test('screens are framed, captioned figures', async ({ page }) => {
   if (inverted) throw new Error(`${inverted} screens inverted in dark mode`);
 }, SIDE);
 
+// Diagrams: the glyph grammar as boxes and lines.
+function diagramProblems(svg) {
+  const bad = [];
+  const root = svg.match(/<svg\b[^>]*>/)?.[0] || '';
+  if (!/viewBox="0 0 640 \d+"/.test(root)) bad.push('viewBox is not 0 0 640 H');
+  if (/\s(width|height)="/.test(root)) bad.push('width/height on <svg>');
+  if (!/^<svg\b[^>]*>\s*<title>[^<]+<\/title>/.test(svg.trim())) bad.push('no <title> first');
+  const tag = svg.match(/<(style|script|image|foreignObject|linearGradient|radialGradient|filter|use)\b/);
+  if (tag) bad.push(`<${tag[1]}>`);
+  if (/\s(style|font-family|opacity|fill-opacity|stroke-opacity|rx|ry)="/.test(svg)) bad.push(svg.match(/\s(style|font-family|opacity|fill-opacity|stroke-opacity|rx|ry)="/)[1] + '=');
+  const paints = [...svg.matchAll(/\s(fill|stroke)="([^"]*)"/g)].filter(m => !['currentColor', 'none'].includes(m[2]));
+  if (paints.length) bad.push(`${paints[0][1]}="${paints[0][2]}"`);
+  const widths = [...svg.matchAll(/stroke-width="([^"]*)"/g)].filter(m => m[1] !== '1.5');
+  if (widths.length) bad.push(`stroke-width ${widths[0][1]}`);
+  const body = svg.replace(/<defs>[\s\S]*?<\/defs>/g, '');
+  const curves = [...body.matchAll(/\sd="([^"]*)"/g)].map(m => m[1].replace(/[-\d.,\s]+/g, '')).join('');
+  if (/[^MLHVZmlhvz]/.test(curves)) bad.push('curved path');
+  const nodes = (body.match(/<(rect|circle|ellipse|polygon)\b/g) || []).length;
+  if (nodes > 8) bad.push(`${nodes} nodes, max 8`);
+  const solid = (body.match(/<(rect|circle)\b[^>]*fill="currentColor"/g) || []).length;
+  if (solid > 1) bad.push(`${solid} solid nodes, max 1 (the project)`);
+  const sizes = [...svg.matchAll(/font-size="([^"]*)"/g)].filter(m => !['12', '14'].includes(m[1]));
+  if (sizes.length) bad.push(`font-size ${sizes[0][1]}`);
+  return bad;
+}
+
+test('the diagram check accepts the spec example and rejects off-spec drawings', async ({ vp }) => {
+  if (vp !== 'desktop') return;
+  const ok = await readFile(resolve(ROOT, 'tests/fixtures/contents/02-gallery/items/proj-a/diagram.svg'), 'utf8');
+  const clean = ok.replace(/<\?xml[^>]*\?>/, '').replace(/<!--[\s\S]*?-->/g, '').trim();
+  const p = diagramProblems(clean);
+  if (p.length) throw new Error(`spec example flagged: ${p.join('; ')}`);
+  for (const [name, broken] of [['colour', clean.replace('fill="currentColor"', 'fill="#E94136"')],
+    ['rounded', clean.replace('<rect x="8"', '<rect rx="4" x="8"')], ['curve', clean.replace('M168 80H232', 'M168 80C200 60 200 60 232 80')],
+    ['thick', clean.replace('stroke-width="1.5"', 'stroke-width="3"')], ['style', clean.replace('<defs>', '<style>x{}</style><defs>')]]) {
+    if (!diagramProblems(broken).length) throw new Error(`${name} diagram passed the check`);
+  }
+}, p => p === '/works.html');
+
+test('diagrams follow the spec', async ({ page }) => {
+  const svgs = await page.$$eval('main figure.diagram svg', ss => ss.map(s => s.outerHTML.replace(/ role="img"/, '')));
+  if (svgs.length > 1) throw new Error(`${svgs.length} diagrams, max 1`);
+  for (const svg of svgs) {
+    const p = diagramProblems(svg);
+    if (p.length) throw new Error(p.join('; '));
+  }
+  const caps = await page.$$eval('main figure.diagram', fs => fs.filter(f => !f.querySelector('figcaption')?.textContent.trim()).length);
+  if (caps) throw new Error('diagram without caption');
+}, SIDE);
+
+// The stylesheet's side of the diagram contract, checked on a live side
+// page with the spec example dropped in: ink in both schemes, Inter labels,
+// 1.5px lines at any scale, the project's label knocked out, and on a phone
+// the diagram scrolls inside its figure instead of shrinking.
+test('diagram styles: ink, Inter, 1.5px hairlines, knockout, no page overflow', async ({ page, vp }) => {
+  const raw = await readFile(resolve(ROOT, 'tests/fixtures/contents/02-gallery/items/proj-a/diagram.svg'), 'utf8');
+  const svg = raw.replace(/<\?xml[^>]*\?>/, '').replace(/<!--[\s\S]*?-->/g, '');
+  const probe = async () => page.evaluate(() => {
+    const s = document.querySelector('#probe svg'), css = getComputedStyle(document.documentElement);
+    const rgb = v => { const d = document.createElement('i'); d.style.color = v; document.body.append(d); const c = getComputedStyle(d).color; d.remove(); return c; };
+    const line = s.querySelector('g[stroke] rect'), knock = s.querySelector('.knock'), label = s.querySelector('text:not(.knock)');
+    const scale = s.getBoundingClientRect().width / s.viewBox.baseVal.width;
+    const nonScaling = getComputedStyle(line).vectorEffect === 'non-scaling-stroke';
+    return { color: getComputedStyle(s).color, ink: rgb(css.getPropertyValue('--ink')), paper: rgb(css.getPropertyValue('--paper')),
+      knock: getComputedStyle(knock).fill, font: getComputedStyle(label).fontFamily,
+      stroke: nonScaling ? parseFloat(getComputedStyle(line).strokeWidth) : parseFloat(getComputedStyle(line).strokeWidth) * scale,
+      labelPx: 14 * scale, over: document.documentElement.scrollWidth - window.innerWidth };
+  });
+  await page.evaluate(svg => {
+    const f = document.createElement('figure'); f.className = 'diagram'; f.id = 'probe';
+    f.innerHTML = svg + '<figcaption>probe</figcaption>';
+    document.querySelector('main .part .body').append(f);
+  }, svg);
+  try {
+    for (const scheme of ['light', 'dark']) {
+      await page.emulateMedia({ colorScheme: scheme });
+      const r = await probe();
+      if (r.color !== r.ink) throw new Error(`${scheme}: diagram is ${r.color}, ink is ${r.ink}`);
+      if (r.knock !== r.paper) throw new Error(`${scheme}: knockout label is ${r.knock}, paper is ${r.paper}`);
+      if (!r.font.includes('InterVariable')) throw new Error(`labels set in ${r.font}`);
+      if (Math.abs(r.stroke - 1.5) > 0.01) throw new Error(`lines are ${r.stroke.toFixed(2)}px`);
+      if (r.labelPx < 11) throw new Error(`labels shrink to ${r.labelPx.toFixed(1)}px at ${vp}`);
+      if (r.over > 0) throw new Error(`page overflows by ${r.over}px`);
+    }
+  } finally {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.evaluate(() => document.getElementById('probe')?.remove());
+  }
+}, p => p === '/work/murmur/');
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.gif': 'image/gif', '.woff2': 'font/woff2' };
