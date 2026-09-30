@@ -325,6 +325,19 @@ absent_in   $P "no XML prolog inlined"    '<?xml'
 absent_in   $P "no SVG comment inlined"   'diagram comment'
 absent_in   $P "DIAGRAM line not in the body" 'DIAGRAM:'
 
+# Toys: a TOY: line right after a DIAGRAM: line mounts toys/<name>.js in
+# that figure. The SVG stays as the no-JS and reduced-motion state.
+P=work/01-tags/index.html
+sentinel_in $P "toy marks its diagram figure" '<figure class="diagram" data-toy="demo"><svg role="img"'
+sentinel_in $P "toy script loads as a module" '<script type="module" src="../../toys/demo.js"></script>'
+absent_in   $P "TOY line not in the body"     'TOY:'
+absent_in   work/proj-a/index.html "no toy script without a TOY line" 'toys/'
+T=contents/01-tags
+build_warns "missing toy flagged" "warn: $T/_.md: toy nope not found" \
+    "sed -i.bak 's/^TOY: demo/TOY: nope/' $T/_.md"
+build_warns "toy without a diagram flagged" "warn: $T/_.md: toy demo is not right after a diagram" \
+    "sed -i.bak 's/^DIAGRAM: .*//' $T/_.md"
+
 # Side rows (and About sections): proj-a (2025-08-01) before proj-b (2024-05-01).
 pos_a=$(grep -n '<li id="proj-a"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)
 pos_b=$(grep -n '<li id="proj-b"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)

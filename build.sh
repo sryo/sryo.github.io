@@ -45,7 +45,8 @@
 #    - To add a video or other embed, include a line starting with 'EMBED:' in your .md file.
 #    - A lone '![alt](screen.png "caption")' line is a captioned screen, and a
 #      'DIAGRAM: diagram.svg "caption"' line inlines a diagram; both resolve
-#      from the .md's folder.
+#      from the .md's folder. A 'TOY: name' line
+#      right after a DIAGRAM line mounts toys/name.js inside that figure.
 
 # 3. Run the script:
 #    - Open a terminal in the folder containing this script.
@@ -453,6 +454,8 @@ render_markdown_content() {
     local in_paragraph=false in_list=false in_metrics=false in_code_block=false in_comment=false
     local metric_line value label
     local part_start=0 part_label="" hoisted=false screens=0 fig lone_at=-1 lone_end=-1
+    local diagram_at=-1 diagram_end=-1 toy
+    local diagram_open='<figure class="diagram">'
     local link_re='^\[[^]]+\]\([^)]+\)$'
     local screen_re='^!\[([^]]*)\]\(([^ )]+)( "(([^"\\]|\\.)*)")?\)[[:space:]]*$'
     local figma_embed_re='src="(https://embed\.figma\.com/[^"]*)"'
@@ -578,7 +581,27 @@ render_markdown_content() {
             if $in_list; then content+="</ul>"; in_list=false; fi
             after=${line#DIAGRAM:}
             after=${after#"${after%%[![:space:]]*}"}
+            diagram_at=${#content}
             content+=$(render_diagram "$after")
+            diagram_end=${#content}
+            continue
+        fi
+
+        # A TOY: line mounts toys/<name>.js inside the diagram right above
+        # it. The figure only gets a name; the
+        # page loads the script (see toy_scripts).
+        if [[ "$line" == "TOY:"* ]]; then
+            toy=${line#TOY:}
+            toy=${toy//[[:space:]]/}
+            if [ "$diagram_at" -ge 0 ] && [ "$diagram_end" = "${#content}" ] \
+                && [ "${content:diagram_at:${#diagram_open}}" = "$diagram_open" ]; then
+                content="${content:0:diagram_at}<figure class=\"diagram\" data-toy=\"$(html_escape "$toy")\">${content:$((diagram_at + ${#diagram_open}))}"
+                if [ "$mode" != metrics ] && [ ! -f "$OUT_DIR/toys/$toy.js" ]; then
+                    echo "warn: $file: toy $toy not found" >&2
+                fi
+            elif [ "$mode" != metrics ]; then
+                echo "warn: $file: toy $toy is not right after a diagram" >&2
+            fi
             continue
         fi
 
@@ -672,6 +695,17 @@ case_cta() {
     text=$(parse_markdown "$(printf '%s' "${line#CTA:}" | sed -E 's/^[[:space:]]+//')")
     text=$(printf '%s' "$text" | sed -E 's|<a href="(https://[a-z.]*linkedin\.com/[^"]*)">([^<]*)</a>|<a href="\1" aria-label="\2 on LinkedIn">\2</a>|g')
     printf '<p class="case-cta">%s</p>\n' "$text"
+}
+
+# One module script per toy the page names (TOY: lines), for toys whose
+# file exists under toys/. Prints nothing when the page has none.
+toy_scripts() {
+    local name
+    strip_frontmatter "$1" | strip_comments | awk '/^TOY:/ { sub(/^TOY:[[:space:]]*/, ""); sub(/[[:space:]]+$/, ""); if (!seen[$0]++) print }' \
+        | while IFS= read -r name; do
+            [[ "$name" =~ ^[a-z0-9-]+$ ]] && [ -f "$OUT_DIR/toys/$name.js" ] || continue
+            printf '<script type="module" src="../../toys/%s.js"></script>\n' "$name"
+        done
 }
 
 # Case pages sit two levels down, so links into the content folder
@@ -1190,6 +1224,7 @@ EOF
     if [ "$idx" -ge 0 ]; then
         render_prev_next "$idx"
     fi
+    toy_scripts "$content_file"
     cat <<EOF
 </body>
 </html>

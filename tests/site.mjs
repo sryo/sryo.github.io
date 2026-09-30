@@ -26,7 +26,8 @@ const { chromium } = playwright;
 const VIEWPORTS = { desktop: { width: 1440, height: 900 }, mobile: { width: 375, height: 812 } };
 const WORK = resolve(ROOT, 'work');
 const CASES = existsSync(WORK) ? readdirSync(WORK).filter(s => existsSync(resolve(WORK, s, 'index.html'))).sort() : [];
-const PAGES = ['/', '/works.html', ...CASES.map(s => `/work/${s}/`)];
+// ONLY=<substring> limits the run to matching pages, for quick iteration.
+const PAGES = ['/', '/works.html', ...CASES.map(s => `/work/${s}/`)].filter(p => !process.env.ONLY || p.includes(process.env.ONLY));
 const PORTFOLIO = p => p !== '/';
 // Side projects (contents/about/items/<slug>) get pages in the case shell.
 const SIDE_SLUGS = readdirSync(resolve(ROOT, 'contents/about/items')).filter(s => existsSync(resolve(ROOT, 'contents/about/items', s, '_.md'))).sort();
@@ -833,6 +834,74 @@ test('PENDING names only real side projects', async ({ vp }) => {
   const unknown = PENDING.filter(s => !SIDE_SLUGS.includes(s));
   if (unknown.length) throw new Error(`unknown slugs in PENDING: ${unknown.join(', ')}`);
 }, p => p === '/works.html');
+
+// ── Toys ───────────────────────
+// A TOY: line mounts toys/<name>.js inside its diagram figure. The SVG
+// stays in the figure (hidden from sight, kept for screen readers) and is
+// what no-JS and reduced-motion visitors see. A toy is captioned an
+// illustration and rests on its end state.
+async function toyState(page, name) {
+  return page.$eval(`figure.diagram[data-toy="${name}"]`, f => {
+    const svg = f.querySelector(':scope > svg'), toy = f.querySelector('.toy');
+    const box = e => e ? e.getBoundingClientRect() : null;
+    return { svg: !!svg, svgShown: (box(svg)?.width || 0) > 100, toy: !!toy, toyShown: (box(toy)?.width || 0) > 100,
+      note: toy?.querySelector('.toy-note')?.textContent.trim(), cap: f.querySelector('figcaption')?.textContent.trim(),
+      state: toy?.dataset.state, shown: Number(toy?.dataset.rows || 0),
+      buttons: [...(toy?.querySelectorAll('button') || [])].map(b => ({ text: b.innerText.trim(), pressed: b.getAttribute('aria-pressed'), h: box(b).height })) };
+  });
+}
+
+async function reducedMotionProblems(page, name) {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.reload();
+  try {
+    const r = await toyState(page, name);
+    const bad = [];
+    if (r.toy) bad.push('toy mounted under reduced motion');
+    if (!r.svgShown) bad.push('diagram hidden under reduced motion');
+    return bad;
+  } finally {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.reload();
+  }
+}
+
+test('Airy / Dense toy flips between the first design and the dense one', async ({ page, vp }) => {
+  const settle = () => page.waitForTimeout(1400);
+  await page.locator('figure.diagram[data-toy="airy-dense"]').scrollIntoViewIfNeeded();
+  let r = await toyState(page, 'airy-dense');
+  if (!r.toy || !r.toyShown) throw new Error('toy not mounted');
+  if (!r.svg || r.svgShown) throw new Error('diagram SVG missing or still shown beside the toy');
+  if (r.note !== 'Illustration') throw new Error(`toy note reads "${r.note}"`);
+  if (r.state !== 'dense') throw new Error(`toy rests on "${r.state}", want dense`);
+  const want = vp === 'mobile' ? ['Before', 'After'] : ['First design', 'After agent research'];
+  if (r.buttons.map(b => b.text).join('|') !== want.join('|')) throw new Error(`buttons read [${r.buttons.map(b => b.text).join(', ')}]`);
+  if (r.buttons.map(b => b.pressed).join() !== 'false,true') throw new Error('After is not the pressed button');
+  if (vp === 'mobile' && r.buttons.some(b => b.h < 44)) throw new Error('switch buttons under 44px on a phone');
+  const dense = r.shown;
+  await page.locator('figure.diagram[data-toy="airy-dense"] .toy button').first().click();
+  await settle();
+  r = await toyState(page, 'airy-dense');
+  if (r.state !== 'airy' || r.buttons.map(b => b.pressed).join() !== 'true,false') throw new Error('first click did not switch to the first design');
+  if (!(r.shown < dense)) throw new Error(`first design shows ${r.shown} rows, dense shows ${dense}`);
+  await page.locator('figure.diagram[data-toy="airy-dense"] .toy button').last().click();
+  await settle();
+  r = await toyState(page, 'airy-dense');
+  if (r.state !== 'dense' || r.shown !== dense) throw new Error(`back on dense shows ${r.shown} rows, want ${dense}`);
+  const accent = await page.evaluate(() => {
+    const d = document.createElement('i'); d.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+    document.body.append(d); const c = getComputedStyle(d).color; d.remove();
+    const thumb = document.querySelector('figure.diagram[data-toy="airy-dense"] .toy [data-live]');
+    return { accent: c, thumb: thumb && getComputedStyle(thumb).fill };
+  });
+  if (accent.thumb !== accent.accent) throw new Error(`scroll thumb is ${accent.thumb}, accent is ${accent.accent}`);
+}, p => p === '/work/continental/');
+
+test('Airy / Dense falls back to the diagram under reduced motion', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const bad = await reducedMotionProblems(page, 'airy-dense');
+  if (bad.length) throw new Error(bad.join('; '));
+}, p => p === '/work/continental/');
 
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.

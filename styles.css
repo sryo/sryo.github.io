@@ -549,6 +549,109 @@ h1 {
     vector-effect: non-scaling-stroke;
 }
 
+.body figure.diagram {
+    position: relative;
+}
+
+.body figure.diagram.has-toy > svg:first-child {
+    position: absolute;
+    width: 1px;
+    min-width: 0;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.body figure.diagram .toy svg {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    color: var(--ink);
+    font-feature-settings: "tnum";
+}
+
+.toy .toy-hair {
+    fill: none;
+    stroke: var(--hair);
+    stroke-width: 1;
+}
+
+.toy .toy-bar-fill {
+    fill: var(--mute);
+}
+
+.toy .toy-knock {
+    fill: var(--paper);
+}
+
+.toy [data-accent] {
+    fill: var(--accent);
+    stroke: var(--accent);
+}
+
+.toy rect[data-accent] {
+    fill: none;
+}
+
+.toy [data-live] {
+    fill: var(--accent);
+}
+
+.toy-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.toy-note {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mute);
+}
+
+.toy-switch {
+    display: flex;
+    gap: 16px;
+}
+
+.toy button {
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: var(--mute);
+    font: inherit;
+    font-size: 13px;
+    line-height: 20px;
+    cursor: pointer;
+}
+
+.toy button[aria-pressed="true"] {
+    color: var(--ink);
+    font-weight: 600;
+    border-bottom-color: var(--ink);
+}
+
+.toy button:hover {
+    color: var(--ink);
+}
+
+.toy .short {
+    display: none;
+}
+
+@media (max-width: 39.99rem) {
+    .toy .long { display: none; }
+    .toy .short { display: inline; }
+}
+
 .diagram .knock {
     fill: var(--paper);
     font-weight: 600;
