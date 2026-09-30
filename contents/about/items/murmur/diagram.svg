@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 232">
+  <title>Murmur: holding the mouth opens your mic; public Nostr relays only introduce the browsers, then voice goes straight to each peer, and a whisper sends everyone else a silent track</title>
+  <defs>
+    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="32" cy="144" r="24"/>
+    <path d="M56 144H128" marker-end="url(#head)"/>
+    <circle cx="416" cy="40" r="24"/>
+    <path d="M216 120V40H384" stroke-dasharray="4 4" marker-end="url(#head)"/>
+    <path d="M440 40H552V72" stroke-dasharray="4 4" marker-end="url(#head)"/>
+    <path d="M296 144H384V104H464" stroke-dasharray="4 4" marker-end="url(#head)"/>
+    <path d="M384 144V192H464" stroke-dasharray="4 4" marker-end="url(#head)"/>
+    <rect x="472" y="80" width="160" height="48"/>
+    <rect x="472" y="168" width="160" height="48"/>
+  </g>
+  <rect x="136" y="120" width="160" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="32" y="144">You</text>
+    <text class="knock" x="216" y="144">Murmur</text>
+    <text x="416" y="40">Nostr</text>
+    <text x="552" y="104">ana's murmur</text>
+    <text x="552" y="192">leo's murmur</text>
+  </g>
+  <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text x="96" y="132">hold</text>
+    <text x="300" y="28">handshake only</text>
+    <text x="340" y="132">WebRTC</text>
+    <text x="424" y="92">voice</text>
+    <text x="424" y="180">silence</text>
+  </g>
+</svg>
