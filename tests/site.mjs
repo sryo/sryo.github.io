@@ -135,6 +135,34 @@ test('glyphs are on-system: black fills, no text, style or animation', async ({ 
   if (bad.length) throw new Error(`${bad.length} off-system glyphs: ${bad.join(', ')}`);
 }, p => p === '/works.html');
 
+test('client roles fit on one line at 1440', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const tall = await page.$$eval('[aria-labelledby="g-client"] .row .role', rs => rs
+    .filter(r => r.getBoundingClientRect().height > parseFloat(getComputedStyle(r).lineHeight) + 1)
+    .map(r => r.textContent));
+  if (tall.length) throw new Error(`${tall.length} roles wrap: ${tall[0]}`);
+}, p => p === '/works.html');
+
+test('at 390 the glyph sits left of the name', async ({ page, vp }) => {
+  if (vp !== 'mobile') return;
+  await page.setViewportSize({ width: 390, height: 844 });
+  const bad = await page.$$eval('.row', rows => rows.filter(r => {
+    const g = r.querySelector('.glyph'), n = r.querySelector('.name');
+    return !(g && n && g.getBoundingClientRect().left < n.getBoundingClientRect().left);
+  }).length);
+  await page.setViewportSize({ width: 375, height: 812 });
+  if (bad) throw new Error(`${bad} rows with the glyph right of the name`);
+}, p => p === '/works.html');
+
+test('Impact captions are at least 13px at 390', async ({ page, vp }) => {
+  if (vp !== 'mobile') return;
+  await page.setViewportSize({ width: 390, height: 844 });
+  const sizes = await page.$$eval('.metric-label', ls => ls.map(l => parseFloat(getComputedStyle(l).fontSize)));
+  await page.setViewportSize({ width: 375, height: 812 });
+  const small = sizes.filter(s => s < 13);
+  if (small.length) throw new Error(`${small.length} captions under 13px (${small[0]}px)`);
+}, p => p.startsWith('/work/'));
+
 test('Tab then Enter on a row opens its case page', async ({ page }) => {
   let href = null;
   for (let i = 0; i < 15 && !href; i++) {

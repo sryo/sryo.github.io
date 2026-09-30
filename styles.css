@@ -215,25 +215,25 @@ h1 {
 }
 
 .row {
-    grid-template-columns: 4ch minmax(0, 1fr) 32px;
+    grid-template-columns: 24px 4ch minmax(0, 1fr);
     grid-template-areas:
-        "yr name glyph"
-        ".  line glyph"
-        ".  role role";
+        "glyph yr name"
+        ".     .  line"
+        ".     .  role";
     column-gap: 12px;
     align-items: baseline;
     min-height: 56px;
-    padding: 12px 0;
+    padding: 10px 0;
     border-bottom: 1px solid var(--hair);
     color: inherit;
     text-decoration: none;
 }
 
 .row .yr { grid-area: yr; color: var(--mute); }
-.row .glyph { grid-area: glyph; align-self: start; }
+.row .glyph { grid-area: glyph; align-self: start; width: 24px; height: 24px; }
 .row .name { grid-area: name; font-weight: 600; }
-.row .line { grid-area: line; }
-.row .role { grid-area: role; font-size: 13px; line-height: 20px; color: var(--mute); }
+.row .line { grid-area: line; text-wrap: pretty; }
+.row .role { grid-area: role; font-size: 13px; line-height: 20px; color: var(--mute); text-wrap: balance; }
 
 .row[href^="http"] .name::after {
     content: " ↗";
@@ -265,8 +265,8 @@ h1 {
     .cols span:nth-child(1) { grid-column: 1; }
     .cols span:nth-child(2) { grid-column: 2; }
     .cols span:nth-child(3) { grid-column: 3 / span 2; }
-    .cols span:nth-child(4) { grid-column: 5 / span 6; }
-    .cols span:nth-child(5) { grid-column: 11 / span 2; text-align: right; }
+    .cols span:nth-child(4) { grid-column: 5 / span 5; }
+    .cols span:nth-child(5) { grid-column: 10 / span 3; text-align: right; }
 
     .row {
         grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -277,10 +277,10 @@ h1 {
     }
 
     .row .yr { grid-area: auto; grid-column: 1; }
-    .row .glyph { grid-area: auto; grid-column: 2; align-self: center; }
+    .row .glyph { grid-area: auto; grid-column: 2; align-self: center; width: 32px; height: 32px; }
     .row .name { grid-area: auto; grid-column: 3 / span 2; }
-    .row .line { grid-area: auto; grid-column: 5 / span 6; }
-    .row .role { grid-area: auto; grid-column: 11 / span 2; padding: 0; text-align: right; font-size: 16px; line-height: 24px; }
+    .row .line { grid-area: auto; grid-column: 5 / span 5; }
+    .row .role { grid-area: auto; grid-column: 10 / span 3; padding: 0; text-align: right; font-size: 16px; line-height: 24px; }
 }
 
 .glyph {
@@ -406,7 +406,7 @@ h1 {
     display: block;
     max-width: 18ch;
     font-size: 13px;
-    line-height: 20px;
+    line-height: 18px;
     color: var(--mute);
 }
 
