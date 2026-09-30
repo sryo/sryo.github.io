@@ -137,6 +137,13 @@ sentinel_in $P "og:title escaped" '<meta property="og:title" content="First &amp
 sentinel_in $P "styles inlined"  '/* test stub */'
 sentinel_in works.html "ledger canonical" '<link rel="canonical" href="https://example.test/works.html">'
 
+# Prev/next follow the ledger order and don't wrap.
+sentinel_in work/03-metrics/index.html "rel=prev to newer neighbour" 'rel="prev" href="../01-tags/"'
+sentinel_in work/03-metrics/index.html "rel=next to older neighbour" 'rel="next" href="../02-gallery/"'
+sentinel_in work/03-metrics/index.html "back link to its row"        'href="../../works.html#03-metrics"'
+absent_in   work/01-tags/index.html    "first page has no prev"      'rel="prev"'
+absent_in   work/05-twin-b/index.html  "last page has no next"       'rel="next"'
+
 # Items on a case page: proj-a (2024-08-01) before proj-b (2024-05-01).
 GALLERY="$FIXTURE_DIR/work/02-gallery/index.html"
 pos_a=$(grep -n '<h3>Project A</h3>' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
@@ -160,14 +167,14 @@ echo "Diff against expected/..."
 if diff -u "$EXPECTED" "$ACTUAL" > /dev/null; then
     pass "works.html matches expected"
 else
-    diff -u "$EXPECTED" "$ACTUAL" | head -60
+    diff -u "$EXPECTED" "$ACTUAL" | head -60 || true
     fail "works.html differs from expected (re-run with --update if intentional)"
 fi
 [ -d "$EXPECTED_DIR/work" ] || fail "$EXPECTED_DIR/work missing — run with --update to create"
 if diff -r -u "$EXPECTED_DIR/work" "$FIXTURE_DIR/work" > /dev/null; then
     pass "work/ matches expected"
 else
-    diff -r -u "$EXPECTED_DIR/work" "$FIXTURE_DIR/work" | head -60
+    diff -r -u "$EXPECTED_DIR/work" "$FIXTURE_DIR/work" | head -60 || true
     fail "work/ differs from expected (re-run with --update if intentional)"
 fi
 

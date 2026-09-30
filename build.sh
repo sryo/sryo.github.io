@@ -414,6 +414,14 @@ derive_line() {
     if [[ "$title" == *": "* ]]; then printf '%s' "${title#*: }"; else printf '%s' "$title"; fi
 }
 
+# The short name of a section folder, for rows and prev/next links.
+label_of() {
+    local title
+    IFS=$FS read -r title _ < <(parse_frontmatter "$1/_.md")
+    [ -z "$title" ] && title=$(basename "$1")
+    derive_label "$title"
+}
+
 # One <li> in the ledger: Year · Glyph · Name · Line · Role.
 render_ledger_row() {
     local slug=$1
@@ -483,6 +491,31 @@ EOF
 EOF
 }
 
+# Pager for case pages. Follows the ledger's sorted list: prev is the row
+# above (newer), next the row below (older). No wrap-around.
+render_prev_next() {
+    local idx=$1
+    local count=${#sorted_folders[@]}
+    local other year
+
+    echo "<nav class=\"pn\" aria-label=\"More work\">"
+    if [ "$idx" -gt 0 ]; then
+        other=${sorted_folders[$((idx - 1))]}
+        IFS=$FS read -r _ year _ < <(parse_frontmatter "$other/_.md")
+        printf '  <a rel="prev" href="../%s/"><span class="label">&larr; Newer, %s</span> <span class="pn-name">%s</span></a>\n' \
+            "$(basename "$other")" "${year%%-*}" "$(html_escape "$(label_of "$other")")"
+    else
+        echo "  <span></span>"
+    fi
+    if [ "$idx" -lt $((count - 1)) ]; then
+        other=${sorted_folders[$((idx + 1))]}
+        IFS=$FS read -r _ year _ < <(parse_frontmatter "$other/_.md")
+        printf '  <a rel="next" href="../%s/"><span class="label">Older, %s &rarr;</span> <span class="pn-name">%s</span></a>\n' \
+            "$(basename "$other")" "${year%%-*}" "$(html_escape "$(label_of "$other")")"
+    fi
+    echo "</nav>"
+}
+
 # One standalone page per section, at work/<slug>/index.html.
 write_case_page() {
     local slug=$1
@@ -490,7 +523,10 @@ write_case_page() {
     local title=$3
     local date=$4
     local tags=$5
+    local idx=$6
     local content_file="$folder/_.md"
+    local position
+    position=$(printf '%02d / %02d' $((idx + 1)) ${#sorted_folders[@]})
     local body
     body=$(render_markdown_content "$content_file")
 
@@ -501,6 +537,7 @@ write_case_page() {
     page_head "$title / $AUTHOR" "$title" "work/$slug/" "../../" "$title" article
     cat <<EOF
 <body>
+<nav class="mast"><a class="back" href="../../works.html#$slug">&larr; All work</a> <span class="count">$position</span></nav>
 <main id="main-content">
 EOF
     render_case_study_header "$title" "$date" "$tags" "$slug"
@@ -508,8 +545,9 @@ EOF
     if [ -d "$folder/items" ]; then
         process_gallery "$folder/items"
     fi
+    echo "</main>"
+    render_prev_next "$idx"
     cat <<EOF
-</main>
 </body>
 </html>
 EOF
@@ -559,6 +597,7 @@ while IFS='|' read -r _ _ _ folder; do
 done < <(printf '%s\n' "${records[@]}" | LC_ALL=C sort -t'|' -k1,1r -k2,2n -k3,3)
 
 rows_html=""
+i=0
 for folder in "${sorted_folders[@]}"; do
     slug=$(basename "$folder")
     content_file="$folder/_.md"
@@ -568,7 +607,8 @@ for folder in "${sorted_folders[@]}"; do
 
     rows_html+=$(render_ledger_row "$slug" "$title" "$date" "$tags" "$image_file")
     rows_html+=$'\n'
-    write_case_page "$slug" "$folder" "$title" "$date" "$tags"
+    write_case_page "$slug" "$folder" "$title" "$date" "$tags" "$i"
+    i=$((i + 1))
 done
 
 echo "Assembling $OUTPUT_FILE..."
