@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 208">
+  <title>AirNod: AirPods stream head attitude to the app, which turns tilts and shakes into scrolls, clicks and recentering, and keeps the sensors awake with silent audio</title>
+  <defs>
+    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="48" cy="104" r="24"/>
+    <path d="M72 104H152" stroke-dasharray="4 4" marker-end="url(#head)"/>
+    <path d="M224 80V40H48V72" stroke-dasharray="4 4" marker-end="url(#head)"/>
+    <path d="M288 104H320V40H344" marker-end="url(#head)"/>
+    <path d="M320 104H344" marker-end="url(#head)"/>
+    <path d="M320 104V168H344" marker-end="url(#head)"/>
+    <rect x="352" y="16" width="144" height="48"/>
+    <rect x="352" y="80" width="144" height="48"/>
+    <rect x="352" y="144" width="144" height="48"/>
+    <path d="M496 40H512V104"/>
+    <path d="M496 104H568" marker-end="url(#head)"/>
+    <circle cx="600" cy="104" r="24"/>
+  </g>
+  <rect x="160" y="80" width="128" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="48" y="144">AirPods</text>
+    <text class="knock" x="224" y="104">AirNod</text>
+    <text x="424" y="40">Nod to scroll</text>
+    <text x="424" y="104">Tilt to click</text>
+    <text x="424" y="168">Shake to recenter</text>
+    <text x="600" y="144">macOS</text>
+  </g>
+  <g fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text class="mute" x="116" y="88">head attitude</text>
+    <text class="mute" x="136" y="28">silent audio loop</text>
+    <text class="mute" x="544" y="88">CGEvent</text>
+  </g>
+</svg>

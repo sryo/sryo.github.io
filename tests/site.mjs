@@ -651,7 +651,7 @@ test('diagram styles: ink, Inter, 1.5px hairlines, knockout, no page overflow', 
 // The per-project goal: real screens where the
 // project has a UI, and always one diagram of how it works. A slug leaves
 // PENDING when its content lands; that is the project's red → green step.
-const PENDING = ['airnod', 'apptidy', 'avis', 'chanchan', 'chronomouse', 'dirpad', 'figma-cdp', 'figma-plugins', 'fin', 'gmailtidy',
+const PENDING = ['apptidy', 'avis', 'chanchan', 'chronomouse', 'dirpad', 'figma-cdp', 'figma-plugins', 'fin', 'gmailtidy',
   'lineandform', 'murmur', 'posta', 'spoons', 'stow', 'subi', 'trueframe', 'va', 'when', 'zentrate'];
 test('side project shows its screens and a diagram', async ({ page, path }) => {
   const slug = slugOf(path);
