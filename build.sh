@@ -302,6 +302,31 @@ flush_part() {
     fi
 }
 
+# A METRICS value earns big-number styling only when it's a quantity:
+# it starts with a digit or one of ~ < > + $ ±. "Real-time" or "Finalist"
+# are true, but they aren't figures.
+is_quantity() {
+    case "$1" in
+        [0-9~\<\>+\$]*|±*) return 0 ;;
+    esac
+    return 1
+}
+
+# Close a METRICS block: end the figures grid, then list what wasn't a
+# quantity under it. Uses render_markdown_content's locals, like flush_part.
+close_metrics() {
+    local open='<div class="metrics-grid">'
+    if [[ "$metrics" == *"$open" ]]; then
+        metrics=${metrics%"$open"}
+    else
+        metrics+="</div>"
+    fi
+    if [ -n "$notes" ]; then
+        metrics+="<ul class=\"metric-notes\">$notes</ul>"
+        notes=""
+    fi
+}
+
 # Modes: "" renders the body in place. "page" wraps each `## ` heading and
 # what follows in a part (see flush_part) and leaves METRICS out; "metrics"
 # renders only the METRICS blocks, for the figures band. HTML comments
@@ -309,7 +334,7 @@ flush_part() {
 render_markdown_content() {
     local file=$1
     local mode=${2:-}
-    local content="" metrics="" line parsed_line escaped_line after
+    local content="" metrics="" notes="" line parsed_line escaped_line after
     local in_paragraph=false in_list=false in_metrics=false in_code_block=false in_comment=false
     local metric_line value label
     local part_start=0 part_label="" hoisted=false
@@ -399,11 +424,17 @@ render_markdown_content() {
                 if [[ "$metric_line" =~ ^\*\*([^*]+)\*\*[[:space:]]*(.*) ]]; then
                     value=$(html_escape "${BASH_REMATCH[1]}")
                     label=$(html_escape "${BASH_REMATCH[2]}")
-                    metrics+="<div class=\"metric\"><span class=\"metric-value\">$value</span><span class=\"metric-label\">$label</span></div>"
+                    if is_quantity "${BASH_REMATCH[1]}"; then
+                        metrics+="<div class=\"metric\"><span class=\"metric-value\">$value</span><span class=\"metric-label\">$label</span></div>"
+                    else
+                        notes+="<li><strong>$value</strong> $label</li>"
+                    fi
+                else
+                    notes+="<li>$(html_escape "$metric_line")</li>"
                 fi
                 continue
             else
-                metrics+="</div>"
+                close_metrics
                 in_metrics=false
                 # Rendered in place unless the page lifts it into the band.
                 if [ -z "$mode" ]; then content+=$metrics; metrics=""; fi
@@ -461,7 +492,7 @@ render_markdown_content() {
 
     if $in_code_block; then content+="</code></pre>"; fi
     if $in_metrics; then
-        metrics+="</div>"
+        close_metrics
         if [ -z "$mode" ]; then content+=$metrics; metrics=""; fi
     fi
     if $in_list; then content+="</ul>"; fi

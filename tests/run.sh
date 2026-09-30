@@ -129,6 +129,8 @@ absent_in   works.html "no dialog galleries"         'class="gallery"'
 # Bodies render on their own case pages.
 sentinel_in work/03-metrics/index.html "METRICS value rendered"   '<span class="metric-value">15%</span>'
 sentinel_in work/03-metrics/index.html "METRICS label rendered"   '<span class="metric-label">reduction in churn</span>'
+absent_in   work/03-metrics/index.html "non-quantity not a stat"  '<span class="metric-value">Catalog + tasking</span>'
+sentinel_in work/03-metrics/index.html "non-quantity listed"      '<li>Catalog + tasking — dual capture flow</li>'
 sentinel_in work/01-tags/index.html    "date formatted"           '<time datetime="2024-03-01">March 2024</time>'
 sentinel_in work/03-metrics/index.html "EMBED passthrough"        '<iframe src="https://example.com/embed">'
 absent_in   work/03-metrics/index.html "ID-less YouTube embed dropped" 'youtube.googleapis.com/embed/?'

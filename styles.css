@@ -402,6 +402,19 @@ h1 {
     letter-spacing: -0.035em;
 }
 
+.figures .metric-notes {
+    grid-column: 1 / -1;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 17px;
+    line-height: 28px;
+}
+
+.metrics-grid + .metric-notes {
+    margin-top: 16px;
+}
+
 .metric-label {
     display: block;
     max-width: 18ch;
@@ -534,6 +547,10 @@ h1 {
     .figures .metrics-grid {
         grid-column: 4 / -1;
         grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .figures .metric-notes {
+        grid-column: 4 / span 7;
     }
 
     .part > .body {
