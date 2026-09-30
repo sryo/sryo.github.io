@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 272">
+  <title>GmailTidy: the timed passes that touch mail search your Gmail and write labels, archives and drafts back; the slower two ask Gemini for replies</title>
+  <defs>
+    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="40" cy="136" r="24"/>
+    <path d="M64 128H192" marker-end="url(#head)"/>
+    <path d="M192 144H64" marker-end="url(#head)"/>
+    <path d="M320 136H344"/>
+    <path d="M344 40V232"/>
+    <path d="M344 40H368" marker-end="url(#head)"/>
+    <path d="M344 104H368" marker-end="url(#head)"/>
+    <path d="M344 168H368" marker-end="url(#head)"/>
+    <path d="M344 232H368" marker-end="url(#head)"/>
+    <rect x="368" y="16" width="176" height="48"/>
+    <rect x="368" y="80" width="176" height="48"/>
+    <rect x="368" y="144" width="176" height="48"/>
+    <rect x="368" y="208" width="176" height="48"/>
+    <path d="M544 168H560V232H544" stroke-dasharray="4 4"/>
+    <path d="M560 200H576" stroke-dasharray="4 4" marker-end="url(#head)"/>
+    <circle cx="600" cy="200" r="24"/>
+  </g>
+  <rect x="192" y="112" width="128" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="40" y="176">Gmail</text>
+    <text class="knock" x="256" y="136">GmailTidy</text>
+    <text x="456" y="40">cleanUp · 5 min</text>
+    <text x="456" y="104">bunch · 5 min</text>
+    <text x="456" y="168">cleanUpDeep · 15 min</text>
+    <text x="456" y="232">sendBurndown · 8:00</text>
+    <text x="600" y="240">Gemini</text>
+  </g>
+  <g fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text class="mute" x="128" y="116">search</text>
+    <text class="mute" x="128" y="160">label, archive, draft</text>
+  </g>
+</svg>
