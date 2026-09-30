@@ -783,6 +783,15 @@ contact_links() {
     printf '%s' "$out"
 }
 
+# The profile's first plain paragraph: the ledger's lead, and the
+# description the ledger and About share. Empty without a profile.
+profile_lead() {
+    [ -n "$profile" ] || return 0
+    strip_frontmatter "$profile/_.md" | awk '
+        /^[[:space:]]*$/ || /^[#<>\[*-]/ || /^(METRICS|EMBED|CTA):/ { next }
+        { print; exit }'
+}
+
 # The ledger's header, from the profile section: its first paragraph as
 # the lead and its italic availability line, plus the years on the ledger.
 render_intro() {
@@ -790,9 +799,7 @@ render_intro() {
     local last=$2
     local lead="" avail="" links
     if [ -n "$profile" ]; then
-        lead=$(strip_frontmatter "$profile/_.md" | awk '
-            /^[[:space:]]*$/ || /^[#<>\[*-]/ || /^(METRICS|EMBED):/ { next }
-            { print; exit }')
+        lead=$(profile_lead)
         avail=$(strip_frontmatter "$profile/_.md" | awk '/^\*[^*].*\*$/ { print substr($0, 2, length($0) - 2); exit }')
     fi
     [ -z "$lead" ] && lead=$AUTHOR
@@ -888,7 +895,9 @@ EOF
     <meta property="og:description" content="$(html_escape "$description")">
     <meta property="og:url" content="$url">
     <meta property="og:image" content="$SITE_URL/og.png">
+    <meta property="og:image:alt" content="$(html_escape "$og_title")">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="$SITE_URL/og.png">
 EOF
     fi
     if [ -f "$OUT_DIR/favicon.svg" ]; then
@@ -953,6 +962,8 @@ write_case_page() {
     fi
 
     load_fm "$folder"
+    # About has no summary line: its lead describes it instead.
+    [ "$fm_kind" = profile ] && [ -z "$fm_summary" ] && fm_summary=$(profile_lead)
     mkdir -p "$WORK_DIR/$slug"
     {
     echo "<!DOCTYPE html>"
@@ -963,6 +974,7 @@ write_case_page() {
 <nav class="mast"><a class="back" href="../../works.html#$slug">&larr; All work</a>$position</nav>
 <main id="main-content">
 EOF
+    [ "$fm_kind" = profile ] && fm_summary=""
     render_case_head "$folder"
     if [ -n "$figures" ]; then
         printf '<section class="figures"><h2 class="label">Impact</h2>%s</section>\n' "$figures"
@@ -1059,7 +1071,8 @@ echo "Assembling $OUTPUT_FILE..."
 {
 echo "<!DOCTYPE html>"
 echo "<html lang=\"en\">"
-page_head "$TITLE" "$TITLE - Portfolio" "$(basename "$OUTPUT_FILE")" ""
+ledger_lead=$(profile_lead)
+page_head "$TITLE" "${ledger_lead:-$TITLE - Portfolio}" "$(basename "$OUTPUT_FILE")" ""
 echo "<body>"
 echo "<main id=\"main-content\">"
 render_intro "$oldest" "$newest"

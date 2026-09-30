@@ -367,6 +367,30 @@ test('Bancor walkthrough embed carries a title', async () => {
   if (!/<iframe[^>]*\btitle="Bancor crisis features walkthrough"/.test(md)) throw new Error('Bancor iframe has no title');
 }, p => p === '/work/bancor/');
 
+test('share cards: large image, alt, twitter image', async ({ page }) => {
+  const m = await page.evaluate(() => {
+    const get = sel => document.querySelector(sel)?.getAttribute('content') || '';
+    return { alt: get('meta[property="og:image:alt"]'), card: get('meta[name="twitter:card"]'), img: get('meta[name="twitter:image"]') };
+  });
+  if (!m.alt) throw new Error('no og:image:alt');
+  if (m.card !== 'summary_large_image') throw new Error(`twitter:card is "${m.card}"`);
+  if (!m.img) throw new Error('no twitter:image');
+}, PORTFOLIO);
+
+test('ledger and About describe themselves', async ({ page, path }) => {
+  const d = await page.getAttribute('meta[name="description"]', 'content');
+  const og = await page.getAttribute('meta[property="og:description"]', 'content');
+  if (path === '/works.html' && /Portfolio$/.test(og)) throw new Error(`og:description is "${og}"`);
+  if (path === '/work/about/') {
+    if (d === 'About Me' || og === 'About Me') throw new Error('About is described as "About Me"');
+    const h1 = (await page.textContent('h1')).trim();
+    if (h1 === 'About Me') throw new Error('About h1 is "About Me"');
+    const dup = await page.$$eval('main h2', (hs, h1) => hs.some(h => h.textContent.trim() === h1), h1);
+    if (dup) throw new Error(`an h2 repeats the h1 "${h1}"`);
+    if (await page.locator('.dek').count()) throw new Error('About has a dek');
+  }
+}, p => p === '/works.html' || p === '/work/about/');
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };

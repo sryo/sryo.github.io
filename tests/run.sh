@@ -160,6 +160,10 @@ sentinel_in $P "og:title escaped" '<meta property="og:title" content="First &amp
 sentinel_in $P "styles inlined"  '/* test stub */'
 sentinel_in $P "script inlined on case pages" '/* script stub */'
 sentinel_in works.html "script inlined on the ledger" '/* script stub */'
+sentinel_in $P "og:image:alt is the page title" '<meta property="og:image:alt" content="First &amp; &lt;Special&gt;">'
+sentinel_in $P "twitter:image"   '<meta name="twitter:image" content="https://example.test/og.png">'
+sentinel_in works.html "ledger og:description is its lead" '<meta property="og:description" content="I make fixtures. Usually that means breaking things on purpose.">'
+sentinel_in work/02-gallery/index.html "About description is its lead" '<meta name="description" content="I make fixtures. Usually that means breaking things on purpose.">'
 sentinel_in works.html "ledger canonical" '<link rel="canonical" href="https://example.test/works.html">'
 
 # Prev/next follow the ledger order and don't wrap.
