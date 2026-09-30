@@ -308,6 +308,48 @@ test('OMSNIC and VENG have no My role', async ({ page }) => {
   if (labels.includes('My role')) throw new Error('has a My role section');
 }, p => p === '/work/omsnic/' || p === '/work/veng/');
 
+test('Decisions are named in readable h3 heads', async ({ page }) => {
+  const heads = await page.$$eval('section.part', ss => ss
+    .filter(s => s.querySelector('h2')?.textContent.trim() === 'Decisions')
+    .flatMap(s => [...s.querySelectorAll('h3')].map(h => ({ text: h.textContent, px: parseFloat(getComputedStyle(h).fontSize) }))));
+  if (!heads.length) throw new Error('no h3 under Decisions');
+  const small = heads.filter(h => h.px < 20);
+  if (small.length) throw new Error(`"${small[0].text}" is ${small[0].px}px`);
+  const all = await page.$$eval('main h3', hs => hs.map(h => h.textContent));
+  const digit = all.find(t => /\d/.test(t));
+  if (digit) throw new Error(`h3 carries a number: ${digit}`);
+}, CASE);
+
+const DECISIONS = {
+  bancor: ['Logical accounts instead of paperwork', 'Peperina: the design system'],
+  veng: ['Familiar e-commerce patterns for unfamiliar SAR imagery'],
+  hometown: ['The platform stays in the loop'],
+  lavoz: ['We built our own paywall, Wyleex', 'Mobile-first storytelling'],
+  infoxel: ['Vlic: real-time news monitoring', 'Welo: live TV clipping'],
+  omsnic: ['Progressive disclosure', 'Branching logic stays invisible'],
+};
+test('decision heads name the decision', async ({ page, path }) => {
+  const want = DECISIONS[path.split('/')[2]];
+  const got = await page.$$eval('main h3', hs => hs.map(h => h.textContent.trim()));
+  if (want.join('|') !== got.join('|')) throw new Error(`h3s are [${got.join('; ')}]`);
+}, p => CASE(p) && DECISIONS[p.split('/')[2]]);
+
+test('cases do not repeat themselves', async ({ page, path }) => {
+  const main = await page.textContent('main');
+  const html = await page.innerHTML('main');
+  const context = await page.$$eval('section.part', ss => ss.find(s => s.querySelector('h2')?.textContent.trim() === 'Context')?.textContent || '');
+  if (path === '/work/omsnic/' && /<strong>[^<]*112/.test(html)) throw new Error('112 is bolded in the body');
+  if (path === '/work/bancor/' && context.includes('March 2020')) throw new Error('Context repeats March 2020');
+  if (path === '/work/hometown/' && main.split('dead end').length !== 2) throw new Error('"dead end" is not said exactly once');
+  const parts = (await page.$$eval('section.part', ss => ss.map(s => s.textContent))).join(' ');
+  if (path === '/work/hometown/' && parts.split('phone number').length > 2) throw new Error('the phone-number idea is said twice');
+  if (path === '/work/topicflower/') {
+    if (/that.s cool/i.test(context)) throw new Error('Context repeats the dek\'s "that\'s cool"');
+    if (main.split('prove ROI').length > 2) throw new Error('"prove ROI" said twice');
+    if (!main.includes('Nebular Design System (Angular)')) throw new Error('Nebular line lost');
+  }
+}, p => ['/work/omsnic/', '/work/bancor/', '/work/hometown/', '/work/topicflower/'].includes(p));
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
@@ -332,7 +374,7 @@ for (const [vp, size] of Object.entries(VIEWPORTS)) {
     const name = path === '/' ? 'index' : path.replace(/^\/|\/$/g, '').replace(/\//g, '-').replace(/\.html$/, '');
     await page.screenshot({ path: resolve(SHOTS, `${name}-${vp}.png`), fullPage: true });
     for (const t of tests.filter(t => t.only(path))) {
-      try { await t.fn({ page, errors, vp, base: BASE }); console.log(`  ✓ [${vp}] ${path} ${t.name}`); }
+      try { await t.fn({ page, errors, vp, base: BASE, path }); console.log(`  ✓ [${vp}] ${path} ${t.name}`); }
       catch (e) { failed++; console.log(`  ✗ [${vp}] ${path} ${t.name}: ${e.message.split('\n')[0]}`); }
     }
     await page.close();
