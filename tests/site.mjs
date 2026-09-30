@@ -115,6 +115,26 @@ test('side lines are not questions', async ({ page }) => {
   if (bad.length) throw new Error(`${bad.length} lines: ${bad[0]}`);
 }, p => p === '/works.html');
 
+test('every row has a drawn glyph', async ({ page }) => {
+  const n = await page.locator('.glyph.initial').count();
+  if (n) throw new Error(`${n} typographic initials`);
+}, p => p === '/works.html');
+
+test('glyphs are on-system: black fills, no text, style or animation', async ({ page }) => {
+  const srcs = await page.$$eval('.glyph img', imgs => imgs.map(i => i.getAttribute('src')));
+  const bad = [];
+  for (const src of srcs) {
+    const m = src.match(/^data:image\/svg\+xml;base64,(.*)$/);
+    if (!m) { bad.push(`not an inline SVG: ${src.slice(0, 40)}`); continue; }
+    const svg = Buffer.from(m[1], 'base64').toString('utf8');
+    if (/<(text|style|animate)/i.test(svg)) { bad.push(svg.match(/<(text|style|animate)\w*/i)[0]); continue; }
+    const fills = [...svg.matchAll(/fill(?:="|:\s*)([^";]+)/g)].map(f => f[1].trim().toLowerCase());
+    const off = fills.filter(f => !['black', '#000', '#000000', 'none'].includes(f));
+    if (off.length) bad.push(`fill ${off[0]}`);
+  }
+  if (bad.length) throw new Error(`${bad.length} off-system glyphs: ${bad.join(', ')}`);
+}, p => p === '/works.html');
+
 test('Tab then Enter on a row opens its case page', async ({ page }) => {
   let href = null;
   for (let i = 0; i < 15 && !href; i++) {

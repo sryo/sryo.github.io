@@ -32,7 +32,8 @@
 #         plain line: the ledger line, the dek and the meta description).
 #         Optional: client, link.
 #      b) Optionally, add a glyph: _.svg (or _.png / _.jpg). Without one, the
-#         label's initial stands in.
+#         label's initial stands in. Glyphs are one system: a 100×100 viewBox,
+#         black fills only, no text, <style> or animation (the build warns).
 #    - Mark one folder 'kind: profile' for the About page. It heads the ledger,
 #      and its 'items/' folder holds side projects: one subfolder each, with
 #      a _.md (label and link optional) and an optional glyph.
@@ -220,6 +221,28 @@ find_item_image() {
             return
         fi
     done
+}
+
+# Glyphs are one system: black fills only (the dark-mode invert depends on
+# it), no <text>, <style> or animation. Anything else still renders, with
+# a warning naming the folder and the first offence.
+check_glyph() {
+    local image_file=$1 slug=$2 fill why=""
+    [[ "$image_file" == *.svg ]] || return 0
+    if grep -qiE '<(text|style|animate)' "$image_file"; then
+        why=$(grep -oiE '<(text|style|animate)[A-Za-z]*' "$image_file" | head -n 1)
+    else
+        while IFS= read -r fill; do
+            fill=${fill#fill}; fill=${fill#=\"}; fill=${fill#:}
+            fill=$(printf '%s' "$fill" | tr -d ' "' | tr '[:upper:]' '[:lower:]')
+            case "$fill" in
+                black|'#000'|'#000000'|none) ;;
+                *) why="fill $fill"; break ;;
+            esac
+        done < <(grep -oE 'fill(="[^"]*"|:[^;"]*)' "$image_file")
+    fi
+    [ -z "$why" ] || echo "warn: $slug glyph off-system ($why)" >&2
+    return 0
 }
 
 insert_image() {
@@ -879,6 +902,7 @@ for folder in "$CONTENT_DIR"*/ "$CONTENT_DIR"*/items/*/; do
         */items/*/) ;;
         *) require_fields "$folder/_.md" || exit 1 ;;
     esac
+    check_glyph "$(find_item_image "${folder%/}")" "$slug"
     case "$seen_slugs" in
         *" $slug "*) friendly_message "Build stopped: duplicate slug '$slug'" "Rename one of the folders called $slug."; exit 1 ;;
     esac

@@ -57,7 +57,8 @@ mkdir -p "$FIXTURE_DIR/work/ghost"
 echo stale > "$FIXTURE_DIR/work/ghost/index.html"
 
 # Build into the fixture dir (build.sh resolves paths relative to CWD).
-(cd "$FIXTURE_DIR" && bash "$REPO_DIR/build.sh" >/dev/null)
+# Keep stderr: warnings are part of the contract.
+BUILD_ERR=$(cd "$FIXTURE_DIR" && bash "$REPO_DIR/build.sh" 2>&1 >/dev/null)
 ACTUAL="$FIXTURE_DIR/works.html"
 [ -f "$ACTUAL" ] || fail "build did not produce works.html"
 
@@ -102,6 +103,20 @@ build_must_fail "folder 'Bad Slug' rejected" "Invalid slug" \
     'mkdir "contents/Bad Slug" && cp contents/04-noorder/_.md "contents/Bad Slug/_.md"'
 build_must_fail "duplicate slug rejected" "duplicate slug" \
     'mkdir contents/02-gallery/items/01-tags && cp contents/02-gallery/items/proj-a/_.md contents/02-gallery/items/01-tags/_.md'
+
+echo "Build warnings..."
+warned() {
+    local desc=$1 pattern=$2
+    case "$BUILD_ERR" in
+        *"$pattern"*) pass "$desc" ;;
+        *) fail "$desc — stderr lacks '$pattern': $BUILD_ERR" ;;
+    esac
+}
+warned "off-system glyph flagged" 'warn: proj-b glyph off-system'
+case "$BUILD_ERR" in
+    *"proj-a glyph off-system"*|*"01-tags glyph off-system"*) fail "black glyphs flagged as off-system" ;;
+    *) pass "black glyphs pass the glyph check" ;;
+esac
 
 echo "Sentinel checks..."
 # works.html is the ledger: no ring, no dialogs, no connectors.
