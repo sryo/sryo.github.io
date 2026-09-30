@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 192">
+  <title>Valora's design system: one token set feeds one design system under the Valuation, Equity and Portfolio modules, and fund-user roles set access to each module</title>
+  <defs>
+    <marker id="valora-head-b" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <rect x="8" y="72" width="88" height="48"/>
+    <path d="M96 96H136" marker-end="url(#valora-head-b)"/>
+    <path d="M272 96H296V32H312" marker-end="url(#valora-head-b)"/>
+    <path d="M272 96H312" marker-end="url(#valora-head-b)"/>
+    <path d="M296 96V160H312" marker-end="url(#valora-head-b)"/>
+    <rect x="320" y="8" width="128" height="48"/>
+    <rect x="320" y="72" width="128" height="48"/>
+    <rect x="320" y="136" width="128" height="48"/>
+    <path d="M504 96H480V32H456" marker-end="url(#valora-head-b)"/>
+    <path d="M504 96H456" marker-end="url(#valora-head-b)"/>
+    <path d="M480 96V160H456" marker-end="url(#valora-head-b)"/>
+    <rect x="504" y="72" width="128" height="48"/>
+  </g>
+  <rect x="144" y="72" width="128" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="52" y="96">Tokens</text>
+    <text class="knock" x="208" y="96">Design system</text>
+    <text x="384" y="32">Valuation</text>
+    <text x="384" y="96">Equity</text>
+    <text x="384" y="160">Portfolio</text>
+    <text x="568" y="96">Fund-user roles</text>
+  </g>
+  <g class="mute" fill="currentColor" font-size="12" dominant-baseline="central">
+    <text x="488" y="52" text-anchor="start">access</text>
+  </g>
+</svg>
