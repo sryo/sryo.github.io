@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Test Portfolio - Portfolio">
+    <title>Test Portfolio</title>
+    <style></style>
+</head>
+<body>
+<main id="main-content">
+<div class="clock" id="clock">
+<label class="item" title="First &amp; &lt;Special&gt;">
+  <input type="checkbox" name="menu" id="item-0" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="gallery-0" />
+  <div class="placeholder-image">No Image</div>
+</label>
+<label class="item" title="Second Section">
+  <input type="checkbox" name="menu" id="item-1" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="gallery-1" />
+  <div class="placeholder-image">No Image</div>
+</label>
+<label class="item" title="Third Section">
+  <input type="checkbox" name="menu" id="item-2" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="gallery-2" />
+  <div class="placeholder-image">No Image</div>
+</label>
+<label class="item" title="Fourth Section">
+  <input type="checkbox" name="menu" id="item-3" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="gallery-3" />
+  <div class="placeholder-image">No Image</div>
+</label>
+</div>
+<div class="gallery" id="gallery-0" data-for="item-0" role="dialog" tabindex="-1" aria-labelledby="title-0">
+<header class="case-study-header">
+  <h1 id="title-0">First &amp; &lt;Special&gt;</h1>
+  <div class="meta">
+    <time datetime="2024-03-01">March 2024</time>
+    <div class="tags">
+      <span class="tag">design</span>
+      <span class="tag">ux</span>
+      <span class="tag">web</span>
+    </div>
+  </div>
+</header>
+  <h2>Overview</h2><p>This is <strong>bold</strong> and <em>italic</em> and <code>inline code</code> and a <a href="https://example.com">link</a>.</p>
+</div>
+<div class="gallery" id="gallery-1" data-for="item-1" role="dialog" tabindex="-1" aria-labelledby="title-1">
+<header class="case-study-header">
+  <h1 id="title-1">Second Section</h1>
+  <div class="meta">
+    <time datetime="2023-06-15">June 2023</time>
+    <div class="tags">
+      <span class="tag">research</span>
+    </div>
+  </div>
+</header>
+  <h2>Section with gallery</h2><p>Projects below are sorted by date descending.</p>
+<div class="project">
+  <div class="project-content">
+    <h3>Project A</h3>
+    <p>Project A description with an inline <img src="https://example.com/img.png" alt="alt text" loading="lazy" />.</p>
+  </div>
+  <div class="project-image">
+<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMCAxMCI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjMDAwIi8+PC9zdmc+Cg==" alt="Project A" />
+  </div>
+</div>
+<div class="project">
+  <div class="project-content">
+    <h3>Project B</h3>
+    <p>Project B uses a cover image, not an icon, to exercise the fallback image lookup.</p>
+  </div>
+  <div class="project-image">
+<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMCAxMCI+PGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjQiIGZpbGw9IiM4ODgiLz48L3N2Zz4K" alt="Project B" />
+  </div>
+</div>
+</div>
+<div class="gallery" id="gallery-2" data-for="item-2" role="dialog" tabindex="-1" aria-labelledby="title-2">
+<header class="case-study-header">
+  <h1 id="title-2">Third Section</h1>
+  <div class="meta">
+    <time datetime="2024-01-15">January 2024</time>
+    <div class="tags">
+      <span class="tag">data</span>
+    </div>
+  </div>
+</header>
+  <p>Results below.</p><div class="metrics-grid"><div class="metric"><span class="metric-value">15%</span><span class="metric-label">reduction in churn</span></div><div class="metric"><span class="metric-value">42</span><span class="metric-label">new accounts</span></div></div><h2>After METRICS</h2><p>A heading that closes the metrics block by falling through (no blank line guarantee).</p><iframe src="https://example.com/embed"></iframe><p>A code block:</p><pre><code>echo "hello &amp; &lt;world&gt;"
+</code></pre><p>A divider below:</p><p>---</p><p>A paragraph after the divider should still render.</p>
+</div>
+<div class="gallery" id="gallery-3" data-for="item-3" role="dialog" tabindex="-1" aria-labelledby="title-3">
+<header class="case-study-header">
+  <h1 id="title-3">Fourth Section</h1>
+  <div class="meta">
+    <time datetime="2022-11-01">November 2022</time>
+    <div class="tags">
+      <span class="tag">misc</span>
+    </div>
+  </div>
+</header>
+  <p>This section has no <code>order:</code> field, so it sorts last via DEFAULT_ORDER.</p><ul><li>list item one</li><li>list item two</li><li>list item three</li></ul>
+</div>
+</main>
+<svg id="lineContainer" aria-hidden="true"></svg>
+<script>
+    /* test stub */
+</script>
+</body>
+</html>

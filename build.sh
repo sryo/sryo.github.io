@@ -51,6 +51,9 @@
 # Config & CLI
 # ─────────────────────────────────────────────────────────────
 
+# Bash 5.2+ treats "&" in ${var//pat/rep} as the match; keep it literal.
+shopt -u patsub_replacement 2>/dev/null || true
+
 if [ -f "config.cfg" ]; then
     source config.cfg
 else

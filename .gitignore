@@ -1,4 +1,6 @@
 .DS_Store
-works.html
+/works.html
+tests/fixtures/works.html
 .claude/
 CLAUDE.md
+tests/shots/
