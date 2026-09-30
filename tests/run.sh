@@ -127,16 +127,16 @@ build_warns "screen over 250KB flagged" "warn: $A/_.md: screen-1.png is over 250
 build_warns "more than 3 screens flagged" "warn: $A/_.md: more than 3 screens" \
     "printf '![Four](screen-1.png)\\n' >> $A/_.md"
 build_warns "screen without alt flagged" "warn: $A/_.md: image without alt" \
-    "printf '\\n![](screen-2.png)\\n' >> $A/_.md && sed -i '/shot.jpg/d' $A/_.md"
+    "printf '\\n![](screen-2.png)\\n' >> $A/_.md && sed -i.bak '/shot.jpg/d' $A/_.md"
 
 build_warns "missing diagram flagged" "warn: $A/_.md: diagram nope.svg not found" \
-    "sed -i 's/DIAGRAM: diagram.svg/DIAGRAM: nope.svg/' $A/_.md"
+    "sed -i.bak 's/DIAGRAM: diagram.svg/DIAGRAM: nope.svg/' $A/_.md"
 build_warns "diagram without caption flagged" "warn: $A/_.md: diagram without caption" \
-    "sed -i 's/^DIAGRAM: diagram.svg.*/DIAGRAM: diagram.svg/' $A/_.md"
+    "sed -i.bak 's/^DIAGRAM: diagram.svg.*/DIAGRAM: diagram.svg/' $A/_.md"
 build_warns "off-spec diagram flagged" "warn: $A/_.md: diagram.svg off-spec (fill #f00)" \
-    "sed -i 's/fill=\"currentColor\"/fill=\"#f00\"/' $A/diagram.svg"
+    "sed -i.bak 's/fill=\"currentColor\"/fill=\"#f00\"/' $A/diagram.svg"
 build_warns "diagram with <style> flagged" "warn: $A/_.md: diagram.svg off-spec (<style)" \
-    "sed -i 's|<defs>|<style>text{}</style><defs>|' $A/diagram.svg"
+    "sed -i.bak 's|<defs>|<style>text{}</style><defs>|' $A/diagram.svg"
 
 warned() {
     local desc=$1 pattern=$2
