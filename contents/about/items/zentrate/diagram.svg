@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 240">
+  <title>ZenTrate: the widget reads its items from a config file, every tap runs the script to count the tap and open the item's URL, and the counts size the text</title>
+  <defs>
+    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="32" cy="112" r="24"/>
+    <path d="M56 112H88" marker-end="url(#head)"/>
+    <rect x="320" y="16" width="168" height="48"/>
+    <path d="M320 40H176V80" marker-end="url(#head)"/>
+    <rect x="536" y="16" width="96" height="48"/>
+    <path d="M536 40H496" marker-end="url(#head)"/>
+    <path d="M256 112H568" marker-end="url(#head)"/>
+    <circle cx="600" cy="112" r="24"/>
+    <path d="M200 136V200H312" marker-end="url(#head)"/>
+    <path d="M320 216H152V144" marker-end="url(#head)"/>
+    <rect x="320" y="184" width="168" height="48"/>
+  </g>
+  <rect x="96" y="88" width="160" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="32" y="112">You</text>
+    <text class="knock" x="176" y="112">ZenTrate.js</text>
+    <text x="404" y="40">zentrate_config.json</text>
+    <text x="584" y="40">ZenTweak.js</text>
+    <text x="600" y="112">App</text>
+    <text x="404" y="208">zentrate_stats.json</text>
+  </g>
+  <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text x="72" y="96">tap</text>
+    <text x="248" y="28">items</text>
+    <text x="512" y="28">edit</text>
+    <text x="412" y="100">open URL scheme or Shortcut</text>
+    <text x="256" y="188">count tap</text>
+    <text x="236" y="228">size text</text>
+  </g>
+</svg>
