@@ -606,6 +606,21 @@ render_ledger_row() {
     printf '</a></li>\n'
 }
 
+# Oldest and newest year among the folders' dates, space-separated.
+# Undated folders are ignored; prints nothing when none is dated.
+year_span() {
+    local folder year oldest="" newest=""
+    for folder in "$@"; do
+        load_fm "$folder"
+        year=${fm_date%%-*}
+        [[ "$year" =~ ^[0-9]{4}$ ]] || continue
+        if [ -z "$oldest" ] || [ "$year" -lt "$oldest" ]; then oldest=$year; fi
+        if [ -z "$newest" ] || [ "$year" -gt "$newest" ]; then newest=$year; fi
+    done
+    [ -n "$oldest" ] && printf '%s %s\n' "$oldest" "$newest"
+    return 0
+}
+
 # One ledger group: heading, count, column header, rows. `key` is
 # "client" (rows open case pages) or "side" (rows open About sections).
 render_group() {
@@ -616,7 +631,16 @@ render_group() {
     local folder href last prev_year="" year vt
 
     printf '<section class="group" aria-labelledby="g-%s">\n' "$key"
-    printf '<div class="group-head"><h2 id="g-%s">%s</h2><span class="count">%02d</span></div>\n' "$key" "$heading" $#
+    if [ "$key" = "side" ]; then
+        # Side projects state their own span and count in the heading.
+        local from to
+        read -r from to < <(year_span "$@")
+        [ -n "$from" ] && heading+=", $from"
+        [ -n "$to" ] && [ "$to" != "$from" ] && heading+="&ndash;$to"
+        printf '<div class="group-head"><h2 id="g-%s">%s &middot; %d</h2></div>\n' "$key" "$heading" $#
+    else
+        printf '<div class="group-head"><h2 id="g-%s">%s</h2><span class="count">%02d</span></div>\n' "$key" "$heading" $#
+    fi
     printf '<div class="cols" aria-hidden="true"><span>Year</span><span></span><span>Name</span><span>Line</span><span>%s</span></div>\n' "$last_col"
     echo '<ol class="ledger">'
     for folder in "$@"; do
@@ -894,12 +918,8 @@ if [ -n "$profile" ]; then
     write_case_page "$profile" -1 "Side projects"
 fi
 
-# Year span of the client work, newest and oldest.
-newest=""; oldest=""
-if [ ${#sorted_folders[@]} -gt 0 ]; then
-    load_fm "${sorted_folders[0]}"; newest=${fm_date%%-*}
-    load_fm "${sorted_folders[$((${#sorted_folders[@]} - 1))]}"; oldest=${fm_date%%-*}
-fi
+# Year span of everything on the ledger, client work and side projects.
+read -r oldest newest < <(year_span "${sorted_folders[@]}" "${side_folders[@]}")
 
 echo "Assembling $OUTPUT_FILE..."
 

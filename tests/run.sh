@@ -187,9 +187,9 @@ absent_in   works.html "profile has no client row"     'class="row" href="work/0
 sentinel_in works.html "ledger header: profile lead"   'I make fixtures. Usually that means breaking things on purpose.'
 sentinel_in works.html "ledger header: availability"   "Ten years in. Open to what's next."
 sentinel_in works.html "ledger header: About link"     'href="work/02-gallery/"'
-sentinel_in works.html "ledger header: year span"      'Work, 2021&ndash;2024'
+sentinel_in works.html "ledger header: year span"      'Work, 2021&ndash;2025'
 sentinel_in works.html "client group"                  '<h2 id="g-client">Client work</h2>'
-sentinel_in works.html "side group"                    '<h2 id="g-side">Side projects</h2>'
+sentinel_in works.html "side group head states span and count" '<h2 id="g-side">Side projects, 2024&ndash;2025 &middot; 2</h2>'
 sentinel_in works.html "side row to its live site"     'class="row" href="https://example.com/a"'
 sentinel_in works.html "side row without a link to About" 'class="row" href="work/02-gallery/#proj-b"'
 sentinel_in $P "About item names link to the project"  '<h3><a href="https://example.com/a">Project A</a></h3>'
@@ -197,7 +197,7 @@ sentinel_in $P "About page keeps the full body"        "Open to what's next."
 sentinel_in $P "About page anchors each item"          'id="proj-a"'
 absent_in   $P "About page has no pager"               'rel="next"'
 
-# Side rows (and About sections): proj-a (2024-08-01) before proj-b (2024-05-01).
+# Side rows (and About sections): proj-a (2025-08-01) before proj-b (2024-05-01).
 pos_a=$(grep -n '<li id="proj-a"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)
 pos_b=$(grep -n '<li id="proj-b"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)
 if [ -n "$pos_a" ] && [ -n "$pos_b" ] && [ "$pos_a" -lt "$pos_b" ]; then

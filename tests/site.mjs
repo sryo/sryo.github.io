@@ -100,6 +100,14 @@ test('ledger rows do not overlap', async ({ page }) => {
   }
 }, p => p === '/works.html');
 
+test('masthead end year is the newest row year', async ({ page }) => {
+  const meta = await page.$eval('.intro .mast .meta', e => e.textContent);
+  const end = Number(meta.match(/(\d{4})\D*$/)?.[1]);
+  const years = await page.$$eval('.row time', ts => ts.map(t => Number(t.textContent)).filter(Boolean));
+  const max = Math.max(...years);
+  if (end !== max) throw new Error(`masthead ends ${end}, newest row is ${max}`);
+}, p => p === '/works.html');
+
 test('Tab then Enter on a row opens its case page', async ({ page }) => {
   let href = null;
   for (let i = 0; i < 15 && !href; i++) {
