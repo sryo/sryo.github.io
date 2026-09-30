@@ -19,18 +19,26 @@
 # How to use LineAndForm:
 # 1. Configure:
 #    - Edit 'config.cfg' to set your title, output filename, and other options.
-#    - Ensure 'styles.css' and 'script.js' are present.
+#    - SITE_URL builds canonical and og: links; AUTHOR signs page titles.
+#    - Ensure 'styles.css' is present. 'script.js' is optional: inlined when non-empty.
 
 # 2. Set up your content:
 #    - Create a 'contents/' directory (or whatever you set in config).
-#    - Inside, make a folder for each main section of your portfolio.
-#    - In each section folder:
-#      a) Add a .md (Markdown) file with your content. Start it with '# Title' or frontmatter.
-#      b) Optionally, add an image file (.jpg, .png, or .svg) for the section cover.
-#    - For projects or sub-galleries:
-#      a) Create a 'gallery' folder inside any section folder.
-#      b) In the 'gallery' folder, make a subfolder for each project.
-#      c) In each project folder, add a .md file and an image file.
+#    - Inside, make a folder for each case study. The folder name is its slug
+#      and URL, so keep it lowercase letters, digits and dashes.
+#    - In each folder:
+#      a) Add a _.md file that starts with frontmatter: title, date (YYYY-MM-DD),
+#         tags, and the required label (short name), role and summary (one
+#         plain line: the ledger line, the dek and the meta description).
+#         Optional: client, link.
+#      b) Optionally, add a glyph: _.svg (or _.png / _.jpg). Without one, the
+#         label's initial stands in.
+#    - Mark one folder 'kind: profile' for the About page. It heads the ledger,
+#      and its 'items/' folder holds side projects: one subfolder each, with
+#      a _.md (label and link optional) and an optional glyph.
+#    - In the body, '## ' headings become the page's parts, 'METRICS:' lists
+#      become the Impact band, a lone '[text](url)' line before the first
+#      heading becomes the Link, and <!-- comments --> never render.
 #    - To add a video or other embed, include a line starting with 'EMBED:' in your .md file.
 
 # 3. Run the script:
@@ -38,8 +46,10 @@
 #    - Run the command: ./build.sh (or bash build.sh)
 #    - To use the self-destruct option (if enabled in config), run: ./build.sh -d
 
-# 3. View your portfolio:
-#    - Open the generated 'works.html' file in a web browser.
+# 4. View your portfolio:
+#    - 'works.html' is the ledger: client work and side projects, newest first.
+#    - 'work/<slug>/index.html' is one page per case study (and the About page),
+#      with prev/next in ledger order. The build rewrites 'work/' every run.
 
 # License:
 # THE UNRESTRICTED BUT RESPONSIBLY SHARED, ALTERED AND DISTRIBUTED SOFTWARE WITHOUT WARRANTIES AND WITH THE ABSENCE OF LIABILITY FOR ANY UNINTENDED CONSEQUENCES LICENSE (VERSION 1.0, AUGUST 4, 2023)
