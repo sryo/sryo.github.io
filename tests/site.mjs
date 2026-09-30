@@ -287,6 +287,27 @@ test('About stays compact: Figma facades are one-line rows', async ({ page, vp }
   if (Math.abs(box - 1.6) > 0.02) throw new Error(`live iframe ratio ${box.toFixed(2)}, want 16/10`);
 }, p => p === '/work/about/');
 
+const ORDER = ['Impact', 'Context', 'My role', 'Decisions', 'Outcome', 'Reflection'];
+test('sections follow the shared case order', async ({ page }) => {
+  const labels = await page.$$eval('main h2', hs => hs.map(h => h.textContent.trim()));
+  let i = 0;
+  for (const l of labels) {
+    const at = ORDER.indexOf(l, i);
+    if (at < 0) throw new Error(`"${l}" out of order or not allowed in [${labels.join(', ')}]`);
+    i = at + 1;
+  }
+  const levels = await page.$$eval('h1, h2, h3, h4, h5, h6', hs => hs.map(h => Number(h.tagName[1])));
+  for (let k = 1; k < levels.length; k++) {
+    if (levels[k] > levels[k - 1] + 1) throw new Error(`heading jumps h${levels[k - 1]} → h${levels[k]}`);
+  }
+  if (levels[0] !== 1) throw new Error(`first heading is h${levels[0]}`);
+}, CASE);
+
+test('OMSNIC and VENG have no My role', async ({ page }) => {
+  const labels = await page.$$eval('main h2', hs => hs.map(h => h.textContent.trim()));
+  if (labels.includes('My role')) throw new Error('has a My role section');
+}, p => p === '/work/omsnic/' || p === '/work/veng/');
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
