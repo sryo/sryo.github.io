@@ -141,6 +141,8 @@ sentinel_in work/01-tags/index.html    "link rendered"            '<a href="http
 sentinel_in work/01-tags/index.html    "h1 escaped"               'First &amp; &lt;Special&gt;</h1>'
 sentinel_in work/03-metrics/index.html "stray --- preserved"      'A paragraph after the divider should still render.'
 sentinel_in work/02-gallery/index.html "item SVG inlined"         'data:image/svg+xml;base64,'
+absent_in   work/02-gallery/index.html "no eager figma iframe"    '<iframe src="https://embed.figma.com'
+sentinel_in work/02-gallery/index.html "figma facade link"        'class="embed-facade" href="https://embed.figma.com/design/x"'
 
 # Page head: canonical and OG built from SITE_URL, title escaped.
 P=work/01-tags/index.html

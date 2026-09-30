@@ -452,6 +452,32 @@ h1 {
     background: var(--hair);
 }
 
+.embed-facade {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    margin: 24px 0;
+    border: 1px solid var(--hair);
+    background: var(--paper);
+    color: var(--mute);
+    font-size: 13px;
+    line-height: 20px;
+    text-decoration: none;
+}
+
+.embed-facade:hover,
+.embed-facade:focus-visible {
+    color: var(--ink);
+    border-color: var(--accent);
+}
+
+.body iframe.embed-live {
+    aspect-ratio: 16 / 10;
+    background: var(--paper);
+    border: 1px solid var(--hair);
+}
+
 .body pre {
     overflow-x: auto;
     font-size: 14px;

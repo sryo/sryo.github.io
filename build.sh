@@ -314,6 +314,7 @@ render_markdown_content() {
     local metric_line value label
     local part_start=0 part_label="" hoisted=false
     local link_re='^\[[^]]+\]\([^)]+\)$'
+    local figma_embed_re='src="(https://embed\.figma\.com/[^"]*)"'
     local idless_embed_re='src="[^"]*youtube(\.googleapis)?\.com/embed/?(\?|")'
 
     while IFS= read -r line || [ -n "$line" ]; do
@@ -367,6 +368,16 @@ render_markdown_content() {
         # it's dropped (with a warning) instead of passed through.
         if [[ "$line" == *"<iframe"* ]] && [[ "$line" =~ $idless_embed_re ]]; then
             [ "$mode" = "metrics" ] || echo "warn: $file: embed has no video ID, dropped" >&2
+            continue
+        fi
+
+        # A Figma embed weighs megabytes and runs its own app, so it waits
+        # behind a link to the prototype; script.js swaps the iframe in on
+        # click, and without JS the link opens Figma.
+        if [[ "$line" == *"<iframe"* ]] && [[ "$line" =~ $figma_embed_re ]]; then
+            if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
+            if $in_list; then content+="</ul>"; in_list=false; fi
+            content+="<p><a class=\"embed-facade\" href=\"$(html_escape "${BASH_REMATCH[1]//&amp;/&}")\">Figma prototype, click to load&nbsp;&#8599;</a></p>"
             continue
         fi
 

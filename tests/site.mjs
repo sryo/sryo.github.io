@@ -163,6 +163,16 @@ test('Impact captions are at least 13px at 390', async ({ page, vp }) => {
   if (small.length) throw new Error(`${small.length} captions under 13px (${small[0]}px)`);
 }, p => p.startsWith('/work/'));
 
+test('Figma facades swap in a lazy iframe on click', async ({ page }) => {
+  const n = await page.locator('a.embed-facade').count();
+  if (!n) throw new Error('no .embed-facade');
+  if (await page.locator('iframe[src*="embed.figma.com"]').count()) throw new Error('eager Figma iframe');
+  await page.locator('a.embed-facade').first().click();
+  const lazy = await page.locator('iframe[src*="embed.figma.com"][loading="lazy"]').count();
+  if (lazy !== 1) throw new Error(`${lazy} iframes after click`);
+  await page.reload();
+}, p => p === '/work/about/');
+
 test('Tab then Enter on a row opens its case page', async ({ page }) => {
   let href = null;
   for (let i = 0; i < 15 && !href; i++) {

@@ -14,3 +14,18 @@
     }
     document.documentElement.style.setProperty("--accent", color);
 })();
+
+// Optional enhancement: a Figma facade loads its prototype in place on
+// click. Without JS the link simply opens Figma.
+document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a.embed-facade");
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    e.preventDefault();
+    var f = document.createElement("iframe");
+    f.src = a.href;
+    f.loading = "lazy";
+    f.className = "embed-live";
+    f.title = "Figma prototype";
+    f.allowFullscreen = true;
+    a.replaceWith(f);
+});
