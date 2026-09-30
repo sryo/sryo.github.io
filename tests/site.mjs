@@ -54,7 +54,8 @@ test('no horizontal scroll', async ({ page }) => {
 });
 
 test('no phone number is published', async ({ page }) => {
-  const html = await page.evaluate(() => document.documentElement.outerHTML);
+  // Inlined data: URIs are left out: base64 can spell anything by chance.
+  const html = (await page.evaluate(() => document.documentElement.outerHTML)).replace(/data:[^"')\s]+/g, '');
   // Any Argentine number or tel: link, without spelling Mateo's digits here.
   const m = html.match(/\+54|\b351[\s.-]?\d{3}[\s.-]?\d{4}\b|href="tel:/);
   if (m) throw new Error(`page carries "${m[0]}"`);
