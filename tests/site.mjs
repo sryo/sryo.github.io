@@ -126,6 +126,14 @@ test('email sits in the header line and the footer', async ({ page }) => {
   if (r.avail !== 1 || r.footer !== 1 || r.all !== 2) throw new Error(`mailto links: ${r.avail} in p.avail, ${r.footer} in the footer, ${r.all} in all`);
 }, p => p === '/works.html');
 
+// The span runs from the oldest row (Taller, 2009) to the newest (the side
+// projects, 2026). Change it together with "masthead end year is the newest
+// row year" when the dates move.
+test('masthead reads Work, 2009–2026', async ({ page }) => {
+  const meta = (await page.$eval('.intro .mast .meta', e => e.textContent)).trim();
+  if (meta !== 'Work, 2009–2026') throw new Error(`masthead reads "${meta}"`);
+}, p => p === '/works.html');
+
 test('side lines are not questions', async ({ page }) => {
   const lines = await page.$$eval('[aria-labelledby="g-side"] .row .line', ls => ls.map(l => l.textContent.trim()));
   if (!lines.length) throw new Error('no side rows');
@@ -259,7 +267,7 @@ const CV = {
   infoxel: [2016, 'Product designer'],
   taller: [2009, 'UX/UI designer'],
 };
-const CV_PENDING = ['taller'];
+const CV_PENDING = [];
 const CV_DONE = p => CASE(p) && !CV_PENDING.includes(slugOf(p));
 // The client rows of the ledger as built, for the pager's two ends.
 const CLIENT_ROWS = (() => {
@@ -358,6 +366,8 @@ test('client ledger is the CV, newest first', async ({ page, vp }) => {
   const want = Object.keys(CV).filter(s => !CV_PENDING.includes(s)).map(s => `work/${s}/`);
   const got = rows.filter(h => want.includes(h));
   if (got.join() !== want.join()) throw new Error(`client rows [${got.join(', ')}], want [${want.join(', ')}]`);
+  const stray = rows.filter(h => !CV[h.split('/')[1]]);
+  if (stray.length) throw new Error(`client rows not in the CV: ${stray.join(', ')}`);
   const unknown = CV_PENDING.filter(s => !CV[s]);
   if (unknown.length) throw new Error(`unknown slugs in CV_PENDING: ${unknown.join(', ')}`);
 }, p => p === '/works.html');
@@ -461,6 +471,7 @@ const DECISIONS = {
   valora: ['The AI suggests, the analyst commits', 'Cap tables and scenarios you can work in', 'One design system for three modules'],
   continental: ['Clarity first, to WCAG', 'Denser screens, not more whitespace', 'One accessible library under everything'],
   'ey-helix': ["Auditors' workflows before patterns", 'Written guidelines for Helix visualizations', 'One architecture for a team of ten'],
+  taller: ['Interactive apps for digital TV', 'An in-cabin console for precision agriculture', 'Leading web publishing on Agilent'],
   topicflower: ['Keep the flower, put the numbers underneath', 'From a place you checked to a place you worked', 'One design system for the new platform'],
 };
 test('decision heads name the decision', async ({ page, path }) => {
