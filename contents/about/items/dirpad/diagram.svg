@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 176">
+  <title>Dirpad taps pointer moves while the trigger key is held and turns them into arrow key presses for the frontmost app</title>
+  <defs>
+    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="32" cy="48" r="24"/>
+    <path d="M56 48H176" marker-end="url(#head)"/>
+    <rect x="8" y="120" width="160" height="48"/>
+    <path d="M168 144H208V72" marker-end="url(#head)"/>
+    <path d="M336 48H584" marker-end="url(#head)"/>
+    <circle cx="608" cy="48" r="24"/>
+    <path d="M304 72V144H456" marker-end="url(#head)"/>
+    <rect x="456" y="120" width="176" height="48"/>
+  </g>
+  <rect x="176" y="24" width="160" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="32" y="48">You</text>
+    <text x="88" y="144">UserDefaults</text>
+    <text class="knock" x="256" y="48">Dirpad</text>
+    <text x="608" y="48">App</text>
+    <text x="544" y="144">Cursor held in place</text>
+  </g>
+  <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text x="116" y="36">hold ⌥, slide</text>
+    <text x="256" y="108">settings</text>
+    <text x="460" y="36">one arrow key per step</text>
+    <text x="460" y="60">+⌃ word, +⇧ select</text>
+    <text x="380" y="132">warped back</text>
+  </g>
+</svg>
