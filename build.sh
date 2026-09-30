@@ -266,6 +266,64 @@ insert_image() {
     fi
 }
 
+# Pixel size of a PNG, GIF or JPEG as "width height", read from its
+# header with od (no image tools needed). Prints nothing when unknown.
+image_size() {
+    local f=$1 off=2 i b
+    [ -f "$f" ] || return 0
+    case "$f" in
+        *.png|*.PNG)
+            od -An -tu1 -j16 -N8 -v "$f" | awk '{ print $1*16777216 + $2*65536 + $3*256 + $4, $5*16777216 + $6*65536 + $7*256 + $8 }' ;;
+        *.gif|*.GIF)
+            od -An -tu1 -j6 -N4 -v "$f" | awk '{ print $1 + $2*256, $3 + $4*256 }' ;;
+        *.jpg|*.jpeg|*.JPG|*.JPEG)
+            # Walk the segments to the first start-of-frame marker.
+            for ((i = 0; i < 200; i++)); do
+                read -r -a b < <(od -An -tu1 -j"$off" -N9 -v "$f" | tr -s ' \n' ' ')
+                [ "${#b[@]}" -ge 4 ] && [ "${b[0]}" = 255 ] || return 0
+                case "${b[1]}" in
+                    192|193|194|195|197|198|199|201|202|203|205|206|207)
+                        echo "$((b[7] * 256 + b[8])) $((b[5] * 256 + b[6]))"; return 0 ;;
+                esac
+                off=$((off + 2 + b[2] * 256 + b[3]))
+            done ;;
+    esac
+    return 0
+}
+
+# A lone "![alt](src "caption")" line: a screen, rendered as a figure with
+# its pixel size (so the page doesn't jump) and a caption (the title, else
+# the alt). A relative src resolves from the markdown file's folder. Warns
+# on an empty alt, a missing file, a file over 250KB and a fourth screen
+#. Reads render_markdown_content's locals
+# (file, mode, screens: already counting this one), since it runs in $().
+render_screen() {
+    local alt=$1 src=$2 caption=$3 path size w h cls=screen bytes
+    local warn=true
+    [ "$mode" = metrics ] && warn=false
+    case "$src" in
+        *://*|/*|"$CONTENT_DIR"*) path=$src ;;
+        *) path="$(dirname "$file")/$src"; src=$path ;;
+    esac
+    if $warn; then
+        [ -n "$alt" ] || echo "warn: $file: image without alt ($src)" >&2
+        [ "$screens" = 4 ] && echo "warn: $file: more than 3 screens" >&2
+        if [[ "$path" != *://* ]]; then
+            if [ -f "$path" ]; then
+                bytes=$(wc -c < "$path")
+                [ "$bytes" -gt 256000 ] && echo "warn: $file: $(basename "$path") is over 250KB ($((bytes / 1024))KB)" >&2
+            else
+                echo "warn: $file: $path not found" >&2
+            fi
+        fi
+    fi
+    read -r w h < <(image_size "$path")
+    [ -n "$h" ] && [ "$h" -gt "$w" ] && cls="screen portrait"
+    printf '<figure class="%s"><img src="%s" alt="%s" loading="lazy"%s><figcaption>%s</figcaption></figure>' \
+        "$cls" "$(html_escape "$src")" "$(html_escape "$alt")" "${w:+ width=\"$w\" height=\"$h\"}" \
+        "$(html_escape "${caption:-$alt}")"
+}
+
 
 # ─────────────────────────────────────────────────────────────
 # Transform — markdown → HTML
@@ -343,8 +401,9 @@ render_markdown_content() {
     local content="" metrics="" notes="" line parsed_line escaped_line after
     local in_paragraph=false in_list=false in_metrics=false in_code_block=false in_comment=false
     local metric_line value label
-    local part_start=0 part_label="" hoisted=false
+    local part_start=0 part_label="" hoisted=false screens=0
     local link_re='^\[[^]]+\]\([^)]+\)$'
+    local screen_re='^!\[([^]]*)\]\(([^ )]+)( "(([^"\\]|\\.)*)")?\)[[:space:]]*$'
     local figma_embed_re='src="(https://embed\.figma\.com/[^"]*)"'
     local idless_embed_re='src="[^"]*youtube(\.googleapis)?\.com/embed/?(\?|")'
 
@@ -459,6 +518,17 @@ render_markdown_content() {
         if [ "$mode" = "page" ] && ! $hoisted && [ -z "$part_label" ] \
             && [[ "$line" =~ $link_re ]]; then
             hoisted=true
+            continue
+        fi
+
+        # A lone image line is a screen: a captioned figure.
+        if [[ "$line" =~ $screen_re ]]; then
+            if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
+            if $in_list; then content+="</ul>"; in_list=false; fi
+            local s_alt=${BASH_REMATCH[1]} s_src=${BASH_REMATCH[2]} s_cap=${BASH_REMATCH[4]}
+            s_cap=${s_cap//\\\"/\"}
+            screens=$((screens + 1))
+            content+=$(render_screen "$s_alt" "$s_src" "$s_cap")
             continue
         fi
 

@@ -104,6 +104,31 @@ build_must_fail "folder 'Bad Slug' rejected" "Invalid slug" \
 build_must_fail "duplicate slug rejected" "duplicate slug" \
     'mkdir contents/02-gallery/items/01-tags && cp contents/02-gallery/items/proj-a/_.md contents/02-gallery/items/01-tags/_.md'
 
+# Like build_must_fail, but the build must succeed and warn on stderr.
+build_warns() {
+    local desc=$1 expect=$2 setup=$3 tmp out
+    tmp=$(mktemp -d)
+    cp -R "$FIXTURE_DIR/." "$tmp/"
+    rm -rf "$tmp/work" "$tmp/works.html"
+    (cd "$tmp" && eval "$setup")
+    if ! out=$(cd "$tmp" && bash "$REPO_DIR/build.sh" 2>&1 >/dev/null); then
+        rm -rf "$tmp"
+        fail "$desc — build failed: $out"
+    fi
+    rm -rf "$tmp"
+    case "$out" in
+        *"$expect"*) pass "$desc" ;;
+        *) fail "$desc — stderr lacks '$expect': $out" ;;
+    esac
+}
+A=contents/02-gallery/items/proj-a
+build_warns "screen over 250KB flagged" "warn: $A/_.md: screen-1.png is over 250KB" \
+    "head -c 260000 /dev/zero >> $A/screen-1.png"
+build_warns "more than 3 screens flagged" "warn: $A/_.md: more than 3 screens" \
+    "printf '![Four](screen-1.png)\\n' >> $A/_.md"
+build_warns "screen without alt flagged" "warn: $A/_.md: image without alt" \
+    "printf '\\n![](screen-2.png)\\n' >> $A/_.md && sed -i '/shot.jpg/d' $A/_.md"
+
 echo "Build warnings..."
 warned() {
     local desc=$1 pattern=$2
@@ -266,6 +291,15 @@ sentinel_in work/proj-b/index.html "side rel=next to the last" 'rel="next" href=
 sentinel_in work/proj-c/index.html "last side page leads back" '<a class="pn-all pn-end" href="../../works.html#proj-c">'
 absent_in   work/proj-c/index.html "side pager stays in side projects" 'href="../01-tags/"'
 absent_in   work/05-twin-b/index.html "client pager stays in client work" 'href="../proj-a/"'
+
+# Screens: a lone image line is a captioned figure with its size, its
+# path resolved from the item's folder; inline images stay inline.
+sentinel_in $P "screen figure, caption from the title" '<figure class="screen"><img src="../../contents/02-gallery/items/proj-a/screen-1.png" alt="A grey test card &amp; &lt;b&gt;" loading="lazy" width="120" height="60"><figcaption>The main view, &quot;quoted&quot;</figcaption></figure>'
+sentinel_in $P "portrait screen marked, caption from the alt" '<figure class="screen portrait"><img src="../../contents/02-gallery/items/proj-a/screen-2.png" alt="A tall grey test card" loading="lazy" width="40" height="80"><figcaption>A tall grey test card</figcaption></figure>'
+sentinel_in $P "JPEG size read"           'shot.jpg" alt="A small dark photo" loading="lazy" width="30" height="20"><figcaption>A JPEG</figcaption>'
+sentinel_in $P "inline image stays inline" 'inline <img src="https://example.com/img.png" alt="alt text" loading="lazy" />'
+sentinel_in work/04-noorder/index.html "contents/ path kept as is" '<figure class="screen"><img src="../../contents/04-noorder/figure.png" alt="A relative image" loading="lazy"><figcaption>A relative image</figcaption></figure>'
+warned "missing screen flagged" 'warn: contents/04-noorder/_.md: contents/04-noorder/figure.png not found'
 
 # Side rows (and About sections): proj-a (2025-08-01) before proj-b (2024-05-01).
 pos_a=$(grep -n '<li id="proj-a"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)

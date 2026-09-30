@@ -493,6 +493,28 @@ h1 {
     border: 0;
 }
 
+.body figure {
+    margin: 32px 0;
+}
+
+.body figure.screen img {
+    margin: 0;
+    border: 1px solid var(--hair);
+}
+
+.body figure.portrait img {
+    width: auto;
+    max-width: min(100%, 320px);
+}
+
+.body figcaption {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--mute);
+    text-wrap: pretty;
+}
+
 .body iframe {
     aspect-ratio: 16 / 9;
     background: var(--hair);

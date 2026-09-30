@@ -497,9 +497,31 @@ test('side pages carry no CTA row', async ({ page }) => {
   if (n) throw new Error(`${n} .case-cta on a side page`);
 }, SIDE);
 
+test('screens are framed, captioned figures', async ({ page }) => {
+  const figs = await page.$$eval('main figure.screen', fs => fs.map(f => {
+    const i = f.querySelector('img'), cs = i && getComputedStyle(i);
+    return { alt: i?.getAttribute('alt')?.trim(), w: i?.getAttribute('width'), h: i?.getAttribute('height'),
+      cap: f.querySelector('figcaption')?.textContent.trim(), border: cs && parseFloat(cs.borderTopWidth),
+      portrait: f.classList.contains('portrait'), shown: i?.getBoundingClientRect().width, natural: i?.naturalWidth };
+  }));
+  if (figs.length > 3) throw new Error(`${figs.length} screens, max 3`);
+  for (const f of figs) {
+    if (!f.alt) throw new Error('screen without alt');
+    if (!f.cap) throw new Error(`"${f.alt}" has no caption`);
+    if (!f.w || !f.h) throw new Error(`"${f.alt}" has no width/height`);
+    if (f.border !== 1) throw new Error(`"${f.alt}" frame is ${f.border}px, want a 1px hairline`);
+    if (f.portrait && f.shown > 320.5) throw new Error(`portrait "${f.alt}" shown ${f.shown}px wide, max 320`);
+    if (!f.natural) throw new Error(`"${f.alt}" did not load`);
+  }
+  await page.emulateMedia({ colorScheme: 'dark' });
+  const inverted = await page.$$eval('main figure.screen img', is => is.filter(i => getComputedStyle(i).filter.includes('invert')).length);
+  await page.emulateMedia({ colorScheme: 'light' });
+  if (inverted) throw new Error(`${inverted} screens inverted in dark mode`);
+}, SIDE);
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
-const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
+const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.gif': 'image/gif', '.woff2': 'font/woff2' };
 const server = createServer(async (req, res) => {
   const path = resolve(ROOT, '.' + decodeURIComponent(new URL(req.url, 'http://x').pathname).replace(/\/$/, '/index.html'));
   let body;
