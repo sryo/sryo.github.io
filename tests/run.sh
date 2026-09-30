@@ -237,7 +237,7 @@ sentinel_in $P "spec lists the client"       '<dt>Client</dt><dd>Tags &amp; &lt;
 sentinel_in $P "spec lists the role"         '<dt>Role</dt><dd>Designer &amp; writer</dd>'
 sentinel_in $P "spec lists the scope"        '<dt>Scope</dt><dd>design, ux, web</dd>'
 P=work/03-metrics/index.html
-sentinel_in $P "lead link hoisted into spec" '<dt>Link</dt><dd><a href="https://example.com/project">Project Link</a></dd>'
+sentinel_in $P "lead link hoisted into spec" '<dt>Link</dt><dd><a href="https://example.com/project">Project Link (demo)</a></dd>'
 absent_in   $P "hoisted link not in body"    '<p><a href="https://example.com/project">'
 
 # glyph: colour keeps an original colour glyph, marked so dark mode skips the invert.
