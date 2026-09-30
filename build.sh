@@ -278,7 +278,8 @@ render_markdown_content() {
     local content="" metrics="" line parsed_line escaped_line after
     local in_paragraph=false in_list=false in_metrics=false in_code_block=false in_comment=false
     local metric_line value label
-    local part_start=0 part_label=""
+    local part_start=0 part_label="" hoisted=false
+    local link_re='^\[[^]]+\]\([^)]+\)$'
 
     while IFS= read -r line || [ -n "$line" ]; do
         # Inside a comment: skip until it closes, keep what follows.
@@ -354,6 +355,14 @@ render_markdown_content() {
                 # Rendered in place unless the page lifts it into the band.
                 if [ -z "$mode" ]; then content+=$metrics; metrics=""; fi
             fi
+        fi
+
+        # Page mode: the first lone link before any heading moves to the
+        # spec column (see lead_link), so it's not repeated in the body.
+        if [ "$mode" = "page" ] && ! $hoisted && [ -z "$part_label" ] \
+            && [[ "$line" =~ $link_re ]]; then
+            hoisted=true
+            continue
         fi
 
         # Page mode: a `## ` heading starts a new part.
@@ -441,36 +450,55 @@ format_date() {
     printf '%s %s' "${months[$month_num]}" "$year"
 }
 
-render_case_study_header() {
-    local title=$1
-    local date=$2
-    local tags=$3
-    local id=$4
-    local safe_title formatted_date tag safe_tag
-    safe_title=$(html_escape "$title")
+# A lone "[text](url)" line before the first ## heading is the project's
+# link ("Project Link", "View archive"). Prints text$FS url, or nothing.
+lead_link() {
+    strip_frontmatter "$1" | awk '
+        /^## / { exit }
+        /^\[[^]]+\]\([^)]+\)$/ {
+            t = $0; sub(/^\[/, "", t); sub(/\]\(.*$/, "", t)
+            u = $0; sub(/^[^(]*\(/, "", u); sub(/\)$/, "", u)
+            printf "%s\037%s", t, u; exit
+        }'
+}
 
-    echo "<header class=\"case-study-header\">"
-    echo "  <h1 id=\"title-$id\">$safe_title</h1>"
-    echo "  <div class=\"meta\">"
+# Case header: a spec column (glyph, then Client / Year / Role / Scope /
+# Link) beside the h1 and the summary as dek. Uses the fm_* globals.
+render_case_head() {
+    local folder=$1
+    local image_file link_text link_url formatted_date scope
+    image_file=$(find_item_image "$folder")
+    IFS=$FS read -r link_text link_url < <(lead_link "$folder/_.md")
+    if [ -n "$fm_link" ]; then link_text=$fm_link; link_url=$fm_link; fi
 
-    if [ -n "$date" ]; then
-        formatted_date=$(format_date "$date")
+    echo "<header class=\"case-head\">"
+    printf '<aside class="spec">'
+    if [ -n "$image_file" ]; then
+        printf '<span class="glyph">%s</span>' "$(insert_image "$image_file" "" | tr -d '\n')"
+    fi
+    if [ "$fm_kind" != "profile" ]; then
+        printf '<dl>'
+        printf '<dt>Client</dt><dd>%s</dd>' "$(html_escape "$fm_client")"
+        formatted_date=$(format_date "$fm_date")
         if [ -n "$formatted_date" ]; then
-            echo "    <time datetime=\"$date\">$formatted_date</time>"
+            printf '<dt>Year</dt><dd><time datetime="%s">%s</time></dd>' "$fm_date" "$formatted_date"
         fi
+        printf '<dt>Role</dt><dd>%s</dd>' "$(html_escape "$fm_role")"
+        if [ -n "$fm_tags" ]; then
+            scope=${fm_tags//,/, }
+            printf '<dt>Scope</dt><dd>%s</dd>' "$(html_escape "$scope")"
+        fi
+        if [ -n "$link_url" ]; then
+            printf '<dt>Link</dt><dd><a href="%s">%s</a></dd>' "$(html_escape "$link_url")" "$(html_escape "$link_text")"
+        fi
+        printf '</dl>'
     fi
-
-    if [ -n "$tags" ]; then
-        echo "    <div class=\"tags\">"
-        local IFS=','
-        for tag in $tags; do
-            safe_tag=$(html_escape "$tag")
-            echo "      <span class=\"tag\">$safe_tag</span>"
-        done
-        echo "    </div>"
+    printf '</aside>\n'
+    printf '<div class="case-title"><h1>%s</h1>' "$(html_escape "$fm_title")"
+    if [ -n "$fm_summary" ]; then
+        printf '<p class="dek">%s</p>' "$(html_escape "$fm_summary")"
     fi
-
-    echo "  </div>"
+    printf '</div>\n'
     echo "</header>"
 }
 
@@ -731,9 +759,7 @@ write_case_page() {
 <nav class="mast"><a class="back" href="../../works.html#$slug">&larr; All work</a>$position</nav>
 <main id="main-content">
 EOF
-    # The profile's date is not a project date; don't print it.
-    [ "$idx" -lt 0 ] && fm_date=""
-    render_case_study_header "$fm_title" "$fm_date" "$fm_tags" "$slug"
+    render_case_head "$folder"
     if [ -n "$figures" ]; then
         printf '<section class="figures"><h2 class="label">Impact</h2>%s</section>\n' "$figures"
     fi

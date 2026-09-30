@@ -157,6 +157,17 @@ absent_in   $P "empty Results part skipped" '<h2 class="label">Results</h2>'
 sentinel_in $P "content src rebased"       'src="../../contents/04-noorder/figure.png"'
 sentinel_in work/01-tags/index.html "h2 hangs as a part label" '<section class="part"><h2 class="label">Overview</h2><div class="body">'
 
+# Case header: a spec column (glyph + dl) beside the h1 and the dek.
+P=work/01-tags/index.html
+sentinel_in $P "spec column holds the glyph" '<aside class="spec"><span class="glyph">'
+sentinel_in $P "summary is the dek"          '<p class="dek">Tags &amp; &lt;escapes&gt; in one line</p>'
+sentinel_in $P "spec lists the client"       '<dt>Client</dt><dd>Tags &amp; &lt;Co&gt;</dd>'
+sentinel_in $P "spec lists the role"         '<dt>Role</dt><dd>Designer &amp; writer</dd>'
+sentinel_in $P "spec lists the scope"        '<dt>Scope</dt><dd>design, ux, web</dd>'
+P=work/03-metrics/index.html
+sentinel_in $P "lead link hoisted into spec" '<dt>Link</dt><dd><a href="https://example.com/project">Project Link</a></dd>'
+absent_in   $P "hoisted link not in body"    '<p><a href="https://example.com/project">'
+
 # kind: profile: no client row, an About page, the ledger header, and
 # its items as the side-project group.
 P=work/02-gallery/index.html

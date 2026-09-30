@@ -1,4 +1,5 @@
-// Browser tests for index.html. Run: node tests/site.mjs
+// Browser tests for index.html, works.html and every work/<slug>/ page.
+// Run: node tests/site.mjs (builds the portfolio first with build.sh).
 // Screenshots go to $SHOTS_DIR (default: tests/shots, gitignored).
 import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
@@ -6,11 +7,14 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 import { resolve } from 'node:path';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readdirSync, existsSync } from 'node:fs';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const SHOTS = process.env.SHOTS_DIR || resolve(ROOT, 'tests/shots');
 mkdirSync(SHOTS, { recursive: true });
+
+// works.html and work/ are build output (gitignored): build them fresh.
+execSync('bash build.sh', { cwd: ROOT, stdio: 'ignore' });
 
 // Use a local playwright if installed, else the global one.
 const req = createRequire(import.meta.url);
@@ -20,10 +24,16 @@ catch { playwright = req(resolve(execSync('npm root -g').toString().trim(), 'pla
 const { chromium } = playwright;
 
 const VIEWPORTS = { desktop: { width: 1440, height: 900 }, mobile: { width: 375, height: 812 } };
-const tests = [];
-const test = (name, fn) => tests.push({ name, fn });
+const WORK = resolve(ROOT, 'work');
+const CASES = existsSync(WORK) ? readdirSync(WORK).filter(s => existsSync(resolve(WORK, s, 'index.html'))).sort() : [];
+const PAGES = ['/', '/works.html', ...CASES.map(s => `/work/${s}/`)];
+const PORTFOLIO = p => p !== '/';
 
-// ── Tests ─────────────────────────────────────────────────────
+const tests = [];
+// only(path) limits a test to the pages it applies to.
+const test = (name, fn, only = () => true) => tests.push({ name, fn, only });
+
+// ── Every page ────────────────────────────────────────────────
 test('no console errors', async ({ errors }) => {
   if (errors.length) throw new Error(errors.join('\n'));
 });
@@ -44,6 +54,65 @@ test('images have alt text', async ({ page }) => {
   if (n) throw new Error(`${n} <img> without alt`);
 });
 
+// ── Portfolio pages ───────────────────────────────────────────
+test('set in InterVariable', async ({ page }) => {
+  const ok = await page.evaluate(async () => {
+    await document.fonts.ready;
+    return document.fonts.check('600 16px InterVariable')
+      && getComputedStyle(document.body).fontFamily.includes('InterVariable');
+  });
+  if (!ok) throw new Error('InterVariable not loaded or not applied');
+}, PORTFOLIO);
+
+test('glyphs invert in dark mode', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  const filters = await page.$$eval('.glyph img', imgs => imgs.map(i => getComputedStyle(i).filter));
+  await page.emulateMedia({ colorScheme: 'light' });
+  if (!filters.length) throw new Error('no .glyph img on page');
+  const bad = filters.filter(f => !f.includes('invert'));
+  if (bad.length) throw new Error(`${bad.length} glyphs not inverted: ${bad[0]}`);
+}, p => p === '/works.html' || (p.startsWith('/work/') && !p.endsWith('/about/')));
+
+test('case h1 is display size at desktop', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const px = parseFloat(await page.$eval('h1', h => getComputedStyle(h).fontSize));
+  if (px < 36) throw new Error(`h1 is ${px}px`);
+}, p => p.startsWith('/work/'));
+
+test('ledger rows do not overlap', async ({ page }) => {
+  const boxes = await page.$$eval('a.row', rows => rows.map(r => {
+    const b = r.getBoundingClientRect(); return [b.top, b.bottom];
+  }));
+  for (let i = 1; i < boxes.length; i++) {
+    if (boxes[i][0] < boxes[i - 1][1] - 0.5) throw new Error(`row ${i} overlaps row ${i - 1}`);
+  }
+}, p => p === '/works.html');
+
+test('Tab then Enter on a row opens its case page', async ({ page }) => {
+  let href = null;
+  for (let i = 0; i < 15 && !href; i++) {
+    await page.keyboard.press('Tab');
+    href = await page.evaluate(() => document.activeElement?.matches('a.row') ? document.activeElement.getAttribute('href') : null);
+  }
+  if (!href) throw new Error('no a.row reachable by Tab');
+  await Promise.all([page.waitForURL(u => u.pathname.endsWith('/' + href.replace(/#.*/, ''))), page.keyboard.press('Enter')]);
+  await page.goBack();
+}, p => p === '/works.html');
+
+test('rel=next walks every client case once', async ({ page, base }) => {
+  const rows = await page.$$eval('[aria-labelledby="g-client"] a.row', as => as.map(a => a.href));
+  const seen = [];
+  let url = rows[0];
+  while (url) {
+    if (seen.includes(url)) throw new Error(`loop at ${url}`);
+    seen.push(url);
+    await page.goto(url);
+    url = await page.$eval('a[rel="next"]', a => a.href).catch(() => null);
+  }
+  if (seen.join() !== rows.join()) throw new Error(`walked ${seen.length}, ledger has ${rows.length}`);
+  await page.goto(`${base}/works.html`);
+}, p => p === '/works.html');
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
@@ -57,17 +126,22 @@ const BASE = `http://localhost:${server.address().port}`;
 const browser = await chromium.launch();
 let failed = 0;
 for (const [vp, size] of Object.entries(VIEWPORTS)) {
-  const page = await browser.newPage({ viewport: size });
-  const errors = [];
-  page.on('console', m => m.type() === 'error' && errors.push(m.text()));
-  page.on('pageerror', e => errors.push(e.message));
-  await page.goto(`${BASE}/`, { waitUntil: 'load' });
-  await page.screenshot({ path: resolve(SHOTS, `index-${vp}.png`), fullPage: true });
-  for (const t of tests) {
-    try { await t.fn({ page, errors, vp }); console.log(`  ✓ [${vp}] ${t.name}`); }
-    catch (e) { failed++; console.log(`  ✗ [${vp}] ${t.name}: ${e.message}`); }
+  for (const path of PAGES) {
+    const page = await browser.newPage({ viewport: size });
+    // Keep the run hermetic: third-party embeds (Figma, YouTube) aren't loaded.
+    await page.route(u => new URL(u).origin !== BASE, r => r.abort());
+    const errors = [];
+    page.on('console', m => m.type() === 'error' && !/net::ERR_FAILED/.test(m.text()) && errors.push(m.text()));
+    page.on('pageerror', e => errors.push(e.message));
+    await page.goto(`${BASE}${path}`, { waitUntil: 'load' });
+    const name = path === '/' ? 'index' : path.replace(/^\/|\/$/g, '').replace(/\//g, '-').replace(/\.html$/, '');
+    await page.screenshot({ path: resolve(SHOTS, `${name}-${vp}.png`), fullPage: true });
+    for (const t of tests.filter(t => t.only(path))) {
+      try { await t.fn({ page, errors, vp, base: BASE }); console.log(`  ✓ [${vp}] ${path} ${t.name}`); }
+      catch (e) { failed++; console.log(`  ✗ [${vp}] ${path} ${t.name}: ${e.message.split('\n')[0]}`); }
+    }
+    await page.close();
   }
-  await page.close();
 }
 await browser.close();
 server.close();
