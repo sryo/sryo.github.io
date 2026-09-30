@@ -609,6 +609,32 @@ test('diagram styles: ink, Inter, 1.5px hairlines, knockout, no page overflow', 
   }
 }, p => p === '/work/murmur/');
 
+// The per-project goal: real screens where the
+// project has a UI, and always one diagram of how it works. A slug leaves
+// PENDING when its content lands; that is the project's red → green step.
+const PENDING = ['airnod', 'apptidy', 'avis', 'chanchan', 'chronomouse', 'dirpad', 'figma-cdp', 'figma-plugins', 'fin', 'gmailtidy',
+  'lineandform', 'murmur', 'posta', 'spoons', 'stow', 'subi', 'trueframe', 'va', 'when', 'zentrate'];
+test('side project shows its screens and a diagram', async ({ page, path }) => {
+  const slug = slugOf(path);
+  const r = await page.evaluate(() => ({
+    screens: [...document.querySelectorAll('main figure.screen')].filter(f =>
+      f.querySelector('img')?.getAttribute('alt')?.trim() && f.querySelector('figcaption')?.textContent.trim()).length,
+    diagrams: [...document.querySelectorAll('main figure.diagram')].filter(f =>
+      f.querySelector('svg') && f.querySelector('figcaption')?.textContent.trim()).length }));
+  const meets = (r.screens >= 1 || r.diagrams >= 1) && r.diagrams >= 1;
+  if (PENDING.includes(slug)) {
+    if (meets) throw new Error(`${slug} is done: remove it from PENDING`);
+    return;
+  }
+  if (!meets) throw new Error(`${r.screens} captioned screens, ${r.diagrams} captioned diagrams: needs a diagram (and screens if it has a UI)`);
+}, SIDE);
+
+test('PENDING names only real side projects', async ({ vp }) => {
+  if (vp !== 'desktop') return;
+  const unknown = PENDING.filter(s => !SIDE_SLUGS.includes(s));
+  if (unknown.length) throw new Error(`unknown slugs in PENDING: ${unknown.join(', ')}`);
+}, p => p === '/works.html');
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.gif': 'image/gif', '.woff2': 'font/woff2' };
