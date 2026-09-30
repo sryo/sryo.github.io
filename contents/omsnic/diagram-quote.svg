@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 208">
+  <title>OMSNIC quote flow: one question at a time, each answer checked on the spot, state rules choosing the next question, until the quote</title>
+  <defs>
+    <marker id="om-head-b" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="32" cy="120" r="24"/>
+    <path d="M56 120H80" marker-end="url(#om-head-b)"/>
+    <path d="M232 120H272" marker-end="url(#om-head-b)"/>
+    <rect x="280" y="96" width="128" height="48"/>
+    <path d="M344 96V40H320" marker-end="url(#om-head-b)"/>
+    <rect x="184" y="16" width="128" height="48"/>
+    <path d="M184 40H160V88" marker-end="url(#om-head-b)"/>
+    <path d="M344 144V176H160V152" marker-end="url(#om-head-b)"/>
+    <path d="M408 120H464" marker-end="url(#om-head-b)"/>
+    <rect x="472" y="96" width="160" height="48"/>
+  </g>
+  <rect x="88" y="96" width="144" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="32" y="160">Surgeon</text>
+    <text class="knock" x="160" y="120">One question</text>
+    <text x="344" y="120">Validate</text>
+    <text x="248" y="40">State rules</text>
+    <text x="552" y="120">Quote</text>
+  </g>
+  <g fill="currentColor" font-size="12" dominant-baseline="central">
+    <text class="mute" x="352" y="68">valid</text>
+    <text class="mute" x="252" y="192" text-anchor="middle">invalid: fixed on the spot</text>
+    <text class="mute" x="436" y="108" text-anchor="middle">done</text>
+  </g>
+</svg>
