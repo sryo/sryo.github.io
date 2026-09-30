@@ -39,7 +39,8 @@
 #      a _.md (label and link optional) and an optional glyph.
 #    - In the body, '## ' headings become the page's parts, 'METRICS:' lists
 #      become the Impact band, a lone '[text](url)' line before the first
-#      heading becomes the Link, and <!-- comments --> never render.
+#      heading becomes the Link, a 'CTA:' line becomes the closing row above
+#      the pager, and <!-- comments --> never render.
 #    - To add a video or other embed, include a line starting with 'EMBED:' in your .md file.
 
 # 3. Run the script:
@@ -408,6 +409,13 @@ render_markdown_content() {
             continue
         fi
 
+        # A CTA: line is the page's closing row (see case_cta), never body.
+        if [[ "$line" == "CTA:"* ]]; then
+            if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
+            if $in_list; then content+="</ul>"; in_list=false; fi
+            continue
+        fi
+
         # METRICS block opener.
         if [[ "$line" == "METRICS:" ]]; then
             if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
@@ -505,6 +513,18 @@ render_markdown_content() {
     else
         echo "$content"
     fi
+}
+
+# The case's closing call to action: its first "CTA:" line, rendered as
+# one row above the pager. A LinkedIn link says where it goes to a screen
+# reader ("Let's talk on LinkedIn"). Prints nothing without a CTA line.
+case_cta() {
+    local line text
+    line=$(strip_frontmatter "$1" | grep -m 1 '^CTA:' || true)
+    [ -n "$line" ] || return 0
+    text=$(parse_markdown "$(printf '%s' "${line#CTA:}" | sed -E 's/^[[:space:]]+//')")
+    text=$(printf '%s' "$text" | sed -E 's|<a href="(https://[a-z.]*linkedin\.com/[^"]*)">([^<]*)</a>|<a href="\1" aria-label="\2 on LinkedIn">\2</a>|g')
+    printf '<p class="case-cta">%s</p>\n' "$text"
 }
 
 # Case pages sit two levels down, so links into the content folder
@@ -920,13 +940,14 @@ write_case_page() {
     local idx=$2
     local items_heading=$3
     local slug content_file="$folder/_.md"
-    local position="" body figures items=""
+    local position="" body figures items="" cta
     slug=$(basename "$folder")
     if [ "$idx" -ge 0 ]; then
         position=" <span class=\"count\">$(printf '%02d / %02d' $((idx + 1)) ${#sorted_folders[@]})</span>"
     fi
     body=$(render_markdown_content "$content_file" page)
     figures=$(render_markdown_content "$content_file" metrics)
+    cta=$(case_cta "$content_file")
     if [ -d "$folder/items" ]; then
         items=$(render_items "$folder/items" "$items_heading")
     fi
@@ -952,6 +973,7 @@ EOF
         rebase_paths "$items"
         echo
     fi
+    [ -n "$cta" ] && echo "$cta"
     echo "</main>"
     if [ "$idx" -ge 0 ]; then
         render_prev_next "$idx"

@@ -245,6 +245,36 @@ test('spec Year shows the year only', async ({ page }) => {
   if (month) throw new Error(`spec cell names a month: ${month}`);
 }, CASE);
 
+test('no part holds only the closing CTA', async ({ page }) => {
+  const hollow = await page.$$eval('section.part', ss => ss.filter(s => {
+    const b = s.querySelector('.body').cloneNode(true);
+    b.querySelectorAll('a[href*="linkedin.com"]').forEach(a => a.closest('p')?.remove());
+    return !b.textContent.trim() && !b.querySelector('img, iframe, a');
+  }).map(s => s.querySelector('h2')?.textContent || '(lead)'));
+  if (hollow.length) throw new Error(`hollow parts: ${hollow.join(', ')}`);
+}, CASE);
+
+test('one closing CTA row sits right before the pager', async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const ctas = document.querySelectorAll('.case-cta');
+    const main = document.querySelector('main');
+    const a = ctas[0]?.querySelector('a[href*="linkedin.com"]');
+    return { n: ctas.length, last: main.lastElementChild?.matches('.case-cta'), pn: main.nextElementSibling?.matches('.pn'),
+      text: a?.textContent.trim(), label: a?.getAttribute('aria-label'),
+      inBody: document.querySelectorAll('.part a[href*="linkedin.com"]').length };
+  });
+  if (r.n !== 1) throw new Error(`${r.n} .case-cta`);
+  if (!r.last || !r.pn) throw new Error('.case-cta is not directly before the pager');
+  if (r.text !== "Let's talk") throw new Error(`CTA link reads "${r.text}"`);
+  if (r.label !== "Let's talk on LinkedIn") throw new Error(`CTA aria-label is "${r.label}"`);
+  if (r.inBody) throw new Error(`${r.inBody} LinkedIn links left in the body`);
+}, CASE);
+
+test('OMSNIC says hours-to-minutes once', async ({ page }) => {
+  const t = await page.textContent('main');
+  if (t.includes('The process that took hours now takes minutes.')) throw new Error('duplicate Results sentence');
+}, p => p === '/work/omsnic/');
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };

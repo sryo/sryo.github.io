@@ -181,6 +181,9 @@ sentinel_in $P "metric value escaped"      '<span class="metric-value">&lt;5 min
 sentinel_in $P "figures band"              '<section class="figures"'
 absent_in   $P "empty Results part skipped" '<h2 class="label">Results</h2>'
 sentinel_in $P "content src rebased"       'src="../../contents/04-noorder/figure.png"'
+sentinel_in $P "CTA line becomes the closing row" "<p class=\"case-cta\">Need fixtures? <a href=\"https://www.linkedin.com/in/test\" aria-label=\"Let's talk on LinkedIn\">Let's talk</a>.</p>"
+absent_in   $P "CTA line not left in the body"   '<p>Need fixtures?'
+absent_in   $P "Results holding only a CTA skipped" '<h2 class="label">Results</h2>'
 sentinel_in work/01-tags/index.html "h2 hangs as a part label" '<section class="part"><h2 class="label">Overview</h2><div class="body">'
 
 # Case header: a spec column (glyph + dl) beside the h1 and the dek.
