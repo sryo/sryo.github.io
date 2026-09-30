@@ -523,17 +523,11 @@ rebase_paths() {
 # Emit — sections, galleries, final HTML
 # ─────────────────────────────────────────────────────────────
 
-# Format YYYY-MM-DD as "Month YYYY". Empty or malformed dates return empty.
-format_date() {
-    local date=$1
-    [[ "$date" =~ ^[0-9]{4}-[0-9]{2} ]] || { printf ''; return; }
-    local year=${date%%-*}
-    local month_num=${date#*-}
-    month_num=${month_num%%-*}
-    month_num=${month_num#0}
-    local months=("" "January" "February" "March" "April" "May" "June"
-                  "July" "August" "September" "October" "November" "December")
-    printf '%s %s' "${months[$month_num]}" "$year"
+# The Year row shows the year alone: a month reads as false precision on
+# a multi-month project. Empty or malformed dates return empty.
+format_year() {
+    [[ "$1" =~ ^([0-9]{4})-[0-9]{2} ]] && printf '%s' "${BASH_REMATCH[1]}"
+    return 0
 }
 
 # A lone "[text](url)" line before the first ## heading is the project's
@@ -552,7 +546,7 @@ lead_link() {
 # Link) beside the h1 and the summary as dek. Uses the fm_* globals.
 render_case_head() {
     local folder=$1
-    local image_file link_text link_url formatted_date scope
+    local image_file link_text link_url year scope
     image_file=$(find_item_image "$folder")
     IFS=$FS read -r link_text link_url < <(lead_link "$folder/_.md")
     if [ -n "$fm_link" ]; then link_text=$fm_link; link_url=$fm_link; fi
@@ -567,9 +561,9 @@ render_case_head() {
     if [ "$fm_kind" != "profile" ]; then
         printf '<dl>'
         printf '<dt>Client</dt><dd>%s</dd>' "$(html_escape "$fm_client")"
-        formatted_date=$(format_date "$fm_date")
-        if [ -n "$formatted_date" ]; then
-            printf '<dt>Year</dt><dd><time datetime="%s">%s</time></dd>' "$fm_date" "$formatted_date"
+        year=$(format_year "$fm_date")
+        if [ -n "$year" ]; then
+            printf '<dt>Year</dt><dd><time datetime="%s">%s</time></dd>' "$year" "$year"
         fi
         printf '<dt>Role</dt><dd>%s</dd>' "$(html_escape "$fm_role")"
         if [ -n "$fm_tags" ]; then

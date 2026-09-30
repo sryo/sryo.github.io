@@ -135,7 +135,7 @@ sentinel_in work/03-metrics/index.html "METRICS value rendered"   '<span class="
 sentinel_in work/03-metrics/index.html "METRICS label rendered"   '<span class="metric-label">reduction in churn</span>'
 absent_in   work/03-metrics/index.html "non-quantity not a stat"  '<span class="metric-value">Catalog + tasking</span>'
 sentinel_in work/03-metrics/index.html "non-quantity listed"      '<li>Catalog + tasking — dual capture flow</li>'
-sentinel_in work/01-tags/index.html    "date formatted"           '<time datetime="2024-03-01">March 2024</time>'
+sentinel_in work/01-tags/index.html    "Year row shows the year"  '<dt>Year</dt><dd><time datetime="2024">2024</time></dd>'
 sentinel_in work/03-metrics/index.html "EMBED passthrough"        '<iframe src="https://example.com/embed">'
 absent_in   work/03-metrics/index.html "ID-less YouTube embed dropped" 'youtube.googleapis.com/embed/?'
 sentinel_in work/03-metrics/index.html "code block opened"        '<pre><code>'

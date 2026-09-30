@@ -233,6 +233,18 @@ test('rel=next walks every client case once', async ({ page, base }) => {
   await page.goto(`${base}/works.html`);
 }, p => p === '/works.html');
 
+const CASE = p => p.startsWith('/work/') && !p.endsWith('/about/');
+const MONTHS = /\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/;
+
+test('spec Year shows the year only', async ({ page }) => {
+  const t = await page.$eval('.spec dl time', t => ({ text: t.textContent.trim(), dt: t.getAttribute('datetime') }));
+  if (!/^\d{4}$/.test(t.text)) throw new Error(`Year reads "${t.text}"`);
+  if (!/^\d{4}$/.test(t.dt)) throw new Error(`datetime is "${t.dt}"`);
+  const cells = await page.$$eval('.spec dd', ds => ds.map(d => d.textContent));
+  const month = cells.find(c => MONTHS.test(c));
+  if (month) throw new Error(`spec cell names a month: ${month}`);
+}, CASE);
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
