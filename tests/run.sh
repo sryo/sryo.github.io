@@ -161,7 +161,7 @@ sentinel_in work/01-tags/index.html "h2 hangs as a part label" '<section class="
 
 # Case header: a spec column (glyph + dl) beside the h1 and the dek.
 P=work/01-tags/index.html
-sentinel_in $P "spec column holds the glyph" '<aside class="spec"><span class="glyph">'
+sentinel_in $P "spec column holds the glyph" '<aside class="spec"><span class="glyph" '
 sentinel_in $P "summary is the dek"          '<p class="dek">Tags &amp; &lt;escapes&gt; in one line</p>'
 sentinel_in $P "spec lists the client"       '<dt>Client</dt><dd>Tags &amp; &lt;Co&gt;</dd>'
 sentinel_in $P "spec lists the role"         '<dt>Role</dt><dd>Designer &amp; writer</dd>'
@@ -172,8 +172,13 @@ absent_in   $P "hoisted link not in body"    '<p><a href="https://example.com/pr
 
 # No glyph: a typographic initial of the label takes its place.
 sentinel_in works.html "row initial for a missing glyph" '<span class="name">Third</span>'
-sentinel_in works.html "initial in the glyph cell"      '<span class="glyph initial" aria-hidden="true">T</span><span class="name">Third</span>'
-sentinel_in work/03-metrics/index.html "spec initial"   '<aside class="spec"><span class="glyph initial" aria-hidden="true">T</span>'
+sentinel_in works.html "initial in the glyph cell"      '<span class="glyph initial" style="view-transition-name: g-03-metrics" aria-hidden="true">T</span><span class="name">Third</span>'
+sentinel_in work/03-metrics/index.html "spec initial"   '<aside class="spec"><span class="glyph initial" style="view-transition-name: g-03-metrics" aria-hidden="true">T</span>'
+
+# View transition: the row's glyph and the case page's glyph share a name.
+sentinel_in works.html              "row glyph named for the transition"  '<span class="glyph" style="view-transition-name: g-01-tags">'
+sentinel_in work/01-tags/index.html "spec glyph shares the name"          '<aside class="spec"><span class="glyph" style="view-transition-name: g-01-tags">'
+absent_in   works.html              "side rows don't claim a name"        'view-transition-name: g-proj-a'
 
 # kind: profile: no client row, an About page, the ledger header, and
 # its items as the side-project group.

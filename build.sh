@@ -473,7 +473,11 @@ render_case_head() {
 
     echo "<header class=\"case-head\">"
     printf '<aside class="spec">'
-    render_glyph "$image_file" "$fm_label"
+    if [ "$fm_kind" = "profile" ]; then
+        render_glyph "$image_file" "$fm_label"
+    else
+        render_glyph "$image_file" "$fm_label" "g-$(basename "$folder")"
+    fi
     if [ "$fm_kind" != "profile" ]; then
         printf '<dl>'
         printf '<dt>Client</dt><dd>%s</dd>' "$(html_escape "$fm_client")"
@@ -513,14 +517,15 @@ sort_folders() {
 }
 
 # The glyph cell: the folder's image, or, when it has none, the label's
-# first letter set in type so the column never has holes.
+# first letter set in type so the column never has holes. An optional
+# view-transition name lets the glyph fly from its row to its case page.
 render_glyph() {
-    local image_file=$1 label=$2 initial
+    local image_file=$1 label=$2 vt=${3:+ style=\"view-transition-name: $3\"} initial
     if [ -n "$image_file" ] && [ -f "$image_file" ]; then
-        printf '<span class="glyph">%s</span>' "$(insert_image "$image_file" "" | tr -d '\n')"
+        printf '<span class="glyph"%s>%s</span>' "$vt" "$(insert_image "$image_file" "" | tr -d '\n')"
     else
         initial=$(printf '%s' "${label:0:1}" | tr '[:lower:]' '[:upper:]')
-        printf '<span class="glyph initial" aria-hidden="true">%s</span>' "$(html_escape "$initial")"
+        printf '<span class="glyph initial"%s aria-hidden="true">%s</span>' "$vt" "$(html_escape "$initial")"
     fi
 }
 
@@ -571,6 +576,7 @@ render_ledger_row() {
     local href=$2
     local last=$3
     local prev_year=$4
+    local vt=$5
     local slug image_file line year repeat=""
     slug=$(basename "$folder")
     image_file=$(find_item_image "$folder")
@@ -583,7 +589,7 @@ render_ledger_row() {
 
     printf '<li id="%s"%s><a class="row" href="%s">' "$slug" "$repeat" "$(html_escape "$href")"
     printf '<time class="yr" datetime="%s">%s</time>' "$fm_date" "$year"
-    render_glyph "$image_file" "$fm_label"
+    render_glyph "$image_file" "$fm_label" "$vt"
     printf '<span class="name">%s</span>' "$(html_escape "$fm_label")"
     printf '<span class="line">%s</span>' "$(html_escape "$line")"
     printf '<span class="role">%s</span>' "$(html_escape "$last")"
@@ -597,7 +603,7 @@ render_group() {
     local heading=$2
     local last_col=$3
     shift 3
-    local folder href last prev_year="" year
+    local folder href last prev_year="" year vt
 
     printf '<section class="group" aria-labelledby="g-%s">\n' "$key"
     printf '<div class="group-head"><h2 id="g-%s">%s</h2><span class="count">%02d</span></div>\n' "$key" "$heading" $#
@@ -609,12 +615,14 @@ render_group() {
         if [ "$key" = "client" ]; then
             href="work/$(basename "$folder")/"
             last=$fm_role
+            vt="g-$(basename "$folder")"
         else
+            vt=""
             href=$(project_link "$folder" "$fm_label")
             [ -z "$href" ] && href="work/$(basename "$profile")/#$(basename "$folder")"
             last=${fm_role:-$(derive_medium "$fm_tags")}
         fi
-        render_ledger_row "$folder" "$href" "$last" "$prev_year"
+        render_ledger_row "$folder" "$href" "$last" "$prev_year" "$vt"
         prev_year=$year
     done
     echo '</ol>'

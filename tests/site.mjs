@@ -85,6 +85,12 @@ test('accent is one of LINE_COLORS', async ({ page }) => {
   if (!LINE_COLORS.includes(accent.toUpperCase())) throw new Error(`--accent is ${accent}`);
 }, PORTFOLIO);
 
+test('pages opt in to cross-document view transitions', async ({ page }) => {
+  const ok = await page.evaluate(() => [...document.styleSheets].some(sh =>
+    [...sh.cssRules].some(r => r.cssText.startsWith('@view-transition'))));
+  if (!ok) throw new Error('no @view-transition rule');
+}, PORTFOLIO);
+
 test('ledger rows do not overlap', async ({ page }) => {
   const boxes = await page.$$eval('a.row', rows => rows.map(r => {
     const b = r.getBoundingClientRect(); return [b.top, b.bottom];
