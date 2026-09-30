@@ -135,6 +135,29 @@ test('glyphs are on-system: black fills, no text, style or animation', async ({ 
   if (bad.length) throw new Error(`${bad.length} off-system glyphs: ${bad.join(', ')}`);
 }, p => p === '/works.html');
 
+// Side-project glyphs follow the original grammar: a few
+// primitives XORed in one evenodd path; straight lines and circular arcs only.
+const SIDE_GLYPHS = ['chanchan', 'stow', 'avis', 'figma-cdp', 'murmur', 'dirpad', 'when', 'trueframe', 'fin', 'subi',
+  'posta', 'apptidy', 'airnod', 'lineandform', 'spoons', 'gmailtidy', 'zentrate', 'figma-plugins', 'chronomouse'];
+test('side glyphs are basic shapes XORed in one path', async () => {
+  const bad = [];
+  for (const slug of SIDE_GLYPHS) {
+    const svg = await readFile(resolve(ROOT, 'contents/about/items', slug, '_.svg'), 'utf8');
+    const paths = svg.match(/<path\b[^>]*>/g) || [];
+    if (paths.length !== 1) { bad.push(`${slug}: ${paths.length} paths`); continue; }
+    if (!/fill-rule="evenodd"/.test(paths[0])) { bad.push(`${slug}: no evenodd`); continue; }
+    if (/<(circle|rect|ellipse|polygon|line|text|style|animate)\b/i.test(svg)) { bad.push(`${slug}: extra element`); continue; }
+    if (/stroke/i.test(svg)) { bad.push(`${slug}: stroke`); continue; }
+    const d = paths[0].match(/\sd="([^"]*)"/)?.[1] || '';
+    const cmds = d.replace(/[-\d.,\s]+/g, '');
+    if (/[^MLHVAZmlhvaz]/.test(cmds)) { bad.push(`${slug}: curve command ${cmds.match(/[^MLHVAZmlhvaz]/)[0]}`); continue; }
+    const shapes = (cmds.match(/[Mm]/g) || []).length;
+    if (shapes < 2 || shapes > 4) { bad.push(`${slug}: ${shapes} shapes, want 2–4`); continue; }
+    if (cmds.length > 32) bad.push(`${slug}: ${cmds.length} segments, too detailed`);
+  }
+  if (bad.length) throw new Error(`${bad.length} glyphs off-grammar: ${bad.join('; ')}`);
+}, p => p === '/works.html');
+
 test('client roles fit on one line at 1440', async ({ page, vp }) => {
   if (vp !== 'desktop') return;
   const tall = await page.$$eval('[aria-labelledby="g-client"] .row .role', rs => rs
