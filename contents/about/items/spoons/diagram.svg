@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 208">
+  <title>Spoons: init.lua loads the chosen modules; they listen to your keys, trackpad and phone through Hammerspoon, then move windows and draw overlays</title>
+  <defs>
+    <marker id="spoons-head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="32" cy="80" r="24"/>
+    <circle cx="32" cy="176" r="24"/>
+    <path d="M56 80H96" marker-end="url(#spoons-head)"/>
+    <path d="M56 176H96" stroke-dasharray="4 4" marker-end="url(#spoons-head)"/>
+    <rect x="96" y="56" width="144" height="48"/>
+    <rect x="96" y="152" width="144" height="48"/>
+    <path d="M240 80H264V112H288" marker-end="url(#spoons-head)"/>
+    <path d="M240 176H264V144H288" marker-end="url(#spoons-head)"/>
+    <rect x="288" y="8" width="160" height="48"/>
+    <path d="M368 56V104" marker-end="url(#spoons-head)"/>
+    <path d="M448 112H472V80H488" marker-end="url(#spoons-head)"/>
+    <path d="M448 144H472V176H488" marker-end="url(#spoons-head)"/>
+    <rect x="488" y="56" width="144" height="48"/>
+    <rect x="488" y="152" width="144" height="48"/>
+  </g>
+  <rect x="288" y="104" width="160" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="32" y="40">You</text>
+    <text x="32" y="136">Phone</text>
+    <text x="168" y="80">hs.eventtap</text>
+    <text x="168" y="176">hs.httpserver</text>
+    <text x="368" y="32">init.lua</text>
+    <text class="knock" x="368" y="128">Spoons</text>
+    <text x="560" y="80">hs.window</text>
+    <text x="560" y="176">hs.canvas</text>
+  </g>
+  <g class="mute" fill="currentColor" font-size="12" dominant-baseline="central">
+    <text x="376" y="80">require</text>
+    <text x="104" y="40">keys, trackpad, cursor</text>
+    <text x="104" y="136">CloudPad, port 1984</text>
+    <text x="496" y="40">move, focus, close</text>
+    <text x="496" y="136">overlays, pickers</text>
+  </g>
+</svg>

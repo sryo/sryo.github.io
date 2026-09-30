@@ -652,7 +652,7 @@ test('diagram styles: ink, Inter, 1.5px hairlines, knockout, no page overflow', 
 // project has a UI, and always one diagram of how it works. A slug leaves
 // PENDING when its content lands; that is the project's red → green step.
 const PENDING = [
-  'spoons', 'stow', 'subi', 'trueframe', 'va', 'when', 'zentrate'];
+  'stow', 'subi', 'trueframe', 'va', 'when', 'zentrate'];
 test('side project shows its screens and a diagram', async ({ page, path }) => {
   const slug = slugOf(path);
   const r = await page.evaluate(() => ({
