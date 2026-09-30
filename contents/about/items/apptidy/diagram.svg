@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 192">
+  <title>AppTidy polls every app's windows, quits the ones idle past the timeout, and turns any quit into a short undo toast</title>
+  <defs>
+    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="32" cy="48" r="24"/>
+    <path d="M56 48H176" marker-end="url(#head)"/>
+    <path d="M304 48H456" marker-end="url(#head)"/>
+    <rect x="456" y="24" width="176" height="48"/>
+    <path d="M544 72V136" marker-end="url(#head)"/>
+    <rect x="456" y="136" width="176" height="48"/>
+    <path d="M456 160H352" marker-end="url(#head)"/>
+    <rect x="176" y="136" width="176" height="48"/>
+    <path d="M176 160H32V72" marker-end="url(#head)"/>
+  </g>
+  <rect x="176" y="24" width="128" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="32" y="48">Apps</text>
+    <text class="knock" x="240" y="48">AppTidy</text>
+    <text x="544" y="48">Quit app</text>
+    <text x="544" y="160">Undo toast</text>
+    <text x="264" y="160">Reopen app or folder</text>
+  </g>
+  <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text x="116" y="36">window count</text>
+    <text x="116" y="60">every 5 s</text>
+    <text x="380" y="36">no windows 5 min</text>
+    <text x="380" y="60">no audio playing</text>
+    <text x="580" y="104">any quit</text>
+    <text x="404" y="148">⌘⌥Z in 5 s</text>
+    <text x="104" y="148">relaunch</text>
+  </g>
+</svg>
