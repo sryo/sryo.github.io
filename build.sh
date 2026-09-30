@@ -140,7 +140,7 @@ html_escape() {
 # $FS-separated. Missing fields are empty strings.
 parse_frontmatter() {
     awk '
-    BEGIN { n = split("title date tags order label client role summary link kind email", keys, " ") }
+    BEGIN { n = split("title date tags order label client role summary link kind email glyph", keys, " ") }
     NR==1 && /^---$/ { in_fm=1; next }
     in_fm && /^---$/ { exit }
     in_fm && match($0, /^[a-z]+:[[:space:]]*/) {
@@ -164,7 +164,7 @@ parse_frontmatter() {
 # filled in: label from the title's text before ": ", client from label.
 load_fm() {
     local folder=$1
-    IFS=$FS read -r fm_title fm_date fm_tags fm_order fm_label fm_client fm_role fm_summary fm_link fm_kind fm_email \
+    IFS=$FS read -r fm_title fm_date fm_tags fm_order fm_label fm_client fm_role fm_summary fm_link fm_kind fm_email fm_glyph \
         < <(parse_frontmatter "$folder/_.md")
     [ -z "$fm_title" ] && fm_title=$(basename "$folder")
     [ -z "$fm_label" ] && fm_label=$(derive_label "$fm_title")
@@ -226,9 +226,11 @@ find_item_image() {
 
 # Glyphs are one system: black fills only (the dark-mode invert depends on
 # it), no <text>, <style> or animation. Anything else still renders, with
-# a warning naming the folder and the first offence.
+# a warning naming the folder and the first offence. "glyph: colour" in the
+# frontmatter keeps an original colour glyph and skips the check.
 check_glyph() {
-    local image_file=$1 slug=$2 fill why=""
+    local image_file=$1 slug=$2 kind=$3 fill why=""
+    [ "$kind" = colour ] && return 0
     [[ "$image_file" == *.svg ]] || return 0
     if grep -qiE '<(text|style|animate)' "$image_file"; then
         why=$(grep -oiE '<(text|style|animate)[A-Za-z]*' "$image_file" | head -n 1)
@@ -604,9 +606,10 @@ sort_folders() {
 # first letter set in type so the column never has holes. An optional
 # view-transition name lets the glyph fly from its row to its case page.
 render_glyph() {
-    local image_file=$1 label=$2 vt=${3:+ style=\"view-transition-name: $3\"} initial
+    local image_file=$1 label=$2 vt=${3:+ style=\"view-transition-name: $3\"} initial cls=glyph
+    [ "$fm_glyph" = colour ] && cls="glyph colour"
     if [ -n "$image_file" ] && [ -f "$image_file" ]; then
-        printf '<span class="glyph"%s>%s</span>' "$vt" "$(insert_image "$image_file" "" | tr -d '\n')"
+        printf '<span class="%s"%s>%s</span>' "$cls" "$vt" "$(insert_image "$image_file" "" | tr -d '\n')"
     else
         initial=$(printf '%s' "${label:0:1}" | tr '[:lower:]' '[:upper:]')
         printf '<span class="glyph initial"%s aria-hidden="true">%s</span>' "$vt" "$(html_escape "$initial")"
@@ -819,7 +822,7 @@ render_items() {
         load_fm "$item"
         printf '<article class="item" id="%s">\n' "$slug"
         if [ -n "$image_file" ]; then
-            printf '<span class="glyph">%s</span>\n' "$(insert_image "$image_file" "")"
+            printf '<span class="glyph%s">%s</span>\n' "${fm_glyph:+ $fm_glyph}" "$(insert_image "$image_file" "")"
         fi
         question=""
         if [[ "$fm_title" == *": "* ]]; then
@@ -983,7 +986,8 @@ for folder in "$CONTENT_DIR"*/ "$CONTENT_DIR"*/items/*/; do
         */items/*/) ;;
         *) require_fields "$folder/_.md" || exit 1 ;;
     esac
-    check_glyph "$(find_item_image "${folder%/}")" "$slug"
+    load_fm "${folder%/}"
+    check_glyph "$(find_item_image "${folder%/}")" "$slug" "$fm_glyph"
     case "$seen_slugs" in
         *" $slug "*) friendly_message "Build stopped: duplicate slug '$slug'" "Rename one of the folders called $slug."; exit 1 ;;
     esac

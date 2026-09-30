@@ -117,6 +117,10 @@ case "$BUILD_ERR" in
     *"proj-a glyph off-system"*|*"01-tags glyph off-system"*) fail "black glyphs flagged as off-system" ;;
     *) pass "black glyphs pass the glyph check" ;;
 esac
+case "$BUILD_ERR" in
+    *"proj-c glyph off-system"*) fail "glyph: colour flagged as off-system" ;;
+    *) pass "glyph: colour is exempt from the glyph check" ;;
+esac
 
 echo "Sentinel checks..."
 # works.html is the ledger: no ring, no dialogs, no connectors.
@@ -190,6 +194,9 @@ P=work/03-metrics/index.html
 sentinel_in $P "lead link hoisted into spec" '<dt>Link</dt><dd><a href="https://example.com/project">Project Link</a></dd>'
 absent_in   $P "hoisted link not in body"    '<p><a href="https://example.com/project">'
 
+# glyph: colour keeps an original colour glyph, marked so dark mode skips the invert.
+sentinel_in works.html "colour glyph marked" '<span class="glyph colour"><img'
+
 # No glyph: a typographic initial of the label takes its place.
 sentinel_in works.html "row initial for a missing glyph" '<span class="name">Third</span>'
 sentinel_in works.html "initial in the glyph cell"      '<span class="glyph initial" style="view-transition-name: g-03-metrics" aria-hidden="true">T</span><span class="name">Third</span>'
@@ -213,7 +220,7 @@ sentinel_in works.html "closing footer"                '<footer class="contact">
 absent_in   works.html "no email without one on file"  'mailto:'
 sentinel_in works.html "ledger header: year span"      'Work, 2021&ndash;2025'
 sentinel_in works.html "client group"                  '<h2 id="g-client">Client work</h2>'
-sentinel_in works.html "side group head states span and count" '<h2 id="g-side">Side projects, 2024&ndash;2025 &middot; 2</h2>'
+sentinel_in works.html "side group head states span and count" '<h2 id="g-side">Side projects, 2024&ndash;2025 &middot; 3</h2>'
 sentinel_in works.html "side row to its live site"     'class="row" href="https://example.com/a"'
 sentinel_in works.html "side row without a link to About" 'class="row" href="work/02-gallery/#proj-b"'
 sentinel_in $P "About item names link to the project"  '<h3><a href="https://example.com/a">Project A</a></h3>'
