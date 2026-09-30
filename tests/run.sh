@@ -116,6 +116,7 @@ sentinel_in work/03-metrics/index.html "METRICS value rendered"   '<span class="
 sentinel_in work/03-metrics/index.html "METRICS label rendered"   '<span class="metric-label">reduction in churn</span>'
 sentinel_in work/01-tags/index.html    "date formatted"           '<time datetime="2024-03-01">March 2024</time>'
 sentinel_in work/03-metrics/index.html "EMBED passthrough"        '<iframe src="https://example.com/embed">'
+absent_in   work/03-metrics/index.html "ID-less YouTube embed dropped" 'youtube.googleapis.com/embed/?'
 sentinel_in work/03-metrics/index.html "code block opened"        '<pre><code>'
 sentinel_in work/03-metrics/index.html "code block escapes &/</>" 'echo "hello &amp; &lt;world&gt;"'
 sentinel_in work/01-tags/index.html    "bold rendered"            '<strong>bold</strong>'

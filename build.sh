@@ -290,6 +290,7 @@ render_markdown_content() {
     local metric_line value label
     local part_start=0 part_label="" hoisted=false
     local link_re='^\[[^]]+\]\([^)]+\)$'
+    local idless_embed_re='src="[^"]*youtube(\.googleapis)?\.com/embed/?(\?|")'
 
     while IFS= read -r line || [ -n "$line" ]; do
         # Inside a comment: skip until it closes, keep what follows.
@@ -336,6 +337,13 @@ render_markdown_content() {
                 fi
             done
             [[ "$line" =~ ^[[:space:]]*$ ]] && continue
+        fi
+
+        # A video embed with no video ID renders as a blank grey box, so
+        # it's dropped (with a warning) instead of passed through.
+        if [[ "$line" == *"<iframe"* ]] && [[ "$line" =~ $idless_embed_re ]]; then
+            [ "$mode" = "metrics" ] || echo "warn: $file: embed has no video ID, dropped" >&2
+            continue
         fi
 
         # METRICS block opener.
