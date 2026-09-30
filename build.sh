@@ -144,6 +144,19 @@ strip_frontmatter() {
     fi
 }
 
+# A slug is the folder's basename: it names the page (work/<slug>/) and the
+# row's #anchor. Prints it, or complains and returns 1 when it isn't a
+# plain lowercase URL segment.
+slug_of() {
+    local slug
+    slug=$(basename "$1")
+    if [[ ! "$slug" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+        friendly_message "Invalid slug: $1" "Folder names must match ^[a-z0-9][a-z0-9-]*\$ (they become URLs)." >&2
+        return 1
+    fi
+    printf '%s' "$slug"
+}
+
 # Look for _.svg, then _.png, then _.jpg. Returns empty if none.
 find_item_image() {
     local folder=$1
@@ -466,13 +479,26 @@ EOF
 # Main
 # ─────────────────────────────────────────────────────────────
 
+shopt -s nullglob
+
+# Check every slug before writing anything. Sections and their items share
+# one namespace, because both become URLs and #anchors.
+seen_slugs=" "
+for folder in "$CONTENT_DIR"*/ "$CONTENT_DIR"*/items/*/; do
+    [ -f "$folder/_.md" ] || continue
+    slug=$(slug_of "${folder%/}") || exit 1
+    case "$seen_slugs" in
+        *" $slug "*) friendly_message "Build stopped: duplicate slug '$slug'" "Rename one of the folders called $slug."; exit 1 ;;
+    esac
+    seen_slugs+="$slug "
+done
+
 # Remove old case pages so a deleted or renamed section leaves nothing
 # behind. Scoped to "$OUT_DIR/work", never anything wider.
 rm -rf -- "$WORK_DIR"
 
 echo "Building sections..."
 
-shopt -s nullglob
 declare -a folder_order=()
 for folder in "$CONTENT_DIR"*/; do
     content_file="$folder/_.md"

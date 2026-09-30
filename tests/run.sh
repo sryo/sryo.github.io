@@ -54,6 +54,30 @@ done
 [ ! -e "$FIXTURE_DIR/work/ghost" ] || fail "stale work/ghost/ survived the rebuild"
 pass "stale work/ghost/ removed"
 
+echo "Slug validation..."
+# Copy the fixture into a scratch dir, let the caller break it, and
+# expect the build to exit non-zero with a message naming the problem.
+build_must_fail() {
+    local desc=$1 expect=$2 setup=$3 tmp out
+    tmp=$(mktemp -d)
+    cp -R "$FIXTURE_DIR/." "$tmp/"
+    rm -rf "$tmp/work" "$tmp/works.html"
+    (cd "$tmp" && eval "$setup")
+    if out=$(cd "$tmp" && bash "$REPO_DIR/build.sh" 2>&1); then
+        rm -rf "$tmp"
+        fail "$desc — build succeeded"
+    fi
+    rm -rf "$tmp"
+    case "$out" in
+        *"$expect"*) pass "$desc" ;;
+        *) fail "$desc — output lacks '$expect': $out" ;;
+    esac
+}
+build_must_fail "folder 'Bad Slug' rejected" "Invalid slug" \
+    'mkdir "contents/Bad Slug" && cp contents/04-noorder/_.md "contents/Bad Slug/_.md"'
+build_must_fail "duplicate slug rejected" "duplicate slug" \
+    'mkdir contents/02-gallery/items/01-tags && cp contents/02-gallery/items/proj-a/_.md contents/02-gallery/items/01-tags/_.md'
+
 echo "Diff against expected/works.html..."
 if diff -u "$EXPECTED" "$ACTUAL" > /dev/null; then
     pass "output matches expected"
