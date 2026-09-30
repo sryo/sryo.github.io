@@ -473,9 +473,7 @@ render_case_head() {
 
     echo "<header class=\"case-head\">"
     printf '<aside class="spec">'
-    if [ -n "$image_file" ]; then
-        printf '<span class="glyph">%s</span>' "$(insert_image "$image_file" "" | tr -d '\n')"
-    fi
+    render_glyph "$image_file" "$fm_label"
     if [ "$fm_kind" != "profile" ]; then
         printf '<dl>'
         printf '<dt>Client</dt><dd>%s</dd>' "$(html_escape "$fm_client")"
@@ -512,6 +510,18 @@ sort_folders() {
         load_fm "$folder"
         printf '%s|%s|%s|%s\n' "$fm_date" "$fm_order" "$(basename "$folder")" "$folder"
     done | LC_ALL=C sort -t'|' -k1,1r -k2,2n -k3,3 | cut -d'|' -f4-
+}
+
+# The glyph cell: the folder's image, or, when it has none, the label's
+# first letter set in type so the column never has holes.
+render_glyph() {
+    local image_file=$1 label=$2 initial
+    if [ -n "$image_file" ] && [ -f "$image_file" ]; then
+        printf '<span class="glyph">%s</span>' "$(insert_image "$image_file" "" | tr -d '\n')"
+    else
+        initial=$(printf '%s' "${label:0:1}" | tr '[:lower:]' '[:upper:]')
+        printf '<span class="glyph initial" aria-hidden="true">%s</span>' "$(html_escape "$initial")"
+    fi
 }
 
 # Fallbacks for items without a label: the text before ": " in the title.
@@ -573,11 +583,7 @@ render_ledger_row() {
 
     printf '<li id="%s"%s><a class="row" href="%s">' "$slug" "$repeat" "$(html_escape "$href")"
     printf '<time class="yr" datetime="%s">%s</time>' "$fm_date" "$year"
-    printf '<span class="glyph">'
-    if [ -n "$image_file" ] && [ -f "$image_file" ]; then
-        insert_image "$image_file" "" | tr -d '\n'
-    fi
-    printf '</span>'
+    render_glyph "$image_file" "$fm_label"
     printf '<span class="name">%s</span>' "$(html_escape "$fm_label")"
     printf '<span class="line">%s</span>' "$(html_escape "$line")"
     printf '<span class="role">%s</span>' "$(html_escape "$last")"

@@ -168,6 +168,11 @@ P=work/03-metrics/index.html
 sentinel_in $P "lead link hoisted into spec" '<dt>Link</dt><dd><a href="https://example.com/project">Project Link</a></dd>'
 absent_in   $P "hoisted link not in body"    '<p><a href="https://example.com/project">'
 
+# No glyph: a typographic initial of the label takes its place.
+sentinel_in works.html "row initial for a missing glyph" '<span class="name">Third</span>'
+sentinel_in works.html "initial in the glyph cell"      '<span class="glyph initial" aria-hidden="true">T</span><span class="name">Third</span>'
+sentinel_in work/03-metrics/index.html "spec initial"   '<aside class="spec"><span class="glyph initial" aria-hidden="true">T</span>'
+
 # kind: profile: no client row, an About page, the ledger header, and
 # its items as the side-project group.
 P=work/02-gallery/index.html

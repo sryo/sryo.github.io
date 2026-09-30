@@ -270,6 +270,20 @@ h1 {
     object-fit: contain;
 }
 
+.glyph.initial {
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0;
+}
+
+.spec .glyph.initial {
+    font-size: 40px;
+    border-width: 3px;
+}
+
 .case-head {
     row-gap: 32px;
     padding: 32px 0 48px;
