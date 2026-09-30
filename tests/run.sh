@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 # Test runner for build.sh.
-# Runs the build inside tests/fixtures, diffs the output against
-# tests/expected/works.html, and runs a handful of sentinel greps.
+# Runs the build inside tests/fixtures, runs sentinel greps against
+# works.html and the case pages, then diffs everything against
+# tests/expected/works.html and tests/expected/work/.
 #
 # Usage:
 #   bash tests/run.sh            # verify
-#   bash tests/run.sh --update   # regenerate tests/expected/works.html after intentional changes
+#   bash tests/run.sh --update   # regenerate tests/expected/ after intentional changes
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 FIXTURE_DIR="$SCRIPT_DIR/fixtures"
-EXPECTED="$SCRIPT_DIR/expected/works.html"
+EXPECTED_DIR="$SCRIPT_DIR/expected"
+EXPECTED="$EXPECTED_DIR/works.html"
 MODE="${1:-verify}"
 
 pass() { printf '  ✓ %s\n' "$1"; }
@@ -29,6 +31,27 @@ sentinel() {
     fi
 }
 
+# Same, against a named output file (relative to the fixture dir).
+sentinel_in() {
+    local file=$1 desc=$2 pattern=$3
+    [ -f "$FIXTURE_DIR/$file" ] || fail "$desc — $file missing"
+    if grep -qF "$pattern" "$FIXTURE_DIR/$file"; then
+        pass "$desc ($file)"
+    else
+        fail "$desc — pattern not found in $file: $pattern"
+    fi
+}
+
+# Negative sentinel: the pattern must not appear in the file.
+absent_in() {
+    local file=$1 desc=$2 pattern=$3
+    if grep -qF "$pattern" "$FIXTURE_DIR/$file"; then
+        fail "$desc — found in $file: $pattern"
+    else
+        pass "$desc ($file)"
+    fi
+}
+
 # A stale page from a deleted section; the build must remove it.
 mkdir -p "$FIXTURE_DIR/work/ghost"
 echo stale > "$FIXTURE_DIR/work/ghost/index.html"
@@ -40,7 +63,9 @@ ACTUAL="$FIXTURE_DIR/works.html"
 
 if [ "$MODE" = "--update" ]; then
     cp "$ACTUAL" "$EXPECTED"
-    pass "regenerated $EXPECTED"
+    rm -rf "$EXPECTED_DIR/work"
+    cp -R "$FIXTURE_DIR/work" "$EXPECTED_DIR/work"
+    pass "regenerated $EXPECTED and $EXPECTED_DIR/work/"
     exit 0
 fi
 
@@ -79,30 +104,37 @@ build_must_fail "duplicate slug rejected" "duplicate slug" \
     'mkdir contents/02-gallery/items/01-tags && cp contents/02-gallery/items/proj-a/_.md contents/02-gallery/items/01-tags/_.md'
 
 echo "Sentinel checks..."
-sentinel "METRICS value rendered"   '<span class="metric-value">15%</span>'
-sentinel "METRICS label rendered"   '<span class="metric-label">reduction in churn</span>'
-sentinel "date formatted"           '<time datetime="2024-03-01">March 2024</time>'
-sentinel "SVG inlined as base64"    'data:image/svg+xml;base64,'
-sentinel "tag rendered"             '<span class="tag">design</span>'
-sentinel "gallery container"        '<div class="gallery"'
-sentinel "EMBED passthrough"        '<iframe src="https://example.com/embed">'
-sentinel "code block opened"        '<pre><code>'
-sentinel "code block escapes &/</>" 'echo "hello &amp; &lt;world&gt;"'
-sentinel "bold rendered"            '<strong>bold</strong>'
-sentinel "italic rendered"          '<em>italic</em>'
-sentinel "inline code rendered"     '<code>inline code</code>'
-sentinel "link rendered"            '<a href="https://example.com">link</a>'
-sentinel "row name escaped"         '<span class="name">First &amp; &lt;Special&gt;</span>'
-sentinel "h1 escaped"               'First &amp; &lt;Special&gt;</h1>'
-sentinel "stray --- preserved"      'A paragraph after the divider should still render.'
+# works.html is the ledger: no ring, no dialogs, no connectors.
+sentinel_in works.html "SVG glyph inlined as base64" 'data:image/svg+xml;base64,'
+absent_in   works.html "no checkbox buttons"         'type="checkbox"'
+absent_in   works.html "no ring"                     'class="clock"'
+absent_in   works.html "no connector svg"            'lineContainer'
+absent_in   works.html "no dialog galleries"         'class="gallery"'
 
-# Gallery ordering: proj-a (2024-08-01) must appear before proj-b (2024-05-01).
-pos_a=$(grep -n '<h3>Project A</h3>' "$ACTUAL" | head -n 1 | cut -d: -f1)
-pos_b=$(grep -n '<h3>Project B</h3>' "$ACTUAL" | head -n 1 | cut -d: -f1)
+# Bodies render on their own case pages.
+sentinel_in work/03-metrics/index.html "METRICS value rendered"   '<span class="metric-value">15%</span>'
+sentinel_in work/03-metrics/index.html "METRICS label rendered"   '<span class="metric-label">reduction in churn</span>'
+sentinel_in work/01-tags/index.html    "date formatted"           '<time datetime="2024-03-01">March 2024</time>'
+sentinel_in work/03-metrics/index.html "EMBED passthrough"        '<iframe src="https://example.com/embed">'
+sentinel_in work/03-metrics/index.html "code block opened"        '<pre><code>'
+sentinel_in work/03-metrics/index.html "code block escapes &/</>" 'echo "hello &amp; &lt;world&gt;"'
+sentinel_in work/01-tags/index.html    "bold rendered"            '<strong>bold</strong>'
+sentinel_in work/01-tags/index.html    "italic rendered"          '<em>italic</em>'
+sentinel_in work/01-tags/index.html    "inline code rendered"     '<code>inline code</code>'
+sentinel_in work/01-tags/index.html    "link rendered"            '<a href="https://example.com">link</a>'
+sentinel_in works.html                 "row name escaped"         '<span class="name">First &amp; &lt;Special&gt;</span>'
+sentinel_in work/01-tags/index.html    "h1 escaped"               'First &amp; &lt;Special&gt;</h1>'
+sentinel_in work/03-metrics/index.html "stray --- preserved"      'A paragraph after the divider should still render.'
+sentinel_in work/02-gallery/index.html "item SVG inlined"         'data:image/svg+xml;base64,'
+
+# Items on a case page: proj-a (2024-08-01) before proj-b (2024-05-01).
+GALLERY="$FIXTURE_DIR/work/02-gallery/index.html"
+pos_a=$(grep -n '<h3>Project A</h3>' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
+pos_b=$(grep -n '<h3>Project B</h3>' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
 if [ -n "$pos_a" ] && [ -n "$pos_b" ] && [ "$pos_a" -lt "$pos_b" ]; then
-    pass "gallery sorted date desc (A before B)"
+    pass "items sorted date desc (A before B)"
 else
-    fail "gallery sort: A=$pos_a B=$pos_b"
+    fail "item sort: A=$pos_a B=$pos_b"
 fi
 
 # Ledger order: one sorted list, date descending, slug breaks ties.
@@ -114,12 +146,19 @@ else
     fail "row order: got '$rows', want '$want'"
 fi
 
-echo "Diff against expected/works.html..."
+echo "Diff against expected/..."
 if diff -u "$EXPECTED" "$ACTUAL" > /dev/null; then
-    pass "output matches expected"
+    pass "works.html matches expected"
 else
     diff -u "$EXPECTED" "$ACTUAL" | head -60
-    fail "output differs from expected (re-run with --update if intentional)"
+    fail "works.html differs from expected (re-run with --update if intentional)"
+fi
+[ -d "$EXPECTED_DIR/work" ] || fail "$EXPECTED_DIR/work missing — run with --update to create"
+if diff -r -u "$EXPECTED_DIR/work" "$FIXTURE_DIR/work" > /dev/null; then
+    pass "work/ matches expected"
+else
+    diff -r -u "$EXPECTED_DIR/work" "$FIXTURE_DIR/work" | head -60
+    fail "work/ differs from expected (re-run with --update if intentional)"
 fi
 
 echo "All checks passed."

@@ -433,36 +433,14 @@ render_ledger_row() {
     printf '</a></li>\n'
 }
 
-process_section_gallery() {
-    local folder=$1
-    local content_file=$2
-    local title=$3
-    local date=$4
-    local tags=$5
-    local section_id=$6
-    local item_id="item-$section_id"
-    local gallery_id="gallery-$section_id"
-    local body
-    body=$(render_markdown_content "$content_file")
-
-    echo "<div class=\"gallery\" id=\"$gallery_id\" data-for=\"$item_id\" role=\"dialog\" tabindex=\"-1\" aria-labelledby=\"title-$section_id\">"
-    render_case_study_header "$title" "$date" "$tags" "$section_id"
-    echo "  $body"
-
-    if [ -d "$folder/items" ]; then
-        process_gallery "$folder/items"
-    fi
-    echo "</div>"
-}
-
-
 # One standalone page per section, at work/<slug>/index.html.
 write_case_page() {
     local slug=$1
-    local content_file=$2
+    local folder=$2
     local title=$3
     local date=$4
     local tags=$5
+    local content_file="$folder/_.md"
     local safe_title body
     safe_title=$(html_escape "$title")
     body=$(render_markdown_content "$content_file")
@@ -482,6 +460,9 @@ write_case_page() {
 EOF
     render_case_study_header "$title" "$date" "$tags" "$slug"
     printf '%s\n' "$body"
+    if [ -d "$folder/items" ]; then
+        process_gallery "$folder/items"
+    fi
     cat <<EOF
 </main>
 </body>
@@ -533,8 +514,6 @@ while IFS='|' read -r _ _ _ folder; do
 done < <(printf '%s\n' "${records[@]}" | LC_ALL=C sort -t'|' -k1,1r -k2,2n -k3,3)
 
 rows_html=""
-galleries_html=""
-i=0
 for folder in "${sorted_folders[@]}"; do
     slug=$(basename "$folder")
     content_file="$folder/_.md"
@@ -544,10 +523,7 @@ for folder in "${sorted_folders[@]}"; do
 
     rows_html+=$(render_ledger_row "$slug" "$title" "$date" "$tags" "$image_file")
     rows_html+=$'\n'
-    galleries_html+=$(process_section_gallery "$folder" "$content_file" "$title" "$date" "$tags" "$i")
-    galleries_html+=$'\n'
-    write_case_page "$slug" "$content_file" "$title" "$date" "$tags"
-    ((i++))
+    write_case_page "$slug" "$folder" "$title" "$date" "$tags"
 done
 
 echo "Assembling $OUTPUT_FILE..."
@@ -571,13 +547,12 @@ cat <<EOF
 EOF
 printf '%s' "$rows_html"
 echo "</ol>"
-printf '%s' "$galleries_html"
+echo "</main>"
+# script.js is an optional enhancement: inlined only when it has content.
+if [ -s "$JS_FILE" ]; then
+    printf '<script>\n%s\n</script>\n' "$(cat "$JS_FILE")"
+fi
 cat <<EOF
-</main>
-<svg id="lineContainer" aria-hidden="true"></svg>
-<script>
-    $(cat "$JS_FILE")
-</script>
 </body>
 </html>
 EOF
