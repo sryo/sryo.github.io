@@ -53,6 +53,13 @@ test('no horizontal scroll', async ({ page }) => {
   if (over > 0) throw new Error(`overflows by ${over}px`);
 });
 
+test('no phone number is published', async ({ page }) => {
+  const html = await page.evaluate(() => document.documentElement.outerHTML);
+  // Any Argentine number or tel: link, without spelling Mateo's digits here.
+  const m = html.match(/\+54|\b351[\s.-]?\d{3}[\s.-]?\d{4}\b|href="tel:/);
+  if (m) throw new Error(`page carries "${m[0]}"`);
+});
+
 test('images have alt text', async ({ page }) => {
   const n = await page.locator('img:not([alt])').count();
   if (n) throw new Error(`${n} <img> without alt`);
@@ -110,6 +117,13 @@ test('masthead end year is the newest row year', async ({ page }) => {
   const years = await page.$$eval('.row time', ts => ts.map(t => Number(t.textContent)).filter(Boolean));
   const max = Math.max(...years);
   if (end !== max) throw new Error(`masthead ends ${end}, newest row is ${max}`);
+}, p => p === '/works.html');
+
+test('email sits in the header line and the footer', async ({ page }) => {
+  const r = await page.evaluate(() => ({ all: document.querySelectorAll('a[href="mailto:mateo@yadarola.com.ar"]').length,
+    avail: document.querySelectorAll('p.avail a[href="mailto:mateo@yadarola.com.ar"]').length,
+    footer: document.querySelectorAll('footer.contact a[href="mailto:mateo@yadarola.com.ar"]').length }));
+  if (r.avail !== 1 || r.footer !== 1 || r.all !== 2) throw new Error(`mailto links: ${r.avail} in p.avail, ${r.footer} in the footer, ${r.all} in all`);
 }, p => p === '/works.html');
 
 test('side lines are not questions', async ({ page }) => {
@@ -607,6 +621,21 @@ test('diagrams follow the spec', async ({ page }) => {
   const caps = await page.$$eval('main figure.diagram', fs => fs.filter(f => !f.querySelector('figcaption')?.textContent.trim()).length);
   if (caps) throw new Error('diagram without caption');
 }, SIDE);
+
+// Two inlined diagrams that share a marker id bind to the wrong marker.
+test('diagram marker ids are unique on a page', async ({ page }) => {
+  const ids = await page.$$eval('main figure.diagram marker[id]', ms => ms.map(m => m.id));
+  const dup = ids.find((id, i) => ids.indexOf(id) !== i);
+  if (dup) throw new Error(`marker id "${dup}" is used twice`);
+}, p => CASE(p) || SIDE(p));
+
+// Client work is under NDA: diagrams, not screens.
+test('client cases show no screens', async ({ page }) => {
+  const r = await page.evaluate(() => ({ screens: document.querySelectorAll('main figure.screen').length,
+    imgs: document.querySelectorAll('main section.part img').length }));
+  if (r.screens) throw new Error(`${r.screens} figure.screen`);
+  if (r.imgs) throw new Error(`${r.imgs} <img> in the parts`);
+}, CASE);
 
 // The stylesheet's side of the diagram contract, checked on a live side
 // page with the spec example dropped in: ink in both schemes, Inter labels,
