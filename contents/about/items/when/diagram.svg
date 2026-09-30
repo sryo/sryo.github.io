@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 232">
+  <title>When: feeds are polled for your interests, matches wait in an inbox, approved ones download with librqbit, and playlets turn download events into actions such as moving files or casting to a TV</title>
+  <defs>
+    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="32" cy="40" r="24"/>
+    <path d="M56 40H104" stroke-dasharray="4 4" marker-end="url(#head)"/>
+    <rect x="104" y="16" width="144" height="48"/>
+    <path d="M248 40H296" marker-end="url(#head)"/>
+    <rect x="296" y="16" width="112" height="48"/>
+    <path d="M408 40H472" marker-end="url(#head)"/>
+    <rect x="472" y="16" width="160" height="48"/>
+    <path d="M552 64V120" marker-end="url(#head)"/>
+    <path d="M472 144H416" marker-end="url(#head)"/>
+    <rect x="232" y="120" width="184" height="48"/>
+    <path d="M552 168V200H416" marker-end="url(#head)"/>
+    <rect x="232" y="176" width="184" height="48"/>
+    <path d="M232 200H56" stroke-dasharray="4 4" marker-end="url(#head)"/>
+    <circle cx="32" cy="200" r="24"/>
+  </g>
+  <rect x="472" y="120" width="160" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="32" y="40">Feeds</text>
+    <text x="176" y="40">match interests</text>
+    <text x="352" y="40">inbox</text>
+    <text x="552" y="40">librqbit</text>
+    <text class="knock" x="552" y="144">playlets</text>
+    <text x="324" y="144">move, notify, subtitles</text>
+    <text x="324" y="200">Axum media server</text>
+    <text x="32" y="200">TV</text>
+  </g>
+  <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text x="80" y="28">poll</text>
+    <text x="440" y="28">approve</text>
+    <text x="588" y="92">done</text>
+    <text x="144" y="188">cast</text>
+  </g>
+</svg>
