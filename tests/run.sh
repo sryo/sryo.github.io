@@ -203,6 +203,10 @@ absent_in   works.html "profile has no client row"     'class="row" href="work/0
 sentinel_in works.html "ledger header: profile lead"   'I make fixtures. Usually that means breaking things on purpose.'
 sentinel_in works.html "ledger header: availability"   "Ten years in. Open to what's next."
 sentinel_in works.html "ledger header: About link"     'href="work/02-gallery/"'
+sentinel_in works.html "masthead LinkedIn"             'href="https://linkedin.com/in/test"'
+sentinel_in works.html "masthead GitHub"               'href="https://github.com/test"'
+sentinel_in works.html "closing footer"                '<footer class="contact">'
+absent_in   works.html "no email without one on file"  'mailto:'
 sentinel_in works.html "ledger header: year span"      'Work, 2021&ndash;2025'
 sentinel_in works.html "client group"                  '<h2 id="g-client">Client work</h2>'
 sentinel_in works.html "side group head states span and count" '<h2 id="g-side">Side projects, 2024&ndash;2025 &middot; 2</h2>'

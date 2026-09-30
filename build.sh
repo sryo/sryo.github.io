@@ -133,13 +133,14 @@ html_escape() {
 #   summary  one plain-text line: ledger line, dek, meta and og:description
 #   link     the project's own site or repo
 #   kind     "profile" marks the About section; anything else is a case
+#   email    profile only, optional: a mailto link beside LinkedIn and GitHub
 # Case studies must set label, role and summary (see require_fields).
 
 # Single awk pass over the frontmatter block. Emits the fields above,
 # $FS-separated. Missing fields are empty strings.
 parse_frontmatter() {
     awk '
-    BEGIN { n = split("title date tags order label client role summary link kind", keys, " ") }
+    BEGIN { n = split("title date tags order label client role summary link kind email", keys, " ") }
     NR==1 && /^---$/ { in_fm=1; next }
     in_fm && /^---$/ { exit }
     in_fm && match($0, /^[a-z]+:[[:space:]]*/) {
@@ -163,7 +164,7 @@ parse_frontmatter() {
 # filled in: label from the title's text before ": ", client from label.
 load_fm() {
     local folder=$1
-    IFS=$FS read -r fm_title fm_date fm_tags fm_order fm_label fm_client fm_role fm_summary fm_link fm_kind \
+    IFS=$FS read -r fm_title fm_date fm_tags fm_order fm_label fm_client fm_role fm_summary fm_link fm_kind fm_email \
         < <(parse_frontmatter "$folder/_.md")
     [ -z "$fm_title" ] && fm_title=$(basename "$folder")
     [ -z "$fm_label" ] && fm_label=$(derive_label "$fm_title")
@@ -176,7 +177,7 @@ load_fm() {
 # fallback in the ledger, so the build stops and says which field.
 require_fields() {
     local file=$1 field value
-    IFS=$FS read -r _ _ _ _ fm_label _ fm_role fm_summary _ fm_kind < <(parse_frontmatter "$file")
+    IFS=$FS read -r _ _ _ _ fm_label _ fm_role fm_summary _ fm_kind _ < <(parse_frontmatter "$file")
     [ "$fm_kind" = "profile" ] && return 0
     for field in label role summary; do
         eval "value=\$fm_$field"
@@ -694,12 +695,41 @@ render_group() {
     echo '</section>'
 }
 
+# Contact links from the profile: LinkedIn and GitHub from its "Find me
+# elsewhere" list, plus email: from its frontmatter when set. Prints one
+# line of links separated by " &middot; ", or nothing.
+contact_links() {
+    local text url out="" want
+    [ -n "$profile" ] || return 0
+    for want in LinkedIn GitHub; do
+        while IFS=$FS read -r text url; do
+            if [ "$text" = "$want" ]; then
+                [ -n "$out" ] && out+=" &middot; "
+                out+="<a href=\"$(html_escape "$url")\">$want&nbsp;&#8599;</a>"
+                break
+            fi
+        done < <(strip_frontmatter "$profile/_.md" | awk '
+            /^## / { on = ($0 == "## Find me elsewhere"); next }
+            on && /^- \[[^]]+\]\([^)]+\)/ {
+                t = $0; sub(/^- \[/, "", t); sub(/\]\(.*$/, "", t)
+                u = $0; sub(/^[^(]*\(/, "", u); sub(/\).*$/, "", u)
+                printf "%s\037%s\n", t, u
+            }')
+    done
+    load_fm "$profile"
+    if [ -n "$fm_email" ]; then
+        [ -n "$out" ] && out+=" &middot; "
+        out+="<a href=\"mailto:$(html_escape "$fm_email")\">$(html_escape "$fm_email")</a>"
+    fi
+    printf '%s' "$out"
+}
+
 # The ledger's header, from the profile section: its first paragraph as
-# the lead and its italic availability line, plus the client-work years.
+# the lead and its italic availability line, plus the years on the ledger.
 render_intro() {
     local first=$1
     local last=$2
-    local lead="" avail=""
+    local lead="" avail="" links
     if [ -n "$profile" ]; then
         lead=$(strip_frontmatter "$profile/_.md" | awk '
             /^[[:space:]]*$/ || /^[#<>\[*-]/ || /^(METRICS|EMBED):/ { next }
@@ -707,16 +737,25 @@ render_intro() {
         avail=$(strip_frontmatter "$profile/_.md" | awk '/^\*[^*].*\*$/ { print substr($0, 2, length($0) - 2); exit }')
     fi
     [ -z "$lead" ] && lead=$AUTHOR
+    links=$(contact_links)
 
     echo '<header class="intro">'
-    printf '<p class="mast"><a class="home" href="./">%s</a> <span class="meta">Work, %s&ndash;%s</span></p>\n' \
+    printf '<p class="mast"><span><a class="home" href="./">%s</a> &middot; Product designer</span> <span class="meta">Work, %s&ndash;%s</span></p>\n' \
         "$(html_escape "$AUTHOR")" "$first" "$last"
     printf '<h1 class="lead">%s</h1>\n' "$(html_escape "$lead")"
     if [ -n "$profile" ]; then
-        printf '<p class="avail">%s <a href="work/%s/">About &rarr;</a></p>\n' \
-            "$(html_escape "$avail")" "$(basename "$profile")"
+        printf '<p class="avail">%s <a href="work/%s/">About &rarr;</a>%s</p>\n' \
+            "$(html_escape "$avail")" "$(basename "$profile")" "${links:+ &middot; $links}"
     fi
     echo '</header>'
+}
+
+# Closing footer: the same contact links, so the skim ends on a next step.
+render_contact_footer() {
+    local links
+    links=$(contact_links)
+    [ -n "$links" ] || return 0
+    printf '<footer class="contact"><h2 class="label">Get in touch</h2><p>%s</p></footer>\n' "$links"
 }
 
 # Items (side projects on the profile) as anchored sections of a page.
@@ -966,6 +1005,7 @@ render_group client "Client work" "Role" "${sorted_folders[@]}"
 if [ ${#side_folders[@]} -gt 0 ]; then
     render_group side "Side projects" "Medium" "${side_folders[@]}"
 fi
+render_contact_footer
 echo "</main>"
 cat <<EOF
 </body>
