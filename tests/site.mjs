@@ -350,6 +350,23 @@ test('cases do not repeat themselves', async ({ page, path }) => {
   }
 }, p => ['/work/omsnic/', '/work/bancor/', '/work/hometown/', '/work/topicflower/'].includes(p));
 
+test('case h1 is "Client: lowercase line"', async ({ page }) => {
+  const h1 = (await page.textContent('h1')).trim();
+  if (!/^[^:]+: [a-z0-9]/.test(h1)) throw new Error(`h1 reads "${h1}"`);
+}, CASE);
+
+test('links say where they go', async ({ page }) => {
+  const vague = await page.$$eval('a', as => as.filter(a => /^project link$/i.test(a.textContent.trim())).length);
+  if (vague) throw new Error(`${vague} "Project Link" links`);
+  const untitled = await page.$$eval('iframe', fs => fs.filter(f => !f.title.trim()).length);
+  if (untitled) throw new Error(`${untitled} iframes without a title`);
+}, PORTFOLIO);
+
+test('Bancor walkthrough embed carries a title', async () => {
+  const md = await readFile(resolve(ROOT, 'contents/bancor/_.md'), 'utf8');
+  if (!/<iframe[^>]*\btitle="Bancor crisis features walkthrough"/.test(md)) throw new Error('Bancor iframe has no title');
+}, p => p === '/work/bancor/');
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
