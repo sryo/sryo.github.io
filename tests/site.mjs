@@ -138,7 +138,7 @@ test('glyphs are on-system: black fills, no text, style or animation', async ({ 
 // Side-project glyphs follow the original grammar: a few
 // primitives XORed in one evenodd path; straight lines and circular arcs only.
 const SIDE_GLYPHS = ['chanchan', 'stow', 'avis', 'figma-cdp', 'murmur', 'dirpad', 'when', 'trueframe', 'fin', 'subi',
-  'posta', 'apptidy', 'airnod', 'lineandform', 'spoons', 'gmailtidy', 'figma-plugins', 'chronomouse'];
+  'posta', 'apptidy', 'airnod', 'lineandform', 'spoons', 'gmailtidy', 'zentrate', 'figma-plugins', 'chronomouse'];
 test('side glyphs are basic shapes XORed in one path', async () => {
   const bad = [];
   for (const slug of SIDE_GLYPHS) {
@@ -156,18 +156,6 @@ test('side glyphs are basic shapes XORed in one path', async () => {
     if (cmds.length > 32) bad.push(`${slug}: ${cmds.length} segments, too detailed`);
   }
   if (bad.length) throw new Error(`${bad.length} glyphs off-grammar: ${bad.join('; ')}`);
-}, p => p === '/works.html');
-
-// ZenTrate keeps its original colour icon.
-test('ZenTrate keeps its original colour glyph', async ({ page }) => {
-  const svg = await readFile(resolve(ROOT, 'contents/about/items/zentrate/_.svg'), 'utf8');
-  if (!svg.includes('#414DA1')) throw new Error('zentrate glyph is not the original');
-  const row = page.locator('.row', { has: page.locator('.name', { hasText: 'ZenTrate' }) });
-  if (!(await row.locator('.glyph.colour').count())) throw new Error('zentrate glyph not marked colour');
-  await page.emulateMedia({ colorScheme: 'dark' });
-  const filter = await row.locator('.glyph img').evaluate(i => getComputedStyle(i).filter);
-  await page.emulateMedia({ colorScheme: 'light' });
-  if (filter !== 'none') throw new Error(`colour glyph inverted in dark mode: ${filter}`);
 }, p => p === '/works.html');
 
 test('client roles fit on one line at 1440', async ({ page, vp }) => {
