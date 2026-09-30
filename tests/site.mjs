@@ -903,6 +903,62 @@ test('Airy / Dense falls back to the diagram under reduced motion', async ({ pag
   if (bad.length) throw new Error(bad.join('; '));
 }, p => p === '/work/continental/');
 
+// The approval gate, played: the AI's suggestions land in four generic
+// fields, and Commit stays shut until each is confirmed or overridden.
+async function gateState(page) {
+  return page.$eval('figure.diagram[data-toy="review-gate"]', f => {
+    const toy = f.querySelector('.toy');
+    const commit = toy?.querySelector('.tr-commit');
+    return { toy: !!toy, svgShown: (f.querySelector(':scope > svg')?.getBoundingClientRect().width || 0) > 100,
+      note: toy?.querySelector('.toy-note')?.textContent.trim(), state: toy?.dataset.state,
+      names: [...(toy?.querySelectorAll('.tr-name') || [])].map(n => n.textContent.trim()),
+      fields: [...(toy?.querySelectorAll('.tr-field') || [])].map(l => l.dataset.state),
+      words: [...(toy?.querySelectorAll('.tr-state') || [])].map(w => w.textContent.trim()),
+      count: toy?.querySelector('.tr-count')?.textContent.trim(),
+      disabled: commit?.getAttribute('aria-disabled'), committed: Number(toy?.dataset.committed || 0),
+      small: [...(toy?.querySelectorAll('button') || [])].filter(b => b.getBoundingClientRect().height < 44).length };
+  });
+}
+
+test('Valora toy: nothing commits until every figure is reviewed', async ({ page, vp }) => {
+  const fig = page.locator('figure.diagram[data-toy="review-gate"]');
+  await fig.scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => document.querySelector('figure.diagram[data-toy="review-gate"] .toy')?.dataset.state === 'review', null, { timeout: 6000 })
+    .catch(() => {});
+  let r = await gateState(page);
+  if (!r.toy) throw new Error('toy not mounted');
+  if (r.svgShown) throw new Error('diagram SVG still shown beside the toy');
+  if (r.note !== 'Illustration') throw new Error(`toy note reads "${r.note}"`);
+  if (r.names.join() !== 'Figure 1,Figure 2,Figure 3,Figure 4') throw new Error(`field names [${r.names.join(', ')}]`);
+  if (r.state !== 'review' || r.fields.some(s => s !== 'suggested')) throw new Error(`after the scan: ${r.state}, fields [${r.fields.join(', ')}]`);
+  if (r.disabled !== 'true' || r.count !== '0 of 4 reviewed') throw new Error(`commit disabled=${r.disabled}, count "${r.count}"`);
+  if (vp === 'mobile' && r.small) throw new Error(`${r.small} buttons under 44px on a phone`);
+  const field = n => fig.locator('.tr-field').nth(n);
+  await field(0).getByRole('button', { name: /^Confirm/ }).click();
+  // aria-disabled keeps Commit focusable; Playwright won't press it unforced.
+  await fig.locator('.tr-commit').click({ force: true });
+  r = await gateState(page);
+  if (r.committed || r.state !== 'review') throw new Error('committed with figures unreviewed');
+  if (r.fields[0] !== 'confirmed' || r.words[0] !== 'Confirmed' || r.count !== '1 of 4 reviewed') throw new Error(`after confirm: ${r.fields[0]}, "${r.words[0]}", "${r.count}"`);
+  await field(1).getByRole('button', { name: /^Override/ }).click();
+  await page.waitForTimeout(1200);
+  await field(2).getByRole('button', { name: /^Confirm/ }).click();
+  await field(3).getByRole('button', { name: /^Confirm/ }).click();
+  r = await gateState(page);
+  if (r.fields[1] !== 'overridden' || r.words[1] !== 'Overridden') throw new Error(`after override: ${r.fields[1]}, "${r.words[1]}"`);
+  if (r.disabled !== 'false' || r.count !== '4 of 4 reviewed') throw new Error(`all reviewed, commit disabled=${r.disabled}, count "${r.count}"`);
+  await fig.locator('.tr-commit').click();
+  await page.waitForTimeout(1200);
+  r = await gateState(page);
+  if (r.state !== 'committed' || r.committed !== 4) throw new Error(`after commit: ${r.state}, ${r.committed} committed`);
+}, p => p === '/work/valora/');
+
+test('Valora toy falls back to the diagram under reduced motion', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const bad = await reducedMotionProblems(page, 'review-gate');
+  if (bad.length) throw new Error(bad.join('; '));
+}, p => p === '/work/valora/');
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.gif': 'image/gif', '.woff2': 'font/woff2' };
