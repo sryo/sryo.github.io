@@ -9,24 +9,14 @@
 </head>
 <body>
 <main id="main-content">
-<div class="clock" id="clock">
-<label class="item" title="First &amp; &lt;Special&gt;">
-  <input type="checkbox" name="menu" id="item-0" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="gallery-0" />
-  <div class="placeholder-image">No Image</div>
-</label>
-<label class="item" title="Second Section">
-  <input type="checkbox" name="menu" id="item-1" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="gallery-1" />
-  <div class="placeholder-image">No Image</div>
-</label>
-<label class="item" title="Third Section">
-  <input type="checkbox" name="menu" id="item-2" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="gallery-2" />
-  <div class="placeholder-image">No Image</div>
-</label>
-<label class="item" title="Fourth Section">
-  <input type="checkbox" name="menu" id="item-3" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="gallery-3" />
-  <div class="placeholder-image">No Image</div>
-</label>
-</div>
+<ol class="ledger">
+<li id="01-tags"><a class="row" href="work/01-tags/"><time class="yr" datetime="2024-03-01">2024</time><span class="glyph"></span><span class="name">First &amp; &lt;Special&gt;</span><span class="line">First &amp; &lt;Special&gt;</span><span class="role">design</span></a></li>
+<li id="03-metrics"><a class="row" href="work/03-metrics/"><time class="yr" datetime="2024-01-15">2024</time><span class="glyph"></span><span class="name">Third Section</span><span class="line">Third Section</span><span class="role">data</span></a></li>
+<li id="02-gallery"><a class="row" href="work/02-gallery/"><time class="yr" datetime="2023-06-15">2023</time><span class="glyph"></span><span class="name">Second Section</span><span class="line">Second Section</span><span class="role">research</span></a></li>
+<li id="04-noorder"><a class="row" href="work/04-noorder/"><time class="yr" datetime="2022-11-01">2022</time><span class="glyph"></span><span class="name">Fourth Section</span><span class="line">Fourth Section</span><span class="role">misc</span></a></li>
+<li id="05-twin-a"><a class="row" href="work/05-twin-a/"><time class="yr" datetime="2021-05-01">2021</time><span class="glyph"></span><span class="name">Twin A</span><span class="line">Twin A</span><span class="role">pair</span></a></li>
+<li id="05-twin-b"><a class="row" href="work/05-twin-b/"><time class="yr" datetime="2021-05-01">2021</time><span class="glyph"></span><span class="name">Twin B</span><span class="line">Twin B</span><span class="role">pair</span></a></li>
+</ol>
 <div class="gallery" id="gallery-0" data-for="item-0" role="dialog" tabindex="-1" aria-labelledby="title-0">
 <header class="case-study-header">
   <h1 id="title-0">First &amp; &lt;Special&gt;</h1>
@@ -43,7 +33,20 @@
 </div>
 <div class="gallery" id="gallery-1" data-for="item-1" role="dialog" tabindex="-1" aria-labelledby="title-1">
 <header class="case-study-header">
-  <h1 id="title-1">Second Section</h1>
+  <h1 id="title-1">Third Section</h1>
+  <div class="meta">
+    <time datetime="2024-01-15">January 2024</time>
+    <div class="tags">
+      <span class="tag">data</span>
+    </div>
+  </div>
+</header>
+  <p>Results below.</p><div class="metrics-grid"><div class="metric"><span class="metric-value">15%</span><span class="metric-label">reduction in churn</span></div><div class="metric"><span class="metric-value">42</span><span class="metric-label">new accounts</span></div></div><h2>After METRICS</h2><p>A heading that closes the metrics block by falling through (no blank line guarantee).</p><iframe src="https://example.com/embed"></iframe><p>A code block:</p><pre><code>echo "hello &amp; &lt;world&gt;"
+</code></pre><p>A divider below:</p><p>---</p><p>A paragraph after the divider should still render.</p>
+</div>
+<div class="gallery" id="gallery-2" data-for="item-2" role="dialog" tabindex="-1" aria-labelledby="title-2">
+<header class="case-study-header">
+  <h1 id="title-2">Second Section</h1>
   <div class="meta">
     <time datetime="2023-06-15">June 2023</time>
     <div class="tags">
@@ -71,19 +74,6 @@
   </div>
 </div>
 </div>
-<div class="gallery" id="gallery-2" data-for="item-2" role="dialog" tabindex="-1" aria-labelledby="title-2">
-<header class="case-study-header">
-  <h1 id="title-2">Third Section</h1>
-  <div class="meta">
-    <time datetime="2024-01-15">January 2024</time>
-    <div class="tags">
-      <span class="tag">data</span>
-    </div>
-  </div>
-</header>
-  <p>Results below.</p><div class="metrics-grid"><div class="metric"><span class="metric-value">15%</span><span class="metric-label">reduction in churn</span></div><div class="metric"><span class="metric-value">42</span><span class="metric-label">new accounts</span></div></div><h2>After METRICS</h2><p>A heading that closes the metrics block by falling through (no blank line guarantee).</p><iframe src="https://example.com/embed"></iframe><p>A code block:</p><pre><code>echo "hello &amp; &lt;world&gt;"
-</code></pre><p>A divider below:</p><p>---</p><p>A paragraph after the divider should still render.</p>
-</div>
 <div class="gallery" id="gallery-3" data-for="item-3" role="dialog" tabindex="-1" aria-labelledby="title-3">
 <header class="case-study-header">
   <h1 id="title-3">Fourth Section</h1>
@@ -95,6 +85,30 @@
   </div>
 </header>
   <p>This section has no <code>order:</code> field, so it sorts last via DEFAULT_ORDER.</p><ul><li>list item one</li><li>list item two</li><li>list item three</li></ul>
+</div>
+<div class="gallery" id="gallery-4" data-for="item-4" role="dialog" tabindex="-1" aria-labelledby="title-4">
+<header class="case-study-header">
+  <h1 id="title-4">Twin A</h1>
+  <div class="meta">
+    <time datetime="2021-05-01">May 2021</time>
+    <div class="tags">
+      <span class="tag">pair</span>
+    </div>
+  </div>
+</header>
+  <p>Shares its date with Twin B, so the slug breaks the tie.</p>
+</div>
+<div class="gallery" id="gallery-5" data-for="item-5" role="dialog" tabindex="-1" aria-labelledby="title-5">
+<header class="case-study-header">
+  <h1 id="title-5">Twin B</h1>
+  <div class="meta">
+    <time datetime="2021-05-01">May 2021</time>
+    <div class="tags">
+      <span class="tag">pair</span>
+    </div>
+  </div>
+</header>
+  <p>Shares its date with Twin A, so the slug breaks the tie.</p>
 </div>
 </main>
 <svg id="lineContainer" aria-hidden="true"></svg>

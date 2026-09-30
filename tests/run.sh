@@ -78,14 +78,6 @@ build_must_fail "folder 'Bad Slug' rejected" "Invalid slug" \
 build_must_fail "duplicate slug rejected" "duplicate slug" \
     'mkdir contents/02-gallery/items/01-tags && cp contents/02-gallery/items/proj-a/_.md contents/02-gallery/items/01-tags/_.md'
 
-echo "Diff against expected/works.html..."
-if diff -u "$EXPECTED" "$ACTUAL" > /dev/null; then
-    pass "output matches expected"
-else
-    diff -u "$EXPECTED" "$ACTUAL" | head -60
-    fail "output differs from expected (re-run with --update if intentional)"
-fi
-
 echo "Sentinel checks..."
 sentinel "METRICS value rendered"   '<span class="metric-value">15%</span>'
 sentinel "METRICS label rendered"   '<span class="metric-label">reduction in churn</span>'
@@ -100,7 +92,7 @@ sentinel "bold rendered"            '<strong>bold</strong>'
 sentinel "italic rendered"          '<em>italic</em>'
 sentinel "inline code rendered"     '<code>inline code</code>'
 sentinel "link rendered"            '<a href="https://example.com">link</a>'
-sentinel "title attr escaped"       'title="First &amp; &lt;Special&gt;"'
+sentinel "row name escaped"         '<span class="name">First &amp; &lt;Special&gt;</span>'
 sentinel "h1 escaped"               'First &amp; &lt;Special&gt;</h1>'
 sentinel "stray --- preserved"      'A paragraph after the divider should still render.'
 
@@ -113,13 +105,21 @@ else
     fail "gallery sort: A=$pos_a B=$pos_b"
 fi
 
-# Section ordering: 01 (order:1) before 02 (order:2) before 03 (order:3) before 04 (no order, default last).
-pos_first=$(grep -n 'First &amp; &lt;Special&gt;</h1>' "$ACTUAL" | head -n 1 | cut -d: -f1)
-pos_fourth=$(grep -n '>Fourth Section</h1>' "$ACTUAL" | head -n 1 | cut -d: -f1)
-if [ -n "$pos_first" ] && [ -n "$pos_fourth" ] && [ "$pos_first" -lt "$pos_fourth" ]; then
-    pass "sections sorted by order (1 before 4)"
+# Ledger order: one sorted list, date descending, slug breaks ties.
+rows=$(grep -o 'class="row" href="work/[^"]*/"' "$ACTUAL" | sed -e 's|.*href="work/||' -e 's|/"$||' | tr '\n' ' ' || true)
+want="01-tags 03-metrics 02-gallery 04-noorder 05-twin-a 05-twin-b "
+if [ "$rows" = "$want" ]; then
+    pass "rows sorted by date desc, then slug"
 else
-    fail "section sort: first=$pos_first fourth=$pos_fourth"
+    fail "row order: got '$rows', want '$want'"
+fi
+
+echo "Diff against expected/works.html..."
+if diff -u "$EXPECTED" "$ACTUAL" > /dev/null; then
+    pass "output matches expected"
+else
+    diff -u "$EXPECTED" "$ACTUAL" | head -60
+    fail "output differs from expected (re-run with --update if intentional)"
 fi
 
 echo "All checks passed."

@@ -68,6 +68,10 @@ fi
 
 DEFAULT_ORDER=9999
 
+# Field separator for parse_frontmatter. Not whitespace, so `read` keeps
+# empty fields in place instead of collapsing them.
+FS=$'\037'
+
 # Case pages go to work/<slug>/index.html next to the output file.
 OUT_DIR=$(dirname "$OUTPUT_FILE")
 WORK_DIR="$OUT_DIR/work"
@@ -105,8 +109,8 @@ html_escape() {
     printf '%s' "$s"
 }
 
-# Single awk pass over the frontmatter block. Emits tab-separated
-# title<TAB>date<TAB>tags<TAB>order. Missing fields are empty strings.
+# Single awk pass over the frontmatter block. Emits $FS-separated
+# title, date, tags, order. Missing fields are empty strings.
 parse_frontmatter() {
     awk '
     BEGIN { in_fm=0; title=""; date=""; tags=""; order="" }
@@ -129,7 +133,7 @@ parse_frontmatter() {
             order = substr($0, RLENGTH+1)
         }
     }
-    END { printf "%s\t%s\t%s\t%s", title, date, tags, order }
+    END { printf "%s\037%s\037%s\037%s", title, date, tags, order }
     ' "$1"
 }
 
@@ -366,7 +370,7 @@ process_gallery() {
         item=${item%/}
         content_file="$item/_.md"
         [ -f "$content_file" ] || continue
-        IFS=$'\t' read -r title date tags order < <(parse_frontmatter "$content_file")
+        IFS=$FS read -r title date tags order < <(parse_frontmatter "$content_file")
         tuples+=("${date}|${item}")
     done
 
@@ -374,7 +378,7 @@ process_gallery() {
         [ -n "$item" ] || continue
         content_file="$item/_.md"
         image_file=$(find_item_image "$item")
-        IFS=$'\t' read -r title date tags order < <(parse_frontmatter "$content_file")
+        IFS=$FS read -r title date tags order < <(parse_frontmatter "$content_file")
         [ -z "$title" ] && title=$(basename "$item")
         body=$(render_markdown_content "$content_file")
         safe_title=$(html_escape "$title")
@@ -393,28 +397,40 @@ process_gallery() {
     done < <(printf '%s\n' "${tuples[@]}" | sort -t'|' -k1,1 -r)
 }
 
-# Caller resolves content_file, title, image_file once and passes them in
-# so we don't re-scan the folder.
-process_section_item() {
-    local content_file=$1
+# Ledger columns until frontmatter names them: the text before ": " in
+# the title is the name, the rest is the line, the first tag is the role.
+derive_label() {
+    local title=$1
+    if [[ "$title" == *": "* ]]; then printf '%s' "${title%%: *}"; else printf '%s' "$title"; fi
+}
+
+derive_line() {
+    local title=$1
+    if [[ "$title" == *": "* ]]; then printf '%s' "${title#*: }"; else printf '%s' "$title"; fi
+}
+
+# One <li> in the ledger: Year · Glyph · Name · Line · Role.
+render_ledger_row() {
+    local slug=$1
     local title=$2
-    local image_file=$3
-    local section_id=$4
-    local item_id="item-$section_id"
-    local gallery_id="gallery-$section_id"
-    local safe_title
-    safe_title=$(html_escape "$title")
+    local date=$3
+    local tags=$4
+    local image_file=$5
+    local year=${date%%-*}
 
     echo "  > Processing section: $title" >&2
 
-    echo "<label class=\"item\" title=\"$safe_title\">"
-    echo "  <input type=\"checkbox\" name=\"menu\" id=\"$item_id\" role=\"button\" tabindex=\"0\" aria-haspopup=\"dialog\" aria-controls=\"$gallery_id\" />"
+    printf '<li id="%s"><a class="row" href="work/%s/">' "$slug" "$slug"
+    printf '<time class="yr" datetime="%s">%s</time>' "$date" "$year"
+    printf '<span class="glyph">'
     if [ -n "$image_file" ] && [ -f "$image_file" ]; then
-        insert_image "$image_file" "$title"
-    else
-        echo "  <div class=\"placeholder-image\">No Image</div>"
+        insert_image "$image_file" "" | tr -d '\n'
     fi
-    echo "</label>"
+    printf '</span>'
+    printf '<span class="name">%s</span>' "$(html_escape "$(derive_label "$title")")"
+    printf '<span class="line">%s</span>' "$(html_escape "$(derive_line "$title")")"
+    printf '<span class="role">%s</span>' "$(html_escape "${tags%%,*}")"
+    printf '</a></li>\n'
 }
 
 process_section_gallery() {
@@ -499,32 +515,40 @@ rm -rf -- "$WORK_DIR"
 
 echo "Building sections..."
 
-declare -a folder_order=()
+# One sorted record list feeds the ledger and the case pages, so they can't
+# disagree: date descending, then order:, then slug.
+declare -a records=()
 for folder in "$CONTENT_DIR"*/; do
-    content_file="$folder/_.md"
-    [ -f "$content_file" ] || continue
-    IFS=$'\t' read -r _ _ _ forder < <(parse_frontmatter "$content_file")
-    [ -z "$forder" ] && forder=$DEFAULT_ORDER
-    folder_order+=("$forder:$folder")
-done
-
-items_html=""
-galleries_html=""
-i=0
-while IFS=: read -r _ folder; do
     folder=${folder%/}
     content_file="$folder/_.md"
-    image_file=$(find_item_image "$folder")
-    IFS=$'\t' read -r title date tags _ < <(parse_frontmatter "$content_file")
-    [ -z "$title" ] && title=$(basename "$folder")
+    [ -f "$content_file" ] || continue
+    IFS=$FS read -r _ date _ forder < <(parse_frontmatter "$content_file")
+    [ -z "$forder" ] && forder=$DEFAULT_ORDER
+    records+=("$date|$forder|$(basename "$folder")|$folder")
+done
 
-    items_html+=$(process_section_item "$content_file" "$title" "$image_file" "$i")
-    items_html+=$'\n'
+declare -a sorted_folders=()
+while IFS='|' read -r _ _ _ folder; do
+    [ -n "$folder" ] && sorted_folders+=("$folder")
+done < <(printf '%s\n' "${records[@]}" | LC_ALL=C sort -t'|' -k1,1r -k2,2n -k3,3)
+
+rows_html=""
+galleries_html=""
+i=0
+for folder in "${sorted_folders[@]}"; do
+    slug=$(basename "$folder")
+    content_file="$folder/_.md"
+    image_file=$(find_item_image "$folder")
+    IFS=$FS read -r title date tags _ < <(parse_frontmatter "$content_file")
+    [ -z "$title" ] && title=$slug
+
+    rows_html+=$(render_ledger_row "$slug" "$title" "$date" "$tags" "$image_file")
+    rows_html+=$'\n'
     galleries_html+=$(process_section_gallery "$folder" "$content_file" "$title" "$date" "$tags" "$i")
     galleries_html+=$'\n'
-    write_case_page "$(basename "$folder")" "$content_file" "$title" "$date" "$tags"
+    write_case_page "$slug" "$content_file" "$title" "$date" "$tags"
     ((i++))
-done < <(printf '%s\n' "${folder_order[@]}" | sort -t: -k1 -n)
+done
 
 echo "Assembling $OUTPUT_FILE..."
 
@@ -543,10 +567,10 @@ cat <<EOF
 </head>
 <body>
 <main id="main-content">
-<div class="clock" id="clock">
+<ol class="ledger">
 EOF
-printf '%s' "$items_html"
-echo "</div>"
+printf '%s' "$rows_html"
+echo "</ol>"
 printf '%s' "$galleries_html"
 cat <<EOF
 </main>
