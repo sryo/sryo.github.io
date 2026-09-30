@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 176">
+  <title>Vlic: TV and radio are captured around the clock, Vlic matches each PR team's keywords with machine learning, and pushes an alert to their phones the moment a term airs</title>
+  <defs>
+    <marker id="infoxel-head-a" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="48" cy="96" r="24"/>
+    <path d="M72 96H96" marker-end="url(#infoxel-head-a)"/>
+    <rect x="104" y="72" width="144" height="48"/>
+    <path d="M248 96H296" marker-end="url(#infoxel-head-a)"/>
+    <path d="M432 96H552" stroke-dasharray="4 4" marker-end="url(#infoxel-head-a)"/>
+    <circle cx="584" cy="96" r="24"/>
+    <path d="M584 72V32H368V64" marker-end="url(#infoxel-head-a)"/>
+  </g>
+  <rect x="304" y="72" width="128" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="48" y="136">TV and radio</text>
+    <text x="176" y="96">24/7 capture</text>
+    <text class="knock" x="368" y="96">Vlic</text>
+    <text x="584" y="136">PR team</text>
+  </g>
+  <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text x="476" y="20">their keywords</text>
+    <text x="368" y="136">ML keyword match</text>
+    <text x="492" y="80">push, as it airs</text>
+  </g>
+</svg>
