@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 320">
+  <title>TopicFlower after the redesign: engagement data from social networks feeds four views, the flower, a metrics dashboard, a content calendar and competitor benchmarks, all built on the Nebular Design System in Angular</title>
+  <defs>
+    <marker id="tf-head-b" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="64" cy="116" r="24"/>
+    <path d="M88 116H120" marker-end="url(#tf-head-b)"/>
+    <path d="M288 116H336"/>
+    <path d="M336 32V200"/>
+    <path d="M336 32H360" marker-end="url(#tf-head-b)"/>
+    <path d="M336 88H360" marker-end="url(#tf-head-b)"/>
+    <path d="M336 144H360" marker-end="url(#tf-head-b)"/>
+    <path d="M336 200H360" marker-end="url(#tf-head-b)"/>
+    <rect x="368" y="8" width="264" height="48"/>
+    <rect x="368" y="64" width="264" height="48"/>
+    <rect x="368" y="120" width="264" height="48"/>
+    <rect x="368" y="176" width="264" height="48"/>
+    <rect x="128" y="264" width="504" height="48"/>
+    <path d="M208 264V148" marker-end="url(#tf-head-b)"/>
+    <path d="M500 264V232" marker-end="url(#tf-head-b)"/>
+  </g>
+  <rect x="128" y="92" width="160" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="64" y="156">Social networks</text>
+    <text class="knock" x="208" y="116">TopicFlower</text>
+    <text x="500" y="32">Flower, the hook</text>
+    <text x="500" y="88">Metrics dashboard</text>
+    <text x="500" y="144">Content calendar</text>
+    <text x="500" y="200">Competitor benchmarks</text>
+    <text x="380" y="288">Nebular Design System (Angular)</text>
+  </g>
+  <g fill="currentColor" font-size="12" dominant-baseline="central">
+    <text class="mute" x="216" y="204">same components</text>
+  </g>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 264">
+  <title>TopicFlower before and after: the flower used to be the whole product; now it leads managers into a metrics dashboard, a content calendar and competitor benchmarks</title>
+  <defs>
+    <marker id="tf-head-a" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="32" cy="56" r="24"/>
+    <path d="M56 56H80" marker-end="url(#tf-head-a)"/>
+    <rect x="88" y="32" width="128" height="48"/>
+    <circle cx="32" cy="200" r="24"/>
+    <path d="M56 200H80" marker-end="url(#tf-head-a)"/>
+    <rect x="88" y="176" width="128" height="48"/>
+    <path d="M216 200H240" marker-end="url(#tf-head-a)"/>
+    <rect x="248" y="176" width="160" height="48"/>
+    <path d="M408 200H424"/>
+    <path d="M424 168V232"/>
+    <path d="M424 168H440" marker-end="url(#tf-head-a)"/>
+    <path d="M424 232H440" marker-end="url(#tf-head-a)"/>
+    <rect x="448" y="144" width="184" height="48"/>
+    <rect x="448" y="208" width="184" height="48"/>
+  </g>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="32" y="96">Manager</text>
+    <text x="152" y="56">Flower</text>
+    <text x="32" y="240">Manager</text>
+    <text x="152" y="200">Flower, the hook</text>
+    <text x="328" y="200">Metrics dashboard</text>
+    <text x="540" y="168">Content calendar</text>
+    <text x="540" y="232">Competitor benchmarks</text>
+  </g>
+  <g fill="currentColor" font-size="12" dominant-baseline="central">
+    <text class="mute" x="8" y="12">Before</text>
+    <text class="mute" x="232" y="56">The whole product: nice to look at, hard to act on</text>
+    <text class="mute" x="8" y="144">After</text>
+    <text class="mute" x="328" y="240" text-anchor="middle">who, what, when, where</text>
+  </g>
+</svg>

@@ -259,7 +259,7 @@ const CV = {
   infoxel: [2016, 'Product designer'],
   taller: [2009, 'UX/UI designer'],
 };
-const CV_PENDING = ['valora', 'continental', 'ey-helix', 'topicflower', 'omsnic', 'lavoz', 'infoxel', 'taller'];
+const CV_PENDING = ['valora', 'continental', 'ey-helix', 'omsnic', 'lavoz', 'infoxel', 'taller'];
 const CV_DONE = p => CASE(p) && !CV_PENDING.includes(slugOf(p));
 // The client rows of the ledger as built, for the pager's two ends.
 const CLIENT_ROWS = (() => {
@@ -458,6 +458,7 @@ const DECISIONS = {
   lavoz: ['We built our own paywall, Wyleex', 'Mobile-first storytelling'],
   infoxel: ['Vlic: real-time news monitoring', 'Welo: live TV clipping'],
   omsnic: ['Progressive disclosure', 'Branching logic stays invisible'],
+  topicflower: ['Keep the flower, put the numbers underneath', 'From a place you checked to a place you worked', 'One design system for the new platform'],
 };
 test('decision heads name the decision', async ({ page, path }) => {
   const want = DECISIONS[path.split('/')[2]];
