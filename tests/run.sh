@@ -134,6 +134,8 @@ sentinel_in $P "og:image"        '<meta property="og:image" content="https://exa
 sentinel_in $P "title escaped"   '<title>First &amp; &lt;Special&gt; / Test Author</title>'
 sentinel_in $P "og:title escaped" '<meta property="og:title" content="First &amp; &lt;Special&gt;">'
 sentinel_in $P "styles inlined"  '/* test stub */'
+sentinel_in $P "script inlined on case pages" '/* script stub */'
+sentinel_in works.html "script inlined on the ledger" '/* script stub */'
 sentinel_in works.html "ledger canonical" '<link rel="canonical" href="https://example.test/works.html">'
 
 # Prev/next follow the ledger order and don't wrap.

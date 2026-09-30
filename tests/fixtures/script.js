@@ -1,1 +1,1 @@
-/* test stub */
+/* script stub */

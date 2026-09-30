@@ -79,6 +79,12 @@ test('case h1 is display size at desktop', async ({ page, vp }) => {
   if (px < 36) throw new Error(`h1 is ${px}px`);
 }, p => p.startsWith('/work/'));
 
+test('accent is one of LINE_COLORS', async ({ page }) => {
+  const LINE_COLORS = ['#FF2D55', '#00C7BE', '#FFCC00', '#007AFF', '#FF9500', '#AF52DE', '#34C759'];
+  const accent = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
+  if (!LINE_COLORS.includes(accent.toUpperCase())) throw new Error(`--accent is ${accent}`);
+}, PORTFOLIO);
+
 test('ledger rows do not overlap', async ({ page }) => {
   const boxes = await page.$$eval('a.row', rows => rows.map(r => {
     const b = r.getBoundingClientRect(); return [b.top, b.bottom];

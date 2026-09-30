@@ -93,7 +93,7 @@ while getopts ":d" opt; do
   esac
 done
 
-for file in "$CONTENT_DIR" "$CSS_FILE" "$JS_FILE"; do
+for file in "$CONTENT_DIR" "$CSS_FILE"; do
     if [ ! -e "$file" ]; then
         friendly_message "Missing requirement: $file" "Please ensure all required files and directories exist."
         exit 1
@@ -727,8 +727,13 @@ EOF
     <style>
     $css
     </style>
-</head>
 EOF
+    # script.js is an optional enhancement: inlined only when it has
+    # content, in the head so the accent is set before first paint.
+    if [ -s "$JS_FILE" ]; then
+        printf '    <script>\n%s\n    </script>\n' "$(cat "$JS_FILE")"
+    fi
+    echo "</head>"
 }
 
 # Pager for case pages. Follows the ledger's sorted list: prev is the row
@@ -892,10 +897,6 @@ if [ ${#side_folders[@]} -gt 0 ]; then
     render_group side "Side projects" "Medium" "${side_folders[@]}"
 fi
 echo "</main>"
-# script.js is an optional enhancement: inlined only when it has content.
-if [ -s "$JS_FILE" ]; then
-    printf '<script>\n%s\n</script>\n' "$(cat "$JS_FILE")"
-fi
 cat <<EOF
 </body>
 </html>
