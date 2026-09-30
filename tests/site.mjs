@@ -28,6 +28,10 @@ const WORK = resolve(ROOT, 'work');
 const CASES = existsSync(WORK) ? readdirSync(WORK).filter(s => existsSync(resolve(WORK, s, 'index.html'))).sort() : [];
 const PAGES = ['/', '/works.html', ...CASES.map(s => `/work/${s}/`)];
 const PORTFOLIO = p => p !== '/';
+// Side projects (contents/about/items/<slug>) get pages in the case shell.
+const SIDE_SLUGS = readdirSync(resolve(ROOT, 'contents/about/items')).filter(s => existsSync(resolve(ROOT, 'contents/about/items', s, '_.md'))).sort();
+const slugOf = p => p.split('/')[2];
+const SIDE = p => p.startsWith('/work/') && SIDE_SLUGS.includes(slugOf(p));
 
 const tests = [];
 // only(path) limits a test to the pages it applies to.
@@ -194,7 +198,7 @@ test('Figma facades swap in a lazy iframe on click', async ({ page }) => {
   const lazy = await page.locator('iframe[src*="embed.figma.com"][loading="lazy"]').count();
   if (lazy !== 1) throw new Error(`${lazy} iframes after click`);
   await page.reload();
-}, p => p === '/work/about/');
+}, p => p === '/work/murmur/');
 
 test('Tab then Enter on a row opens its case page', async ({ page }) => {
   let href = null;
@@ -221,7 +225,7 @@ test('rel=next walks every client case once', async ({ page, base }) => {
   await page.goto(`${base}/works.html`);
 }, p => p === '/works.html');
 
-const CASE = p => p.startsWith('/work/') && !p.endsWith('/about/');
+const CASE = p => p.startsWith('/work/') && !p.endsWith('/about/') && !SIDE(p);
 const MONTHS = /\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/;
 
 test('spec Year shows the year only', async ({ page }) => {
@@ -263,17 +267,27 @@ test('OMSNIC says hours-to-minutes once', async ({ page }) => {
   if (t.includes('The process that took hours now takes minutes.')) throw new Error('duplicate Results sentence');
 }, p => p === '/work/omsnic/');
 
-test('About stays compact: Figma facades are one-line rows', async ({ page, vp }) => {
+test('About stays compact: one entry per side project, no embeds', async ({ page, vp }) => {
   if (vp !== 'desktop') return;
   const h = await page.evaluate(() => document.documentElement.scrollHeight);
   if (h >= 6000) throw new Error(`About is ${h}px tall`);
+  const r = await page.evaluate(() => ({ items: document.querySelectorAll('.item').length,
+    heavy: document.querySelectorAll('.items iframe, .items .embed-facade, .items figure').length,
+    links: [...document.querySelectorAll('.item h3 a')].map(a => a.getAttribute('href')) }));
+  if (r.heavy) throw new Error(`${r.heavy} embeds or figures on About`);
+  const bad = r.links.filter(h => !/^\.\.\/[a-z0-9-]+\/$/.test(h));
+  if (bad.length) throw new Error(`item links leave the site: ${bad[0]}`);
+}, p => p === '/work/about/');
+
+test('Figma facades are one-line rows; a loaded one is 16/10', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
   const tall = await page.$$eval('a.embed-facade', as => as.map(a => a.offsetHeight).filter(x => x > 48));
   if (tall.length) throw new Error(`${tall.length} facades taller than 48px (${tall[0]}px)`);
   await page.locator('a.embed-facade').first().click();
   const box = await page.$eval('iframe.embed-live', f => { const b = f.getBoundingClientRect(); return b.width / b.height; });
   await page.reload();
   if (Math.abs(box - 1.6) > 0.02) throw new Error(`live iframe ratio ${box.toFixed(2)}, want 16/10`);
-}, p => p === '/work/about/');
+}, p => p === '/work/murmur/');
 
 const ORDER = ['Impact', 'Context', 'My role', 'Decisions', 'Outcome', 'Reflection'];
 test('sections follow the shared case order', async ({ page }) => {
@@ -397,13 +411,11 @@ test('InterVariable is preloaded', async ({ page }) => {
 }, PORTFOLIO);
 
 test('a loaded prototype is titled after its project', async ({ page }) => {
-  const facade = page.locator('.item a.embed-facade').first();
-  const h3 = (await facade.evaluate(a => a.closest('.item').querySelector('h3').textContent)).trim();
-  await facade.click();
+  await page.locator('a.embed-facade').first().click();
   const title = await page.$eval('iframe.embed-live', f => f.title);
   await page.reload();
-  if (title !== `${h3} prototype`) throw new Error(`iframe title "${title}", want "${h3} prototype"`);
-}, p => p === '/work/about/');
+  if (title !== 'Murmur prototype') throw new Error(`iframe title "${title}", want "Murmur prototype"`);
+}, p => p === '/work/murmur/');
 
 test('pager ends lead back to All work', async ({ page }) => {
   const r = await page.$eval('.pn', n => ({ empty: [...n.children].filter(c => c.tagName === 'SPAN' && !c.textContent.trim()).length,
@@ -421,7 +433,7 @@ test('pager links show the target case\'s ledger line', async ({ page, base }) =
     const want = row?.[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
     if (!l.line || l.line !== want) throw new Error(`${l.slug}: pager line "${l.line}", ledger "${want}"`);
   }
-}, CASE);
+}, p => CASE(p) || SIDE(p));
 
 test('static server answers 404 for a missing path', async ({ base, vp }) => {
   if (vp !== 'desktop') return;
@@ -430,6 +442,60 @@ test('static server answers 404 for a missing path', async ({ base, vp }) => {
   const again = await fetch(`${base}/works.html`).catch(e => ({ status: e.message }));
   if (again.status !== 200) throw new Error(`server down after /nope: ${again.status}`);
 }, p => p === '/works.html');
+
+// ── Side-project pages ─────────────
+test('side pages use the case shell', async ({ page, path }) => {
+  const r = await page.evaluate(() => ({
+    glyph: !!document.querySelector('.case-head .spec .glyph'),
+    h1: document.querySelectorAll('h1').length, dek: document.querySelector('.dek')?.textContent.trim(),
+    back: document.querySelector('nav.mast a.back')?.getAttribute('href'),
+    pn: !!document.querySelector('main + nav.pn'),
+    rows: [...document.querySelectorAll('.spec dt')].map(d => d.textContent) }));
+  const slug = slugOf(path);
+  if (!r.glyph) throw new Error('no glyph in the spec column');
+  if (r.h1 !== 1) throw new Error(`${r.h1} h1s`);
+  if (!r.dek) throw new Error('no dek');
+  if (r.back !== `../../works.html#${slug}`) throw new Error(`back link is ${r.back}`);
+  if (!r.pn) throw new Error('no pager after main');
+  if (r.rows.includes('Client')) throw new Error('side page lists a Client');
+  if (r.rows[0] !== 'Year') throw new Error(`spec opens on ${r.rows[0]}`);
+}, SIDE);
+
+test('side rows open their own pages, and rel=next walks them all once', async ({ page, base }) => {
+  const rows = await page.$$eval('[aria-labelledby="g-side"] a.row', as => as.map(a => a.href));
+  const off = rows.filter(h => !/\/work\/[a-z0-9-]+\/$/.test(h));
+  if (off.length) throw new Error(`${off.length} side rows leave the site: ${off[0]}`);
+  const seen = [];
+  let url = rows[0];
+  while (url) {
+    if (seen.includes(url)) throw new Error(`loop at ${url}`);
+    seen.push(url);
+    await page.goto(url);
+    url = await page.$eval('a[rel="next"]', a => a.href).catch(() => null);
+  }
+  if (seen.join() !== rows.join()) throw new Error(`walked ${seen.length}, ledger has ${rows.length}`);
+  await page.goto(`${base}/works.html`);
+}, p => p === '/works.html');
+
+const SIDE_ORDER = ['What it does', 'Screens', 'How it works', 'Details'];
+test('side sections follow the project order', async ({ page }) => {
+  const labels = await page.$$eval('main h2', hs => hs.map(h => h.textContent.trim()));
+  let i = 0;
+  for (const l of labels) {
+    const at = SIDE_ORDER.indexOf(l, i);
+    if (at < 0) throw new Error(`"${l}" out of order or not allowed in [${labels.join(', ')}]`);
+    i = at + 1;
+  }
+  const levels = await page.$$eval('h1, h2, h3, h4, h5, h6', hs => hs.map(h => Number(h.tagName[1])));
+  for (let k = 1; k < levels.length; k++) {
+    if (levels[k] > levels[k - 1] + 1) throw new Error(`heading jumps h${levels[k - 1]} → h${levels[k]}`);
+  }
+}, SIDE);
+
+test('side pages carry no CTA row', async ({ page }) => {
+  const n = await page.locator('.case-cta').count();
+  if (n) throw new Error(`${n} .case-cta on a side page`);
+}, SIDE);
 
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.

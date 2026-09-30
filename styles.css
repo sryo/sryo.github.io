@@ -363,6 +363,7 @@ h1 {
 
 .spec dd {
     margin: 0;
+    overflow-wrap: anywhere;
 }
 
 .spec dd a::after {

@@ -73,7 +73,7 @@ fi
 [ -f "$EXPECTED" ] || fail "$EXPECTED missing — run with --update to create"
 
 echo "Case pages..."
-for slug in 01-tags 02-gallery 03-metrics 04-noorder; do
+for slug in 01-tags 02-gallery 03-metrics 04-noorder proj-a proj-b proj-c; do
     [ -f "$FIXTURE_DIR/work/$slug/index.html" ] || fail "missing work/$slug/index.html"
     pass "work/$slug/index.html written"
 done
@@ -147,8 +147,8 @@ sentinel_in work/01-tags/index.html    "link rendered"            '<a href="http
 sentinel_in work/01-tags/index.html    "h1 escaped"               'First &amp; &lt;Special&gt;</h1>'
 sentinel_in work/03-metrics/index.html "stray --- preserved"      'A paragraph after the divider should still render.'
 sentinel_in work/02-gallery/index.html "item SVG inlined"         'data:image/svg+xml;base64,'
-absent_in   work/02-gallery/index.html "no eager figma iframe"    '<iframe src="https://embed.figma.com'
-sentinel_in work/02-gallery/index.html "figma facade link"        'class="embed-facade" href="https://embed.figma.com/design/x"'
+absent_in   work/proj-a/index.html "no eager figma iframe"        '<iframe src="https://embed.figma.com'
+sentinel_in work/proj-a/index.html "figma facade link"            'class="embed-facade" href="https://embed.figma.com/design/x"'
 
 # Page head: canonical and OG built from SITE_URL, title escaped.
 P=work/01-tags/index.html
@@ -208,7 +208,7 @@ sentinel_in $P "lead link hoisted into spec" '<dt>Link</dt><dd><a href="https://
 absent_in   $P "hoisted link not in body"    '<p><a href="https://example.com/project">'
 
 # glyph: colour keeps an original colour glyph, marked so dark mode skips the invert.
-sentinel_in works.html "colour glyph marked" '<span class="glyph colour"><img'
+sentinel_in works.html "colour glyph marked" '<span class="glyph colour" style="view-transition-name: g-proj-c"><img'
 
 # No glyph: a typographic initial of the label takes its place.
 sentinel_in works.html "row initial for a missing glyph" '<span class="name">Third</span>'
@@ -218,7 +218,8 @@ sentinel_in work/03-metrics/index.html "spec initial"   '<aside class="spec"><sp
 # View transition: the row's glyph and the case page's glyph share a name.
 sentinel_in works.html              "row glyph named for the transition"  '<span class="glyph" style="view-transition-name: g-01-tags">'
 sentinel_in work/01-tags/index.html "spec glyph shares the name"          '<aside class="spec"><span class="glyph" style="view-transition-name: g-01-tags">'
-absent_in   works.html              "side rows don't claim a name"        'view-transition-name: g-proj-a'
+sentinel_in works.html              "side rows name their glyph too"      '<span class="glyph" style="view-transition-name: g-proj-a">'
+sentinel_in work/proj-a/index.html  "side spec glyph shares the name"     '<aside class="spec"><span class="glyph" style="view-transition-name: g-proj-a">'
 
 # kind: profile: no client row, an About page, the ledger header, and
 # its items as the side-project group.
@@ -234,12 +235,37 @@ absent_in   works.html "no email without one on file"  'mailto:'
 sentinel_in works.html "ledger header: year span"      'Work, 2021&ndash;2025'
 sentinel_in works.html "client group"                  '<h2 id="g-client">Client work</h2>'
 sentinel_in works.html "side group head states span and count" '<h2 id="g-side">Side projects, 2024&ndash;2025 &middot; 3</h2>'
-sentinel_in works.html "side row to its live site"     'class="row" href="https://example.com/a"'
-sentinel_in works.html "side row without a link to About" 'class="row" href="work/02-gallery/#proj-b"'
-sentinel_in $P "About item names link to the project"  '<h3><a href="https://example.com/a">Project A</a></h3>'
+sentinel_in works.html "side row opens its page"       'class="row" href="work/proj-a/"'
+sentinel_in works.html "linkless side row opens its page" 'class="row" href="work/proj-b/"'
+absent_in   works.html "side row no longer leaves the site" 'class="row" href="https://example.com/a"'
+sentinel_in works.html "side row medium from its tags"  '<span class="role">Web</span>'
+sentinel_in $P "About item names link to its page"     '<h3><a href="../proj-a/">Project A</a></h3>'
+sentinel_in $P "About item keeps its one line"         '<p class="item-line">Project A in one line</p>'
+absent_in   $P "About item bodies stay on their pages" 'class="embed-facade"'
 sentinel_in $P "About page keeps the full body"        "Open to what's next."
 sentinel_in $P "About page anchors each item"          'id="proj-a"'
 absent_in   $P "About page has no pager"               'rel="next"'
+
+# Side-project pages: the case shell, facts from frontmatter, a pager
+# over side projects only.
+P=work/proj-a/index.html
+sentinel_in $P "side h1"                  '<div class="case-title"><h1>Project A</h1>'
+sentinel_in $P "side dek is the summary"  '<p class="dek">Project A in one line</p>'
+sentinel_in $P "side Year row"            '<dt>Year</dt><dd><time datetime="2025">2025</time></dd>'
+sentinel_in $P "side Medium row"          '<dt>Medium</dt><dd>Web</dd>'
+sentinel_in $P "side Scope row"           '<dt>Scope</dt><dd>JavaScript, Browser</dd>'
+sentinel_in $P "side Link row says where" '<dt>Link</dt><dd><a href="https://example.com/a">example.com/a</a></dd>'
+sentinel_in $P "side Code row from repo:" '<dt>Code</dt><dd><a href="https://github.com/test/a">github.com/test/a</a></dd>'
+absent_in   $P "side page has no Client row" '<dt>Client</dt>'
+sentinel_in $P "side back link to its row"   'href="../../works.html#proj-a"'
+sentinel_in $P "side position among side projects" '<span class="count">01 / 03</span>'
+sentinel_in $P "first side page leads back"  '<a class="pn-all" href="../../works.html#proj-a">'
+sentinel_in $P "side rel=next"               'rel="next" href="../proj-b/"'
+sentinel_in work/proj-b/index.html "side rel=prev" 'rel="prev" href="../proj-a/"'
+sentinel_in work/proj-b/index.html "side rel=next to the last" 'rel="next" href="../proj-c/"'
+sentinel_in work/proj-c/index.html "last side page leads back" '<a class="pn-all pn-end" href="../../works.html#proj-c">'
+absent_in   work/proj-c/index.html "side pager stays in side projects" 'href="../01-tags/"'
+absent_in   work/05-twin-b/index.html "client pager stays in client work" 'href="../proj-a/"'
 
 # Side rows (and About sections): proj-a (2025-08-01) before proj-b (2024-05-01).
 pos_a=$(grep -n '<li id="proj-a"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)
@@ -249,7 +275,7 @@ if [ -n "$pos_a" ] && [ -n "$pos_b" ] && [ "$pos_a" -lt "$pos_b" ]; then
 else
     fail "side row sort: A=$pos_a B=$pos_b"
 fi
-GALLERY="$FIXTURE_DIR/$P"
+GALLERY="$FIXTURE_DIR/work/02-gallery/index.html"
 pos_a=$(grep -n 'id="proj-a"' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
 pos_b=$(grep -n 'id="proj-b"' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
 if [ -n "$pos_a" ] && [ -n "$pos_b" ] && [ "$pos_a" -lt "$pos_b" ]; then
@@ -260,7 +286,7 @@ fi
 
 # Ledger order: one sorted list, date descending, slug breaks ties.
 rows=$(grep -o 'class="row" href="work/[^"]*/"' "$ACTUAL" | sed -e 's|.*href="work/||' -e 's|/"$||' | tr '\n' ' ' || true)
-want="01-tags 03-metrics 04-noorder 05-twin-a 05-twin-b "
+want="01-tags 03-metrics 04-noorder 05-twin-a 05-twin-b proj-a proj-b proj-c "
 if [ "$rows" = "$want" ]; then
     pass "rows sorted by date desc, then slug"
 else

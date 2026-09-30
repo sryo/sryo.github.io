@@ -25,8 +25,10 @@ document.addEventListener("click", function (e) {
     f.src = a.href;
     f.loading = "lazy";
     f.className = "embed-live";
-    var h = a.closest(".item") && a.closest(".item").querySelector("h3");
-    f.title = h ? h.textContent.trim() + " prototype" : "Figma prototype";
+    // Named after its project: the page's h1 up to the colon.
+    var h = document.querySelector(".case-title h1");
+    var name = h ? h.textContent.split(": ")[0].trim() : "";
+    f.title = name ? name + " prototype" : "Figma prototype";
     f.allowFullscreen = true;
     a.replaceWith(f);
 });
