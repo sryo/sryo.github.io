@@ -29,6 +29,10 @@ sentinel() {
     fi
 }
 
+# A stale page from a deleted section; the build must remove it.
+mkdir -p "$FIXTURE_DIR/work/ghost"
+echo stale > "$FIXTURE_DIR/work/ghost/index.html"
+
 # Build into the fixture dir (build.sh resolves paths relative to CWD).
 (cd "$FIXTURE_DIR" && bash "$REPO_DIR/build.sh" >/dev/null)
 ACTUAL="$FIXTURE_DIR/works.html"
@@ -41,6 +45,14 @@ if [ "$MODE" = "--update" ]; then
 fi
 
 [ -f "$EXPECTED" ] || fail "$EXPECTED missing — run with --update to create"
+
+echo "Case pages..."
+for slug in 01-tags 02-gallery 03-metrics 04-noorder; do
+    [ -f "$FIXTURE_DIR/work/$slug/index.html" ] || fail "missing work/$slug/index.html"
+    pass "work/$slug/index.html written"
+done
+[ ! -e "$FIXTURE_DIR/work/ghost" ] || fail "stale work/ghost/ survived the rebuild"
+pass "stale work/ghost/ removed"
 
 echo "Diff against expected/works.html..."
 if diff -u "$EXPECTED" "$ACTUAL" > /dev/null; then

@@ -68,6 +68,10 @@ fi
 
 DEFAULT_ORDER=9999
 
+# Case pages go to work/<slug>/index.html next to the output file.
+OUT_DIR=$(dirname "$OUTPUT_FILE")
+WORK_DIR="$OUT_DIR/work"
+
 friendly_message() {
     echo "$1"
     echo "   $2"
@@ -423,9 +427,48 @@ process_section_gallery() {
 }
 
 
+# One standalone page per section, at work/<slug>/index.html.
+write_case_page() {
+    local slug=$1
+    local content_file=$2
+    local title=$3
+    local date=$4
+    local tags=$5
+    local safe_title body
+    safe_title=$(html_escape "$title")
+    body=$(render_markdown_content "$content_file")
+
+    mkdir -p "$WORK_DIR/$slug"
+    {
+    cat <<EOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$safe_title</title>
+</head>
+<body>
+<main id="main-content">
+EOF
+    render_case_study_header "$title" "$date" "$tags" "$slug"
+    printf '%s\n' "$body"
+    cat <<EOF
+</main>
+</body>
+</html>
+EOF
+    } > "$WORK_DIR/$slug/index.html"
+}
+
+
 # ─────────────────────────────────────────────────────────────
 # Main
 # ─────────────────────────────────────────────────────────────
+
+# Remove old case pages so a deleted or renamed section leaves nothing
+# behind. Scoped to "$OUT_DIR/work", never anything wider.
+rm -rf -- "$WORK_DIR"
 
 echo "Building sections..."
 
@@ -453,6 +496,7 @@ while IFS=: read -r _ folder; do
     items_html+=$'\n'
     galleries_html+=$(process_section_gallery "$folder" "$content_file" "$title" "$date" "$tags" "$i")
     galleries_html+=$'\n'
+    write_case_page "$(basename "$folder")" "$content_file" "$title" "$date" "$tags"
     ((i++))
 done < <(printf '%s\n' "${folder_order[@]}" | sort -t: -k1 -n)
 

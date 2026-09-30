@@ -4,3 +4,5 @@ tests/fixtures/works.html
 .claude/
 CLAUDE.md
 tests/shots/
+/work/
+tests/fixtures/work/
