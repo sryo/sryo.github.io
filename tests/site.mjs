@@ -7,7 +7,7 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 import { resolve } from 'node:path';
-import { mkdirSync, readdirSync, existsSync } from 'node:fs';
+import { mkdirSync, readdirSync, existsSync, readFileSync } from 'node:fs';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const SHOTS = process.env.SHOTS_DIR || resolve(ROOT, 'tests/shots');
@@ -242,6 +242,126 @@ test('rel=next walks every client case once', async ({ page, base }) => {
 const CASE = p => p.startsWith('/work/') && !p.endsWith('/about/') && !SIDE(p);
 const MONTHS = /\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/;
 
+// Client cases: newest
+// first, each with its CV year and role, a My role section and one or two
+// diagrams. A slug leaves CV_PENDING when its CV update lands; that is the
+// case's red → green step. The test fails if a pending case already passes.
+const CV = {
+  valora: [2024, 'Lead UX/UI designer'],
+  continental: [2022, 'Lead UX/UI designer'],
+  'ey-helix': [2021, 'Lead UX designer'],
+  bancor: [2020, 'Product owner and lead designer'],
+  veng: [2019, 'Lead UX designer'],
+  hometown: [2019, 'Senior UX designer'],
+  topicflower: [2019, 'Senior UX designer'],
+  omsnic: [2019, 'Lead UI designer'],
+  lavoz: [2017, 'UX researcher and product designer'],
+  infoxel: [2016, 'Product designer'],
+  taller: [2009, 'UX/UI designer'],
+};
+const CV_PENDING = ['valora', 'continental', 'ey-helix', 'bancor', 'veng', 'hometown', 'topicflower', 'omsnic', 'lavoz', 'infoxel', 'taller'];
+const CV_DONE = p => CASE(p) && !CV_PENDING.includes(slugOf(p));
+// The client rows of the ledger as built, for the pager's two ends.
+const CLIENT_ROWS = (() => {
+  const html = existsSync(resolve(ROOT, 'works.html')) ? readFileSync(resolve(ROOT, 'works.html'), 'utf8') : '';
+  const group = html.match(/aria-labelledby="g-client"[\s\S]*?<\/section>/)?.[0] || '';
+  return [...group.matchAll(/<a class="row[^"]*" href="work\/([a-z0-9-]+)\/"/g)].map(m => m[1]);
+})();
+const CLIENT_ENDS = [CLIENT_ROWS[0], CLIENT_ROWS[CLIENT_ROWS.length - 1]].map(s => `/work/${s}/`);
+
+async function cvFactProblems(page, slug) {
+  const [year, role] = CV[slug];
+  const r = await page.evaluate(() => {
+    const dts = [...document.querySelectorAll('.spec dt')];
+    const role = dts.find(d => d.textContent.trim() === 'Role')?.nextElementSibling?.textContent.trim();
+    return { year: document.querySelector('.spec dl time')?.textContent.trim(), role };
+  });
+  const bad = [];
+  if (r.year !== String(year)) bad.push(`Year reads ${r.year}, the CV says ${year}`);
+  if (r.role !== role) bad.push(`Role reads "${r.role}", the CV says "${role}"`);
+  return bad;
+}
+
+async function myRoleProblems(page) {
+  const labels = await page.$$eval('main h2', hs => hs.map(h => h.textContent.trim()));
+  return labels.includes('My role') ? [] : ['no My role section'];
+}
+
+// SPEC-projects.md §4, as it applies to client cases: one or two diagrams
+// (under a decision, not "How it works"), each on the glyph grammar, circle
+// labels inside when they fit (≤ 5 characters) else centred below or above,
+// node labels in sentence case unless they are code names, and a caption
+// of one line (≤ 95 characters) at column width.
+async function clientDiagramProblems(page, vp) {
+  const figs = await page.$$eval('main figure.diagram', fs => fs.map(f => {
+    const svg = f.querySelector('svg'), cap = f.querySelector('figcaption');
+    let lines = 0;
+    if (cap) { const r = document.createRange(); r.selectNodeContents(cap); lines = new Set([...r.getClientRects()].map(b => Math.round(b.top))).size; }
+    const labels = [];
+    if (svg) {
+      const texts = [...svg.querySelectorAll('text')].map(t => ({ x: +t.getAttribute('x'), y: +t.getAttribute('y'), s: t.textContent.trim(),
+        mute: !!t.closest('.mute'), knock: t.classList.contains('knock'), anchor: getComputedStyle(t).textAnchor }));
+      for (const c of svg.querySelectorAll('circle')) {
+        const cx = +c.getAttribute('cx'), cy = +c.getAttribute('cy');
+        const t = texts.find(t => !t.mute && t.x === cx && t.anchor === 'middle' && [cy, cy + 40, cy - 40].includes(t.y));
+        if (!t) { labels.push(`circle at ${cx},${cy} is not labelled inside, below or above`); continue; }
+        const fits = [...t.s].length <= 5;
+        if (fits && t.y !== cy) labels.push(`"${t.s}" fits inside its circle`);
+        if (!fits && t.y === cy) labels.push(`"${t.s}" does not fit inside its circle`);
+      }
+      for (const t of texts.filter(t => !t.mute)) {
+        if (/\.$/.test(t.s)) labels.push(`"${t.s}" ends with a period`);
+        if (/^[a-z]/.test(t.s) && !/[._/<>A-Z]/.test(t.s)) labels.push(`label "${t.s}" is not sentence case`);
+        if (t.knock && /[()]/.test(t.s)) labels.push(`knockout label "${t.s}" is a parenthetical`);
+      }
+    }
+    return { svg: svg ? svg.outerHTML.replace(/ role="img"/, '') : '', cap: cap?.textContent.trim() || '', lines, labels };
+  }));
+  const bad = [];
+  if (figs.length < 1 || figs.length > 2) bad.push(`${figs.length} diagrams, want 1 or 2`);
+  for (const f of figs) {
+    if (!f.svg) { bad.push('diagram without an svg'); continue; }
+    if (!f.cap) bad.push('diagram without a caption');
+    if (f.cap.length > 95) bad.push(`caption is ${f.cap.length} characters, max 95: ${f.cap}`);
+    if (vp === 'desktop' && f.lines > 1) bad.push(`caption wraps to ${f.lines} lines: ${f.cap}`);
+    if (/\.$/.test(f.cap)) bad.push(`caption ends with a period: ${f.cap}`);
+    bad.push(...diagramProblems(f.svg), ...f.labels);
+  }
+  return bad;
+}
+
+test('client case matches the CV: year and role', async ({ page, path }) => {
+  const bad = await cvFactProblems(page, slugOf(path));
+  if (bad.length) throw new Error(bad.join('; '));
+}, CV_DONE);
+
+test('every client case has a My role section', async ({ page }) => {
+  const bad = await myRoleProblems(page);
+  if (bad.length) throw new Error(bad.join('; '));
+}, CV_DONE);
+
+test('every client case has one or two diagrams, on spec', async ({ page, vp }) => {
+  const bad = await clientDiagramProblems(page, vp);
+  if (bad.length) throw new Error(bad.join('; '));
+}, CV_DONE);
+
+test('CV_PENDING holds only cases still to update', async ({ page, path, vp }) => {
+  const slug = slugOf(path);
+  if (!CV[slug]) throw new Error(`${slug} is not in the CV map`);
+  const bad = [...await cvFactProblems(page, slug), ...await myRoleProblems(page), ...await clientDiagramProblems(page, vp)];
+  if (!bad.length) throw new Error(`${slug} is done: remove it from CV_PENDING`);
+}, p => CASE(p) && CV_PENDING.includes(slugOf(p)));
+
+test('client ledger is the CV, newest first', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const rows = await page.$$eval('[aria-labelledby="g-client"] a.row', as => as.map(a => a.getAttribute('href')));
+  const want = Object.keys(CV).filter(s => !CV_PENDING.includes(s)).map(s => `work/${s}/`);
+  const got = rows.filter(h => want.includes(h));
+  if (got.join() !== want.join()) throw new Error(`client rows [${got.join(', ')}], want [${want.join(', ')}]`);
+  const unknown = CV_PENDING.filter(s => !CV[s]);
+  if (unknown.length) throw new Error(`unknown slugs in CV_PENDING: ${unknown.join(', ')}`);
+}, p => p === '/works.html');
+
 test('spec Year shows the year only', async ({ page }) => {
   const t = await page.$eval('.spec dl time', t => ({ text: t.textContent.trim(), dt: t.getAttribute('datetime') }));
   if (!/^\d{4}$/.test(t.text)) throw new Error(`Year reads "${t.text}"`);
@@ -318,11 +438,6 @@ test('sections follow the shared case order', async ({ page }) => {
   }
   if (levels[0] !== 1) throw new Error(`first heading is h${levels[0]}`);
 }, CASE);
-
-test('OMSNIC and VENG have no My role', async ({ page }) => {
-  const labels = await page.$$eval('main h2', hs => hs.map(h => h.textContent.trim()));
-  if (labels.includes('My role')) throw new Error('has a My role section');
-}, p => p === '/work/omsnic/' || p === '/work/veng/');
 
 test('Decisions are named in readable h3 heads', async ({ page }) => {
   const heads = await page.$$eval('section.part', ss => ss
@@ -436,7 +551,7 @@ test('pager ends lead back to All work', async ({ page }) => {
     all: !!n.querySelector('a[href*="works.html"]') }));
   if (r.empty) throw new Error('empty slot in the pager');
   if (!r.all) throw new Error('no link to works.html in the pager');
-}, p => p === '/work/omsnic/' || p === '/work/hometown/');
+}, p => CLIENT_ENDS.includes(p));
 
 test('pager links show the target case\'s ledger line', async ({ page, base }) => {
   const ledger = await (await page.request.get(`${base}/works.html`)).text();
