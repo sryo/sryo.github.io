@@ -259,7 +259,7 @@ const CV = {
   infoxel: [2016, 'Product designer'],
   taller: [2009, 'UX/UI designer'],
 };
-const CV_PENDING = ['valora', 'continental', 'ey-helix', 'lavoz', 'infoxel', 'taller'];
+const CV_PENDING = ['valora', 'continental', 'ey-helix', 'infoxel', 'taller'];
 const CV_DONE = p => CASE(p) && !CV_PENDING.includes(slugOf(p));
 // The client rows of the ledger as built, for the pager's two ends.
 const CLIENT_ROWS = (() => {
