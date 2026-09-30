@@ -108,6 +108,13 @@ test('masthead end year is the newest row year', async ({ page }) => {
   if (end !== max) throw new Error(`masthead ends ${end}, newest row is ${max}`);
 }, p => p === '/works.html');
 
+test('side lines are not questions', async ({ page }) => {
+  const lines = await page.$$eval('[aria-labelledby="g-side"] .row .line', ls => ls.map(l => l.textContent.trim()));
+  if (!lines.length) throw new Error('no side rows');
+  const bad = lines.filter(l => l.startsWith('What if') || l.endsWith('?') || l.length > 100);
+  if (bad.length) throw new Error(`${bad.length} lines: ${bad[0]}`);
+}, p => p === '/works.html');
+
 test('Tab then Enter on a row opens its case page', async ({ page }) => {
   let href = null;
   for (let i = 0; i < 15 && !href; i++) {
