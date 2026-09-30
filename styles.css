@@ -466,13 +466,9 @@ h1 {
 }
 
 .embed-facade {
-    display: grid;
-    place-items: center;
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    margin: 24px 0;
-    border: 1px solid var(--hair);
-    background: var(--paper);
+    display: block;
+    padding: 8px 0;
+    border-top: 1px solid var(--hair);
     color: var(--mute);
     font-size: 13px;
     line-height: 20px;
@@ -482,7 +478,7 @@ h1 {
 .embed-facade:hover,
 .embed-facade:focus-visible {
     color: var(--ink);
-    border-color: var(--accent);
+    border-top-color: var(--accent);
 }
 
 .body iframe.embed-live {
@@ -521,6 +517,37 @@ h1 {
 
 .item-meta time {
     margin-right: 8px;
+}
+
+.items .item {
+    font-size: 15px;
+    line-height: 24px;
+}
+
+.items .body img {
+    max-width: 240px;
+}
+
+@media (min-width: 64rem) {
+    .part.items > .body {
+        grid-column: 4 / -1;
+        max-width: none;
+        columns: 2;
+        column-gap: calc(2 * var(--gap));
+    }
+
+    .items .item {
+        break-inside: avoid;
+    }
+
+    .items .item:first-child {
+        padding-top: 24px;
+        border-top: 1px solid var(--hair);
+    }
+
+    .items .item:first-child h3 {
+        margin-top: 0;
+    }
 }
 
 @media (min-width: 40rem) {

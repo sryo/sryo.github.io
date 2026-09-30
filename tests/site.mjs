@@ -275,6 +275,18 @@ test('OMSNIC says hours-to-minutes once', async ({ page }) => {
   if (t.includes('The process that took hours now takes minutes.')) throw new Error('duplicate Results sentence');
 }, p => p === '/work/omsnic/');
 
+test('About stays compact: Figma facades are one-line rows', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const h = await page.evaluate(() => document.documentElement.scrollHeight);
+  if (h >= 6000) throw new Error(`About is ${h}px tall`);
+  const tall = await page.$$eval('a.embed-facade', as => as.map(a => a.offsetHeight).filter(x => x > 48));
+  if (tall.length) throw new Error(`${tall.length} facades taller than 48px (${tall[0]}px)`);
+  await page.locator('a.embed-facade').first().click();
+  const box = await page.$eval('iframe.embed-live', f => { const b = f.getBoundingClientRect(); return b.width / b.height; });
+  await page.reload();
+  if (Math.abs(box - 1.6) > 0.02) throw new Error(`live iframe ratio ${box.toFixed(2)}, want 16/10`);
+}, p => p === '/work/about/');
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };

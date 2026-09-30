@@ -400,12 +400,12 @@ render_markdown_content() {
         fi
 
         # A Figma embed weighs megabytes and runs its own app, so it waits
-        # behind a link to the prototype; script.js swaps the iframe in on
+        # behind a one-line link to the prototype; script.js swaps the iframe in on
         # click, and without JS the link opens Figma.
         if [[ "$line" == *"<iframe"* ]] && [[ "$line" =~ $figma_embed_re ]]; then
             if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
             if $in_list; then content+="</ul>"; in_list=false; fi
-            content+="<p><a class=\"embed-facade\" href=\"$(html_escape "${BASH_REMATCH[1]//&amp;/&}")\">Figma prototype, click to load&nbsp;&#8599;</a></p>"
+            content+="<p><a class=\"embed-facade\" href=\"$(html_escape "${BASH_REMATCH[1]//&amp;/&}")\">Open Figma prototype&nbsp;&#8599;</a></p>"
             continue
         fi
 
