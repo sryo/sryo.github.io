@@ -474,42 +474,16 @@ render_case_study_header() {
     echo "</header>"
 }
 
-# Render gallery items sorted by date descending (newest first); items
-# without a date sort to the end.
-process_gallery() {
-    local gallery_dir=$1
-    local item content_file image_file body date safe_title
-    local -a tuples=()
-
-    shopt -s nullglob
-    for item in "$gallery_dir"/*/; do
-        item=${item%/}
-        content_file="$item/_.md"
-        [ -f "$content_file" ] || continue
-        load_fm "$item"
-        tuples+=("${fm_date}|${item}")
-    done
-
-    while IFS='|' read -r date item; do
-        [ -n "$item" ] || continue
-        content_file="$item/_.md"
-        image_file=$(find_item_image "$item")
-        load_fm "$item"
-        body=$(render_markdown_content "$content_file")
-        safe_title=$(html_escape "$fm_title")
-
-        echo "<div class=\"project\">"
-        echo "  <div class=\"project-content\">"
-        echo "    <h3>$safe_title</h3>"
-        echo "    $body"
-        echo "  </div>"
-        if [ -n "$image_file" ] && [ -f "$image_file" ]; then
-            echo "  <div class=\"project-image\">"
-            insert_image "$image_file" "$fm_title"
-            echo "  </div>"
-        fi
-        echo "</div>"
-    done < <(printf '%s\n' "${tuples[@]}" | LC_ALL=C sort -t'|' -k1,1 -r)
+# Print folders newest first: date descending, then order:, then slug.
+# Folders without a _.md are skipped. Undated ones sort last.
+sort_folders() {
+    local folder
+    for folder in "$@"; do
+        folder=${folder%/}
+        [ -f "$folder/_.md" ] || continue
+        load_fm "$folder"
+        printf '%s|%s|%s|%s\n' "$fm_date" "$fm_order" "$(basename "$folder")" "$folder"
+    done | LC_ALL=C sort -t'|' -k1,1r -k2,2n -k3,3 | cut -d'|' -f4-
 }
 
 # Fallbacks for items without a label: the text before ": " in the title.
@@ -523,19 +497,38 @@ derive_line() {
     if [[ "$title" == *": "* ]]; then printf '%s' "${title#*: }"; else printf '%s' "$title"; fi
 }
 
-# One <li> in the ledger: Year · Glyph · Name · Line · Role.
+# Side projects show a platform in the last column: the first tag that
+# names one. Empty when none does.
+derive_medium() {
+    local IFS=',' tag
+    for tag in $1; do
+        case "$tag" in
+            macOS|iOS|Figma|Desktop|Tauri) printf '%s' "$tag"; return ;;
+            Hammerspoon) printf 'macOS'; return ;;
+            Browser|JavaScript|WebRTC) printf 'Web'; return ;;
+            "Google Apps Script") printf 'Gmail'; return ;;
+        esac
+    done
+}
+
+# One <li> in the ledger: Year · Glyph · Name · Line · Role (or Medium).
+# A year equal to the row above's gets class="repeat" (hidden by CSS).
 render_ledger_row() {
     local folder=$1
-    local slug image_file line year
+    local href=$2
+    local last=$3
+    local prev_year=$4
+    local slug image_file line year repeat=""
     slug=$(basename "$folder")
     image_file=$(find_item_image "$folder")
     load_fm "$folder"
     year=${fm_date%%-*}
     line=${fm_summary:-$(derive_line "$fm_title")}
+    [ -n "$year" ] && [ "$year" = "$prev_year" ] && repeat=' class="repeat"'
 
-    echo "  > Processing section: $fm_label" >&2
+    echo "  > Processing: $fm_label" >&2
 
-    printf '<li id="%s"><a class="row" href="work/%s/">' "$slug" "$slug"
+    printf '<li id="%s"%s><a class="row" href="%s">' "$slug" "$repeat" "$href"
     printf '<time class="yr" datetime="%s">%s</time>' "$fm_date" "$year"
     printf '<span class="glyph">'
     if [ -n "$image_file" ] && [ -f "$image_file" ]; then
@@ -544,8 +537,98 @@ render_ledger_row() {
     printf '</span>'
     printf '<span class="name">%s</span>' "$(html_escape "$fm_label")"
     printf '<span class="line">%s</span>' "$(html_escape "$line")"
-    printf '<span class="role">%s</span>' "$(html_escape "${fm_role:-${fm_tags%%,*}}")"
+    printf '<span class="role">%s</span>' "$(html_escape "$last")"
     printf '</a></li>\n'
+}
+
+# One ledger group: heading, count, column header, rows. `key` is
+# "client" (rows open case pages) or "side" (rows open About sections).
+render_group() {
+    local key=$1
+    local heading=$2
+    local last_col=$3
+    shift 3
+    local folder href last prev_year="" year
+
+    printf '<section class="group" aria-labelledby="g-%s">\n' "$key"
+    printf '<div class="group-head"><h2 id="g-%s">%s</h2><span class="count">%02d</span></div>\n' "$key" "$heading" $#
+    printf '<div class="cols" aria-hidden="true"><span>Year</span><span></span><span>Name</span><span>Line</span><span>%s</span></div>\n' "$last_col"
+    echo '<ol class="ledger">'
+    for folder in "$@"; do
+        load_fm "$folder"
+        year=${fm_date%%-*}
+        if [ "$key" = "client" ]; then
+            href="work/$(basename "$folder")/"
+            last=$fm_role
+        else
+            href="work/$(basename "$profile")/#$(basename "$folder")"
+            last=${fm_role:-$(derive_medium "$fm_tags")}
+        fi
+        render_ledger_row "$folder" "$href" "$last" "$prev_year"
+        prev_year=$year
+    done
+    echo '</ol>'
+    echo '</section>'
+}
+
+# The ledger's header, from the profile section: its first paragraph as
+# the lead and its italic availability line, plus the client-work years.
+render_intro() {
+    local first=$1
+    local last=$2
+    local lead="" avail=""
+    if [ -n "$profile" ]; then
+        lead=$(strip_frontmatter "$profile/_.md" | awk '
+            /^[[:space:]]*$/ || /^[#<>\[*-]/ || /^(METRICS|EMBED):/ { next }
+            { print; exit }')
+        avail=$(strip_frontmatter "$profile/_.md" | awk '/^\*[^*].*\*$/ { print substr($0, 2, length($0) - 2); exit }')
+    fi
+    [ -z "$lead" ] && lead=$AUTHOR
+
+    echo '<header class="intro">'
+    printf '<p class="mast"><a class="home" href="./">%s</a> <span class="meta">Work, %s&ndash;%s</span></p>\n' \
+        "$(html_escape "$AUTHOR")" "$first" "$last"
+    printf '<h1 class="lead">%s</h1>\n' "$(html_escape "$lead")"
+    if [ -n "$profile" ]; then
+        printf '<p class="avail">%s <a href="work/%s/">About &rarr;</a></p>\n' \
+            "$(html_escape "$avail")" "$(basename "$profile")"
+    fi
+    echo '</header>'
+}
+
+# Items (side projects on the profile) as anchored sections of a page.
+render_items() {
+    local dir=$1
+    local heading=$2
+    local item slug image_file body question
+    local -a items=()
+    while IFS= read -r item; do
+        items+=("$item")
+    done < <(sort_folders "$dir"/*/)
+    [ ${#items[@]} -gt 0 ] || return 0
+
+    printf '<section class="part items"><h2 class="label">%s</h2><div class="body">\n' "$heading"
+    for item in "${items[@]}"; do
+        slug=$(basename "$item")
+        image_file=$(find_item_image "$item")
+        body=$(render_markdown_content "$item/_.md")
+        load_fm "$item"
+        printf '<article class="item" id="%s">\n' "$slug"
+        if [ -n "$image_file" ]; then
+            printf '<span class="glyph">%s</span>\n' "$(insert_image "$image_file" "")"
+        fi
+        question=""
+        if [[ "$fm_title" == *": "* ]]; then
+            question=$(derive_line "$fm_title")
+        elif [ "$fm_title" != "$fm_label" ]; then
+            question=$fm_title
+        fi
+        printf '<h3>%s</h3>\n' "$(html_escape "$fm_label")"
+        printf '<p class="item-meta"><time datetime="%s">%s</time> %s</p>\n' \
+            "$fm_date" "${fm_date%%-*}" "$(html_escape "$question")"
+        printf '%s\n</article>\n' "$body"
+    done
+    echo '</div></section>'
 }
 
 # Shared <head> for the ledger and the case pages. `root` is the relative
@@ -618,19 +701,23 @@ render_prev_next() {
     echo "</nav>"
 }
 
-# One standalone page per section, at work/<slug>/index.html.
+# One standalone page per section, at work/<slug>/index.html. `idx` is the
+# section's place in the client-work list; -1 for the profile, which gets
+# no position or pager.
 write_case_page() {
     local folder=$1
     local idx=$2
+    local items_heading=$3
     local slug content_file="$folder/_.md"
+    local position="" body figures items=""
     slug=$(basename "$folder")
-    local position
-    position=$(printf '%02d / %02d' $((idx + 1)) ${#sorted_folders[@]})
-    local body figures items=""
+    if [ "$idx" -ge 0 ]; then
+        position=" <span class=\"count\">$(printf '%02d / %02d' $((idx + 1)) ${#sorted_folders[@]})</span>"
+    fi
     body=$(render_markdown_content "$content_file" page)
     figures=$(render_markdown_content "$content_file" metrics)
     if [ -d "$folder/items" ]; then
-        items=$(process_gallery "$folder/items")
+        items=$(render_items "$folder/items" "$items_heading")
     fi
 
     load_fm "$folder"
@@ -638,12 +725,14 @@ write_case_page() {
     {
     echo "<!DOCTYPE html>"
     echo "<html lang=\"en\">"
-    page_head "$fm_title / $AUTHOR" "$fm_summary" "work/$slug/" "../../" "$fm_title" article
+    page_head "$fm_title / $AUTHOR" "${fm_summary:-$fm_title}" "work/$slug/" "../../" "$fm_title" article
     cat <<EOF
 <body>
-<nav class="mast"><a class="back" href="../../works.html#$slug">&larr; All work</a> <span class="count">$position</span></nav>
+<nav class="mast"><a class="back" href="../../works.html#$slug">&larr; All work</a>$position</nav>
 <main id="main-content">
 EOF
+    # The profile's date is not a project date; don't print it.
+    [ "$idx" -lt 0 ] && fm_date=""
     render_case_study_header "$fm_title" "$fm_date" "$fm_tags" "$slug"
     if [ -n "$figures" ]; then
         printf '<section class="figures"><h2 class="label">Impact</h2>%s</section>\n' "$figures"
@@ -655,7 +744,9 @@ EOF
         echo
     fi
     echo "</main>"
-    render_prev_next "$idx"
+    if [ "$idx" -ge 0 ]; then
+        render_prev_next "$idx"
+    fi
     cat <<EOF
 </body>
 </html>
@@ -692,30 +783,47 @@ rm -rf -- "$WORK_DIR"
 
 echo "Building sections..."
 
-# One sorted record list feeds the ledger and the case pages, so they can't
-# disagree: date descending, then order:, then slug.
-declare -a records=()
+# One sorted list per group feeds the ledger and the pager, so they can't
+# disagree. The first kind: profile section is About: it gets no row, it
+# heads the ledger, and its items are the side projects.
+profile=""
+declare -a cases=()
 for folder in "$CONTENT_DIR"*/; do
     folder=${folder%/}
-    content_file="$folder/_.md"
-    [ -f "$content_file" ] || continue
+    [ -f "$folder/_.md" ] || continue
     load_fm "$folder"
-    records+=("$fm_date|$fm_order|$(basename "$folder")|$folder")
+    if [ "$fm_kind" = "profile" ] && [ -z "$profile" ]; then
+        profile=$folder
+    else
+        cases+=("$folder")
+    fi
 done
 
-declare -a sorted_folders=()
-while IFS='|' read -r _ _ _ folder; do
-    [ -n "$folder" ] && sorted_folders+=("$folder")
-done < <(printf '%s\n' "${records[@]}" | LC_ALL=C sort -t'|' -k1,1r -k2,2n -k3,3)
+declare -a sorted_folders=() side_folders=()
+while IFS= read -r folder; do
+    sorted_folders+=("$folder")
+done < <(sort_folders "${cases[@]}")
+if [ -n "$profile" ]; then
+    while IFS= read -r folder; do
+        side_folders+=("$folder")
+    done < <(sort_folders "$profile"/items/*/)
+fi
 
-rows_html=""
 i=0
 for folder in "${sorted_folders[@]}"; do
-    rows_html+=$(render_ledger_row "$folder")
-    rows_html+=$'\n'
-    write_case_page "$folder" "$i"
+    write_case_page "$folder" "$i" "Also"
     i=$((i + 1))
 done
+if [ -n "$profile" ]; then
+    write_case_page "$profile" -1 "Side projects"
+fi
+
+# Year span of the client work, newest and oldest.
+newest=""; oldest=""
+if [ ${#sorted_folders[@]} -gt 0 ]; then
+    load_fm "${sorted_folders[0]}"; newest=${fm_date%%-*}
+    load_fm "${sorted_folders[$((${#sorted_folders[@]} - 1))]}"; oldest=${fm_date%%-*}
+fi
 
 echo "Assembling $OUTPUT_FILE..."
 
@@ -723,13 +831,13 @@ echo "Assembling $OUTPUT_FILE..."
 echo "<!DOCTYPE html>"
 echo "<html lang=\"en\">"
 page_head "$TITLE" "$TITLE - Portfolio" "$(basename "$OUTPUT_FILE")" ""
-cat <<EOF
-<body>
-<main id="main-content">
-<ol class="ledger">
-EOF
-printf '%s' "$rows_html"
-echo "</ol>"
+echo "<body>"
+echo "<main id=\"main-content\">"
+render_intro "$oldest" "$newest"
+render_group client "Client work" "Role" "${sorted_folders[@]}"
+if [ ${#side_folders[@]} -gt 0 ]; then
+    render_group side "Side projects" "Medium" "${side_folders[@]}"
+fi
 echo "</main>"
 # script.js is an optional enhancement: inlined only when it has content.
 if [ -s "$JS_FILE" ]; then

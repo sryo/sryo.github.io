@@ -138,7 +138,7 @@ sentinel_in works.html "ledger canonical" '<link rel="canonical" href="https://e
 
 # Prev/next follow the ledger order and don't wrap.
 sentinel_in work/03-metrics/index.html "rel=prev to newer neighbour" 'rel="prev" href="../01-tags/"'
-sentinel_in work/03-metrics/index.html "rel=next to older neighbour" 'rel="next" href="../02-gallery/"'
+sentinel_in work/03-metrics/index.html "rel=next to older neighbour" 'rel="next" href="../04-noorder/"'
 sentinel_in work/03-metrics/index.html "back link to its row"        'href="../../works.html#03-metrics"'
 absent_in   work/01-tags/index.html    "first page has no prev"      'rel="prev"'
 absent_in   work/05-twin-b/index.html  "last page has no next"       'rel="next"'
@@ -157,19 +157,41 @@ absent_in   $P "empty Results part skipped" '<h2 class="label">Results</h2>'
 sentinel_in $P "content src rebased"       'src="../../contents/04-noorder/figure.png"'
 sentinel_in work/01-tags/index.html "h2 hangs as a part label" '<section class="part"><h2 class="label">Overview</h2><div class="body">'
 
-# Items on a case page: proj-a (2024-08-01) before proj-b (2024-05-01).
-GALLERY="$FIXTURE_DIR/work/02-gallery/index.html"
+# kind: profile: no client row, an About page, the ledger header, and
+# its items as the side-project group.
+P=work/02-gallery/index.html
+absent_in   works.html "profile has no client row"     'class="row" href="work/02-gallery/"'
+sentinel_in works.html "ledger header: profile lead"   'I make fixtures. Usually that means breaking things on purpose.'
+sentinel_in works.html "ledger header: availability"   "Ten years in. Open to what's next."
+sentinel_in works.html "ledger header: About link"     'href="work/02-gallery/"'
+sentinel_in works.html "ledger header: year span"      'Work, 2021&ndash;2024'
+sentinel_in works.html "client group"                  '<h2 id="g-client">Client work</h2>'
+sentinel_in works.html "side group"                    '<h2 id="g-side">Side projects</h2>'
+sentinel_in works.html "side row to its About section" 'class="row" href="work/02-gallery/#proj-a"'
+sentinel_in $P "About page keeps the full body"        "Open to what's next."
+sentinel_in $P "About page anchors each item"          'id="proj-a"'
+absent_in   $P "About page has no pager"               'rel="next"'
+
+# Side rows (and About sections): proj-a (2024-08-01) before proj-b (2024-05-01).
+pos_a=$(grep -n 'href="work/02-gallery/#proj-a"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)
+pos_b=$(grep -n 'href="work/02-gallery/#proj-b"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)
+if [ -n "$pos_a" ] && [ -n "$pos_b" ] && [ "$pos_a" -lt "$pos_b" ]; then
+    pass "side rows sorted date desc (A before B)"
+else
+    fail "side row sort: A=$pos_a B=$pos_b"
+fi
+GALLERY="$FIXTURE_DIR/$P"
 pos_a=$(grep -n '<h3>Project A</h3>' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
 pos_b=$(grep -n '<h3>Project B</h3>' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
 if [ -n "$pos_a" ] && [ -n "$pos_b" ] && [ "$pos_a" -lt "$pos_b" ]; then
-    pass "items sorted date desc (A before B)"
+    pass "About items sorted date desc (A before B)"
 else
-    fail "item sort: A=$pos_a B=$pos_b"
+    fail "About item sort: A=$pos_a B=$pos_b"
 fi
 
 # Ledger order: one sorted list, date descending, slug breaks ties.
 rows=$(grep -o 'class="row" href="work/[^"]*/"' "$ACTUAL" | sed -e 's|.*href="work/||' -e 's|/"$||' | tr '\n' ' ' || true)
-want="01-tags 03-metrics 02-gallery 04-noorder 05-twin-a 05-twin-b "
+want="01-tags 03-metrics 04-noorder 05-twin-a 05-twin-b "
 if [ "$rows" = "$want" ]; then
     pass "rows sorted by date desc, then slug"
 else
