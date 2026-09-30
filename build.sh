@@ -219,13 +219,42 @@ parse_markdown() {
         -e 's|^- (.*)|<li>\1</li>|'
 }
 
+# Page mode helper: wrap everything since $part_start in a part. The h2
+# hangs as its label; content before the first h2 gets an unlabeled part.
+# A part left empty (say, a "Results" that only held METRICS) is dropped.
+# Uses render_markdown_content's locals through bash's dynamic scope.
+flush_part() {
+    local body=${content:$part_start}
+    content=${content:0:$part_start}
+    [ -n "$body" ] || return 0
+    if [ -n "$part_label" ]; then
+        content+="<section class=\"part\"><h2 class=\"label\">$part_label</h2><div class=\"body\">$body</div></section>"
+    else
+        content+="<section class=\"part part-lead\"><div class=\"body\">$body</div></section>"
+    fi
+}
+
+# Modes: "" renders the body in place. "page" wraps each `## ` heading and
+# what follows in a part (see flush_part) and leaves METRICS out; "metrics"
+# renders only the METRICS blocks, for the figures band. HTML comments
+# (source notes) never render, in any mode.
 render_markdown_content() {
     local file=$1
-    local content="" line parsed_line escaped_line
-    local in_paragraph=false in_list=false in_metrics=false in_code_block=false
+    local mode=${2:-}
+    local content="" metrics="" line parsed_line escaped_line after
+    local in_paragraph=false in_list=false in_metrics=false in_code_block=false in_comment=false
     local metric_line value label
+    local part_start=0 part_label=""
 
     while IFS= read -r line || [ -n "$line" ]; do
+        # Inside a comment: skip until it closes, keep what follows.
+        if $in_comment; then
+            [[ "$line" == *"-->"* ]] || continue
+            line=${line#*-->}
+            in_comment=false
+            [[ "$line" =~ ^[[:space:]]*$ ]] && continue
+        fi
+
         # Fenced code block — toggle and escape contents.
         if [[ "$line" == '```'* ]]; then
             if $in_code_block; then
@@ -248,11 +277,27 @@ render_markdown_content() {
             continue
         fi
 
+        # Strip comments that open on this line; a comment-only line is
+        # dropped without closing the paragraph around it.
+        if [[ "$line" == *"<!--"* ]]; then
+            while [[ "$line" == *"<!--"* ]]; do
+                after=${line#*<!--}
+                if [[ "$after" == *"-->"* ]]; then
+                    line="${line%%<!--*}${after#*-->}"
+                else
+                    line=${line%%<!--*}
+                    in_comment=true
+                    break
+                fi
+            done
+            [[ "$line" =~ ^[[:space:]]*$ ]] && continue
+        fi
+
         # METRICS block opener.
         if [[ "$line" == "METRICS:" ]]; then
             if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
             if $in_list; then content+="</ul>"; in_list=false; fi
-            content+="<div class=\"metrics-grid\">"
+            metrics+="<div class=\"metrics-grid\">"
             in_metrics=true
             continue
         fi
@@ -264,15 +309,29 @@ render_markdown_content() {
             if [[ "$line" == "- "* ]]; then
                 metric_line=${line#- }
                 if [[ "$metric_line" =~ ^\*\*([^*]+)\*\*[[:space:]]*(.*) ]]; then
-                    value=${BASH_REMATCH[1]}
-                    label=${BASH_REMATCH[2]}
-                    content+="<div class=\"metric\"><span class=\"metric-value\">$value</span><span class=\"metric-label\">$label</span></div>"
+                    value=$(html_escape "${BASH_REMATCH[1]}")
+                    label=$(html_escape "${BASH_REMATCH[2]}")
+                    metrics+="<div class=\"metric\"><span class=\"metric-value\">$value</span><span class=\"metric-label\">$label</span></div>"
                 fi
                 continue
             else
-                content+="</div>"
+                metrics+="</div>"
                 in_metrics=false
+                # Rendered in place unless the page lifts it into the band.
+                if [ -z "$mode" ]; then content+=$metrics; metrics=""; fi
             fi
+        fi
+
+        # Page mode: a `## ` heading starts a new part.
+        if [ "$mode" = "page" ] && [[ "$line" == "## "* ]]; then
+            if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
+            if $in_list; then content+="</ul>"; in_list=false; fi
+            flush_part
+            parsed_line=$(parse_markdown "$line")
+            part_label=${parsed_line#<h2>}
+            part_label=${part_label%</h2>}
+            part_start=${#content}
+            continue
         fi
 
         parsed_line=$(parse_markdown "$line")
@@ -305,10 +364,29 @@ render_markdown_content() {
     done < <(strip_frontmatter "$file")
 
     if $in_code_block; then content+="</code></pre>"; fi
-    if $in_metrics; then content+="</div>"; fi
+    if $in_metrics; then
+        metrics+="</div>"
+        if [ -z "$mode" ]; then content+=$metrics; metrics=""; fi
+    fi
     if $in_list; then content+="</ul>"; fi
     if $in_paragraph; then content+="</p>"; fi
-    echo "$content"
+    if [ "$mode" = "page" ]; then flush_part; fi
+    if [ "$mode" = "metrics" ]; then
+        echo "$metrics"
+    else
+        echo "$content"
+    fi
+}
+
+# Case pages sit two levels down, so links into the content folder
+# ("contents/…") need "../../" in front.
+rebase_paths() {
+    local html=$1
+    local from_src="src=\"$CONTENT_DIR" from_href="href=\"$CONTENT_DIR"
+    local to_src="src=\"../../$CONTENT_DIR" to_href="href=\"../../$CONTENT_DIR"
+    html=${html//"$from_src"/$to_src}
+    html=${html//"$from_href"/$to_href}
+    printf '%s' "$html"
 }
 
 
@@ -527,8 +605,12 @@ write_case_page() {
     local content_file="$folder/_.md"
     local position
     position=$(printf '%02d / %02d' $((idx + 1)) ${#sorted_folders[@]})
-    local body
-    body=$(render_markdown_content "$content_file")
+    local body figures items=""
+    body=$(render_markdown_content "$content_file" page)
+    figures=$(render_markdown_content "$content_file" metrics)
+    if [ -d "$folder/items" ]; then
+        items=$(process_gallery "$folder/items")
+    fi
 
     mkdir -p "$WORK_DIR/$slug"
     {
@@ -541,9 +623,14 @@ write_case_page() {
 <main id="main-content">
 EOF
     render_case_study_header "$title" "$date" "$tags" "$slug"
-    printf '%s\n' "$body"
-    if [ -d "$folder/items" ]; then
-        process_gallery "$folder/items"
+    if [ -n "$figures" ]; then
+        printf '<section class="figures"><h2 class="label">Impact</h2>%s</section>\n' "$figures"
+    fi
+    rebase_paths "$body"
+    echo
+    if [ -n "$items" ]; then
+        rebase_paths "$items"
+        echo
     fi
     echo "</main>"
     render_prev_next "$idx"

@@ -144,6 +144,20 @@ sentinel_in work/03-metrics/index.html "back link to its row"        'href="../.
 absent_in   work/01-tags/index.html    "first page has no prev"      'rel="prev"'
 absent_in   work/05-twin-b/index.html  "last page has no next"       'rel="next"'
 
+# Page mode: comments dropped, metrics escaped and lifted into a figures
+# band, parts left empty by that are skipped, content paths rebased.
+if grep -rqF "secret note" "$FIXTURE_DIR/works.html" "$FIXTURE_DIR/work"; then
+    fail "HTML comment leaked into output"
+else
+    pass "HTML comments stripped from every output"
+fi
+P=work/04-noorder/index.html
+sentinel_in $P "metric value escaped"      '<span class="metric-value">&lt;5 min</span>'
+sentinel_in $P "figures band"              '<section class="figures"'
+absent_in   $P "empty Results part skipped" '<h2 class="label">Results</h2>'
+sentinel_in $P "content src rebased"       'src="../../contents/04-noorder/figure.png"'
+sentinel_in work/01-tags/index.html "h2 hangs as a part label" '<section class="part"><h2 class="label">Overview</h2><div class="body">'
+
 # Items on a case page: proj-a (2024-08-01) before proj-b (2024-05-01).
 GALLERY="$FIXTURE_DIR/work/02-gallery/index.html"
 pos_a=$(grep -n '<h3>Project A</h3>' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
