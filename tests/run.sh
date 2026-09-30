@@ -122,7 +122,6 @@ sentinel_in work/01-tags/index.html    "bold rendered"            '<strong>bold<
 sentinel_in work/01-tags/index.html    "italic rendered"          '<em>italic</em>'
 sentinel_in work/01-tags/index.html    "inline code rendered"     '<code>inline code</code>'
 sentinel_in work/01-tags/index.html    "link rendered"            '<a href="https://example.com">link</a>'
-sentinel_in works.html                 "row name escaped"         '<span class="name">First &amp; &lt;Special&gt;</span>'
 sentinel_in work/01-tags/index.html    "h1 escaped"               'First &amp; &lt;Special&gt;</h1>'
 sentinel_in work/03-metrics/index.html "stray --- preserved"      'A paragraph after the divider should still render.'
 sentinel_in work/02-gallery/index.html "item SVG inlined"         'data:image/svg+xml;base64,'
@@ -176,6 +175,20 @@ if [ "$rows" = "$want" ]; then
 else
     fail "row order: got '$rows', want '$want'"
 fi
+
+echo "Case fields..."
+build_must_fail "case without role: fails" "Missing role" \
+    'grep -v "^role:" contents/01-tags/_.md > x && mv x contents/01-tags/_.md'
+build_must_fail "case without label: fails" "Missing label" \
+    'grep -v "^label:" contents/01-tags/_.md > x && mv x contents/01-tags/_.md'
+build_must_fail "case without summary: fails" "Missing summary" \
+    'grep -v "^summary:" contents/01-tags/_.md > x && mv x contents/01-tags/_.md'
+SUMMARY='Tags &amp; &lt;escapes&gt; in one line'
+sentinel_in works.html "summary is the ledger line"   "<span class=\"line\">$SUMMARY</span>"
+sentinel_in works.html "label is the ledger name, escaped" '<span class="name">Tags &amp; &lt;Co&gt;</span>'
+sentinel_in works.html "role is the last column"      '<span class="role">Designer &amp; writer</span>'
+sentinel_in work/01-tags/index.html "summary is the meta description" "<meta name=\"description\" content=\"$SUMMARY\">"
+sentinel_in work/01-tags/index.html "summary is og:description"       "<meta property=\"og:description\" content=\"$SUMMARY\">"
 
 echo "Diff against expected/..."
 if diff -u "$EXPECTED" "$ACTUAL" > /dev/null; then

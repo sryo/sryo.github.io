@@ -114,32 +114,66 @@ html_escape() {
     printf '%s' "$s"
 }
 
-# Single awk pass over the frontmatter block. Emits $FS-separated
-# title, date, tags, order. Missing fields are empty strings.
+# Frontmatter fields, in the order parse_frontmatter emits them.
+#   title, date, tags, order   the originals; order is a tie-break only
+#   label    short name for the ledger, prev/next and <title>
+#   client   organization, shown on the case page (defaults to label)
+#   role     my role; the ledger's last column
+#   summary  one plain-text line: ledger line, dek, meta and og:description
+#   link     the project's own site or repo
+#   kind     "profile" marks the About section; anything else is a case
+# Case studies must set label, role and summary (see require_fields).
+
+# Single awk pass over the frontmatter block. Emits the fields above,
+# $FS-separated. Missing fields are empty strings.
 parse_frontmatter() {
     awk '
-    BEGIN { in_fm=0; title=""; date=""; tags=""; order="" }
+    BEGIN { n = split("title date tags order label client role summary link kind", keys, " ") }
     NR==1 && /^---$/ { in_fm=1; next }
-    in_fm && /^---$/ { in_fm=0; exit }
-    in_fm {
-        if (match($0, /^title:[[:space:]]*/)) {
-            v = substr($0, RLENGTH+1)
-            sub(/^"/, "", v); sub(/"$/, "", v)
-            title = v
-        } else if (match($0, /^date:[[:space:]]*/)) {
-            date = substr($0, RLENGTH+1)
-        } else if (match($0, /^tags:[[:space:]]*/)) {
-            v = substr($0, RLENGTH+1)
+    in_fm && /^---$/ { exit }
+    in_fm && match($0, /^[a-z]+:[[:space:]]*/) {
+        k = substr($0, 1, index($0, ":") - 1)
+        v = substr($0, RLENGTH + 1)
+        sub(/[[:space:]]+$/, "", v)
+        if (k == "tags") {
             gsub(/[\[\]]/, "", v)
             gsub(/[[:space:]]*,[[:space:]]*/, ",", v)
             gsub(/^[[:space:]]+|[[:space:]]+$/, "", v)
-            tags = v
-        } else if (match($0, /^order:[[:space:]]*/)) {
-            order = substr($0, RLENGTH+1)
+        } else {
+            sub(/^"/, "", v); sub(/"$/, "", v)
         }
+        val[k] = v
     }
-    END { printf "%s\037%s\037%s\037%s", title, date, tags, order }
+    END { for (i = 1; i <= n; i++) printf "%s%s", (i > 1 ? "\037" : ""), val[keys[i]] }
     ' "$1"
+}
+
+# Load a folder's frontmatter into fm_* globals, with the ledger fallbacks
+# filled in: label from the title's text before ": ", client from label.
+load_fm() {
+    local folder=$1
+    IFS=$FS read -r fm_title fm_date fm_tags fm_order fm_label fm_client fm_role fm_summary fm_link fm_kind \
+        < <(parse_frontmatter "$folder/_.md")
+    [ -z "$fm_title" ] && fm_title=$(basename "$folder")
+    [ -z "$fm_label" ] && fm_label=$(derive_label "$fm_title")
+    [ -z "$fm_client" ] && fm_client=$fm_label
+    [ -z "$fm_order" ] && fm_order=$DEFAULT_ORDER
+    return 0
+}
+
+# A case study without label, role or summary would print an ugly
+# fallback in the ledger, so the build stops and says which field.
+require_fields() {
+    local file=$1 field value
+    IFS=$FS read -r _ _ _ _ fm_label _ fm_role fm_summary _ fm_kind < <(parse_frontmatter "$file")
+    [ "$fm_kind" = "profile" ] && return 0
+    for field in label role summary; do
+        eval "value=\$fm_$field"
+        if [ -z "$value" ]; then
+            friendly_message "Missing $field: in $file" "Case studies need label:, role: and summary: in their frontmatter."
+            return 1
+        fi
+    done
 }
 
 # Skip only the first two `---` markers (the frontmatter delimiters).
@@ -444,8 +478,7 @@ render_case_study_header() {
 # without a date sort to the end.
 process_gallery() {
     local gallery_dir=$1
-    local item content_file image_file body
-    local title date tags order safe_title
+    local item content_file image_file body date safe_title
     local -a tuples=()
 
     shopt -s nullglob
@@ -453,18 +486,17 @@ process_gallery() {
         item=${item%/}
         content_file="$item/_.md"
         [ -f "$content_file" ] || continue
-        IFS=$FS read -r title date tags order < <(parse_frontmatter "$content_file")
-        tuples+=("${date}|${item}")
+        load_fm "$item"
+        tuples+=("${fm_date}|${item}")
     done
 
     while IFS='|' read -r date item; do
         [ -n "$item" ] || continue
         content_file="$item/_.md"
         image_file=$(find_item_image "$item")
-        IFS=$FS read -r title date tags order < <(parse_frontmatter "$content_file")
-        [ -z "$title" ] && title=$(basename "$item")
+        load_fm "$item"
         body=$(render_markdown_content "$content_file")
-        safe_title=$(html_escape "$title")
+        safe_title=$(html_escape "$fm_title")
 
         echo "<div class=\"project\">"
         echo "  <div class=\"project-content\">"
@@ -473,15 +505,14 @@ process_gallery() {
         echo "  </div>"
         if [ -n "$image_file" ] && [ -f "$image_file" ]; then
             echo "  <div class=\"project-image\">"
-            insert_image "$image_file" "$title"
+            insert_image "$image_file" "$fm_title"
             echo "  </div>"
         fi
         echo "</div>"
-    done < <(printf '%s\n' "${tuples[@]}" | sort -t'|' -k1,1 -r)
+    done < <(printf '%s\n' "${tuples[@]}" | LC_ALL=C sort -t'|' -k1,1 -r)
 }
 
-# Ledger columns until frontmatter names them: the text before ": " in
-# the title is the name, the rest is the line, the first tag is the role.
+# Fallbacks for items without a label: the text before ": " in the title.
 derive_label() {
     local title=$1
     if [[ "$title" == *": "* ]]; then printf '%s' "${title%%: *}"; else printf '%s' "$title"; fi
@@ -492,35 +523,28 @@ derive_line() {
     if [[ "$title" == *": "* ]]; then printf '%s' "${title#*: }"; else printf '%s' "$title"; fi
 }
 
-# The short name of a section folder, for rows and prev/next links.
-label_of() {
-    local title
-    IFS=$FS read -r title _ < <(parse_frontmatter "$1/_.md")
-    [ -z "$title" ] && title=$(basename "$1")
-    derive_label "$title"
-}
-
 # One <li> in the ledger: Year · Glyph · Name · Line · Role.
 render_ledger_row() {
-    local slug=$1
-    local title=$2
-    local date=$3
-    local tags=$4
-    local image_file=$5
-    local year=${date%%-*}
+    local folder=$1
+    local slug image_file line year
+    slug=$(basename "$folder")
+    image_file=$(find_item_image "$folder")
+    load_fm "$folder"
+    year=${fm_date%%-*}
+    line=${fm_summary:-$(derive_line "$fm_title")}
 
-    echo "  > Processing section: $title" >&2
+    echo "  > Processing section: $fm_label" >&2
 
     printf '<li id="%s"><a class="row" href="work/%s/">' "$slug" "$slug"
-    printf '<time class="yr" datetime="%s">%s</time>' "$date" "$year"
+    printf '<time class="yr" datetime="%s">%s</time>' "$fm_date" "$year"
     printf '<span class="glyph">'
     if [ -n "$image_file" ] && [ -f "$image_file" ]; then
         insert_image "$image_file" "" | tr -d '\n'
     fi
     printf '</span>'
-    printf '<span class="name">%s</span>' "$(html_escape "$(derive_label "$title")")"
-    printf '<span class="line">%s</span>' "$(html_escape "$(derive_line "$title")")"
-    printf '<span class="role">%s</span>' "$(html_escape "${tags%%,*}")"
+    printf '<span class="name">%s</span>' "$(html_escape "$fm_label")"
+    printf '<span class="line">%s</span>' "$(html_escape "$line")"
+    printf '<span class="role">%s</span>' "$(html_escape "${fm_role:-${fm_tags%%,*}}")"
     printf '</a></li>\n'
 }
 
@@ -574,35 +598,32 @@ EOF
 render_prev_next() {
     local idx=$1
     local count=${#sorted_folders[@]}
-    local other year
+    local other
 
     echo "<nav class=\"pn\" aria-label=\"More work\">"
     if [ "$idx" -gt 0 ]; then
         other=${sorted_folders[$((idx - 1))]}
-        IFS=$FS read -r _ year _ < <(parse_frontmatter "$other/_.md")
+        load_fm "$other"
         printf '  <a rel="prev" href="../%s/"><span class="label">&larr; Newer, %s</span> <span class="pn-name">%s</span></a>\n' \
-            "$(basename "$other")" "${year%%-*}" "$(html_escape "$(label_of "$other")")"
+            "$(basename "$other")" "${fm_date%%-*}" "$(html_escape "$fm_label")"
     else
         echo "  <span></span>"
     fi
     if [ "$idx" -lt $((count - 1)) ]; then
         other=${sorted_folders[$((idx + 1))]}
-        IFS=$FS read -r _ year _ < <(parse_frontmatter "$other/_.md")
+        load_fm "$other"
         printf '  <a rel="next" href="../%s/"><span class="label">Older, %s &rarr;</span> <span class="pn-name">%s</span></a>\n' \
-            "$(basename "$other")" "${year%%-*}" "$(html_escape "$(label_of "$other")")"
+            "$(basename "$other")" "${fm_date%%-*}" "$(html_escape "$fm_label")"
     fi
     echo "</nav>"
 }
 
 # One standalone page per section, at work/<slug>/index.html.
 write_case_page() {
-    local slug=$1
-    local folder=$2
-    local title=$3
-    local date=$4
-    local tags=$5
-    local idx=$6
-    local content_file="$folder/_.md"
+    local folder=$1
+    local idx=$2
+    local slug content_file="$folder/_.md"
+    slug=$(basename "$folder")
     local position
     position=$(printf '%02d / %02d' $((idx + 1)) ${#sorted_folders[@]})
     local body figures items=""
@@ -612,17 +633,18 @@ write_case_page() {
         items=$(process_gallery "$folder/items")
     fi
 
+    load_fm "$folder"
     mkdir -p "$WORK_DIR/$slug"
     {
     echo "<!DOCTYPE html>"
     echo "<html lang=\"en\">"
-    page_head "$title / $AUTHOR" "$title" "work/$slug/" "../../" "$title" article
+    page_head "$fm_title / $AUTHOR" "$fm_summary" "work/$slug/" "../../" "$fm_title" article
     cat <<EOF
 <body>
 <nav class="mast"><a class="back" href="../../works.html#$slug">&larr; All work</a> <span class="count">$position</span></nav>
 <main id="main-content">
 EOF
-    render_case_study_header "$title" "$date" "$tags" "$slug"
+    render_case_study_header "$fm_title" "$fm_date" "$fm_tags" "$slug"
     if [ -n "$figures" ]; then
         printf '<section class="figures"><h2 class="label">Impact</h2>%s</section>\n' "$figures"
     fi
@@ -654,6 +676,10 @@ seen_slugs=" "
 for folder in "$CONTENT_DIR"*/ "$CONTENT_DIR"*/items/*/; do
     [ -f "$folder/_.md" ] || continue
     slug=$(slug_of "${folder%/}") || exit 1
+    case "$folder" in
+        */items/*/) ;;
+        *) require_fields "$folder/_.md" || exit 1 ;;
+    esac
     case "$seen_slugs" in
         *" $slug "*) friendly_message "Build stopped: duplicate slug '$slug'" "Rename one of the folders called $slug."; exit 1 ;;
     esac
@@ -673,9 +699,8 @@ for folder in "$CONTENT_DIR"*/; do
     folder=${folder%/}
     content_file="$folder/_.md"
     [ -f "$content_file" ] || continue
-    IFS=$FS read -r _ date _ forder < <(parse_frontmatter "$content_file")
-    [ -z "$forder" ] && forder=$DEFAULT_ORDER
-    records+=("$date|$forder|$(basename "$folder")|$folder")
+    load_fm "$folder"
+    records+=("$fm_date|$fm_order|$(basename "$folder")|$folder")
 done
 
 declare -a sorted_folders=()
@@ -686,15 +711,9 @@ done < <(printf '%s\n' "${records[@]}" | LC_ALL=C sort -t'|' -k1,1r -k2,2n -k3,3
 rows_html=""
 i=0
 for folder in "${sorted_folders[@]}"; do
-    slug=$(basename "$folder")
-    content_file="$folder/_.md"
-    image_file=$(find_item_image "$folder")
-    IFS=$FS read -r title date tags _ < <(parse_frontmatter "$content_file")
-    [ -z "$title" ] && title=$slug
-
-    rows_html+=$(render_ledger_row "$slug" "$title" "$date" "$tags" "$image_file")
+    rows_html+=$(render_ledger_row "$folder")
     rows_html+=$'\n'
-    write_case_page "$slug" "$folder" "$title" "$date" "$tags" "$i"
+    write_case_page "$folder" "$i"
     i=$((i + 1))
 done
 
