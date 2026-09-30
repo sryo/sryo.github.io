@@ -452,7 +452,7 @@ render_markdown_content() {
     local content="" metrics="" notes="" line parsed_line escaped_line after
     local in_paragraph=false in_list=false in_metrics=false in_code_block=false in_comment=false
     local metric_line value label
-    local part_start=0 part_label="" hoisted=false screens=0
+    local part_start=0 part_label="" hoisted=false screens=0 fig lone_at=-1 lone_end=-1
     local link_re='^\[[^]]+\]\([^)]+\)$'
     local screen_re='^!\[([^]]*)\]\(([^ )]+)( "(([^"\\]|\\.)*)")?\)[[:space:]]*$'
     local figma_embed_re='src="(https://embed\.figma\.com/[^"]*)"'
@@ -589,7 +589,20 @@ render_markdown_content() {
             local s_alt=${BASH_REMATCH[1]} s_src=${BASH_REMATCH[2]} s_cap=${BASH_REMATCH[4]}
             s_cap=${s_cap//\\\"/\"}
             screens=$((screens + 1))
-            content+=$(render_screen "$s_alt" "$s_src" "$s_cap")
+            fig=$(render_screen "$s_alt" "$s_src" "$s_cap")
+            # Two portrait screens in a row sit side by side (a pair).
+            if [[ "$fig" == '<figure class="screen portrait">'* ]]; then
+                if [ "$lone_at" -ge 0 ] && [ "$lone_end" = "${#content}" ]; then
+                    content="${content:0:lone_at}<div class=\"screen-pair\">${content:lone_at}$fig</div>"
+                    lone_at=-1
+                    continue
+                fi
+                lone_at=${#content}
+                content+=$fig
+                lone_end=${#content}
+                continue
+            fi
+            content+=$fig
             continue
         fi
 
@@ -687,13 +700,32 @@ format_year() {
 # A lone "[text](url)" line before the first ## heading is the project's
 # link ("Project Link", "View archive"). Prints text$FS url, or nothing.
 lead_link() {
-    strip_frontmatter "$1" | awk '
+    strip_frontmatter "$1" | strip_comments | awk '
         /^## / { exit }
         /^\[[^]]+\]\([^)]+\)$/ {
             t = $0; sub(/^\[/, "", t); sub(/\]\(.*$/, "", t)
             u = $0; sub(/^[^(]*\(/, "", u); sub(/\)$/, "", u)
             printf "%s\037%s", t, u; exit
         }'
+}
+
+# HTML comments (source notes) removed, even across lines, so a link
+# kept in a comment is never taken for the page's link.
+strip_comments() {
+    awk '{
+        line = $0; out = ""
+        while (1) {
+            if (inc) {
+                i = index(line, "-->")
+                if (!i) { line = ""; break }
+                line = substr(line, i + 3); inc = 0
+            }
+            i = index(line, "<!--")
+            if (!i) { out = out line; break }
+            out = out substr(line, 1, i - 1); line = substr(line, i + 4); inc = 1
+        }
+        print out
+    }'
 }
 
 # A URL as link text that says where it goes: no scheme, no "www.", no
@@ -744,6 +776,11 @@ render_case_head() {
         if [ -n "$fm_tags" ]; then
             scope=${fm_tags//,/, }
             printf '<dt>Scope</dt><dd>%s</dd>' "$(html_escape "$scope")"
+        fi
+        # A link that is the repo shows once, as Code.
+        if [ "$kind" = side ] && [ -n "$fm_repo" ] && [ -n "$link_url" ] \
+            && [ "$(display_url "$link_url")" = "$(display_url "$fm_repo")" ]; then
+            link_url=""
         fi
         if [ -n "$link_url" ]; then
             printf '<dt>Link</dt><dd><a href="%s">%s</a></dd>' "$(html_escape "$link_url")" "$(html_escape "$link_text")"
@@ -811,7 +848,7 @@ project_link() {
             printf '%s' "${match%\)}"
             return
         fi
-    done < <(strip_frontmatter "$folder/_.md" | grep -o '\[[^]]*\]([^)]*)')
+    done < <(strip_frontmatter "$folder/_.md" | strip_comments | grep -o '\[[^]]*\]([^)]*)')
 }
 
 # Side projects show a platform in the last column: the first tag that

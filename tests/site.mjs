@@ -519,6 +519,45 @@ test('screens are framed, captioned figures', async ({ page }) => {
   if (inverted) throw new Error(`${inverted} screens inverted in dark mode`);
 }, SIDE);
 
+// Two portrait screens in a row (a .screen-pair, see build.sh) sit side
+// by side on desktop, each at most 320px, and stack on a phone. Checked on
+// every pair a page has, and on a probe pair dropped into Murmur's page.
+async function pairProblems(page, vp) {
+  return page.$$eval('main .screen-pair', (ps, vp) => ps.flatMap(p => {
+    const [a, b] = [...p.querySelectorAll('figure.screen.portrait')].map(f => f.querySelector('img').getBoundingClientRect());
+    if (!a || !b) return ['pair without two portrait screens'];
+    const bad = [];
+    if (a.width > 320.5 || b.width > 320.5) bad.push(`pair screens ${a.width}px / ${b.width}px wide, max 320`);
+    if (vp === 'desktop' && (Math.abs(a.top - b.top) > 0.5 || b.left <= a.right)) bad.push('pair not side by side on desktop');
+    if (vp === 'mobile' && b.top < a.bottom) bad.push('pair not stacked on mobile');
+    return bad;
+  }), vp);
+}
+
+test('portrait pairs sit side by side on desktop and stack on mobile', async ({ page, vp }) => {
+  const bad = await pairProblems(page, vp);
+  if (bad.length) throw new Error(bad.join('; '));
+}, SIDE);
+
+test('portrait pair styles, on a probe pair', async ({ page, vp }) => {
+  const tall = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="1386"><rect width="640" height="1386" fill="#888"/></svg>');
+  await page.evaluate(src => {
+    const fig = n => `<figure class="screen portrait"><img src="${src}" alt="Probe ${n}" width="640" height="1386"><figcaption>Probe ${n}</figcaption></figure>`;
+    const d = document.createElement('div'); d.className = 'screen-pair'; d.id = 'pair-probe';
+    d.innerHTML = fig(1) + fig(2);
+    document.querySelector('main .part .body').append(d);
+  }, tall);
+  try {
+    await page.waitForFunction(() => [...document.querySelectorAll('#pair-probe img')].every(i => i.complete));
+    const bad = await pairProblems(page, vp);
+    if (bad.length) throw new Error(bad.join('; '));
+    const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    if (over > 0) throw new Error(`page overflows by ${over}px`);
+  } finally {
+    await page.evaluate(() => document.getElementById('pair-probe')?.remove());
+  }
+}, p => p === '/work/murmur/');
+
 // Diagrams: the glyph grammar as boxes and lines.
 function diagramProblems(svg) {
   const bad = [];

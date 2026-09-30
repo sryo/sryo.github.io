@@ -300,6 +300,12 @@ sentinel_in work/proj-c/index.html "last side page leads back" '<a class="pn-all
 absent_in   work/proj-c/index.html "side pager stays in side projects" 'href="../01-tags/"'
 absent_in   work/05-twin-b/index.html "client pager stays in client work" 'href="../proj-a/"'
 
+# Link and Code: a link that is the repo
+# shows once, as Code; a link inside a comment is never the page link.
+sentinel_in work/proj-b/index.html "link equal to repo: shows as Code" '<dt>Code</dt><dd><a href="https://github.com/test/b">github.com/test/b</a></dd>'
+absent_in   work/proj-b/index.html "no Link row repeating the repo" '<dt>Link</dt>'
+absent_in   work/proj-c/index.html "commented-out link is not the page link" 'example.com/comment'
+
 # Screens: a lone image line is a captioned figure with its size, its
 # path resolved from the item's folder; inline images stay inline.
 sentinel_in $P "screen figure, caption from the title" '<figure class="screen"><img src="../../contents/02-gallery/items/proj-a/screen-1.png" alt="A grey test card &amp; &lt;b&gt;" loading="lazy" width="120" height="60"><figcaption>The main view, &quot;quoted&quot;</figcaption></figure>'
@@ -308,6 +314,8 @@ sentinel_in $P "JPEG size read"           'shot.jpg" alt="A small dark photo" lo
 sentinel_in $P "inline image stays inline" 'inline <img src="https://example.com/img.png" alt="alt text" loading="lazy" />'
 sentinel_in work/04-noorder/index.html "contents/ path kept as is" '<figure class="screen"><img src="../../contents/04-noorder/figure.png" alt="A relative image" loading="lazy"><figcaption>A relative image</figcaption></figure>'
 warned "missing screen flagged" 'warn: contents/04-noorder/_.md: contents/04-noorder/figure.png not found'
+sentinel_in work/proj-b/index.html "two portrait screens in a row pair up" '<div class="screen-pair"><figure class="screen portrait"><img src="../../contents/02-gallery/items/proj-a/screen-2.png" alt="Tall card one"'
+sentinel_in work/proj-b/index.html "the pair closes after the second" '<figcaption>The second tall card</figcaption></figure></div>'
 
 # Diagrams: DIAGRAM: file "caption" inlines the SVG in a captioned figure.
 sentinel_in $P "diagram inlined in a figure" '<figure class="diagram"><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160">'
