@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 200">
+  <title>EY Helix: as Lead UX I gave the design team of ten guidance, architecture and patterns; the team unified the Helix analyzers onto the new design system alongside Product, Content and Business Development, and as Community Lead I tracked the team's health</title>
+  <defs>
+    <marker id="ey-head-b" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <rect x="232" y="8" width="192" height="48"/>
+    <path d="M328 56V80" stroke-dasharray="4 4" marker-end="url(#ey-head-b)"/>
+    <rect x="8" y="88" width="128" height="48"/>
+    <path d="M136 112H256" marker-end="url(#ey-head-b)"/>
+    <rect x="264" y="88" width="128" height="48"/>
+    <path d="M392 112H496" marker-end="url(#ey-head-b)"/>
+    <path d="M328 136V168H72V144" marker-end="url(#ey-head-b)"/>
+  </g>
+  <rect x="504" y="88" width="128" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="328" y="32">Product, Content, BizDev</text>
+    <text x="72" y="112">Lead UX (me)</text>
+    <text x="328" y="112">Design team (10)</text>
+    <text class="knock" x="568" y="112">Helix analyzers</text>
+  </g>
+  <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text x="196" y="96">guidance, patterns</text>
+    <text x="444" y="96">unify</text>
+    <text x="200" y="184">team health, mentoring</text>
+  </g>
+</svg>

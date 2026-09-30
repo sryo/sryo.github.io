@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 240">
+  <title>EY Helix: auditor interviews shaped the data patterns, iterated against real workflows; separately, the Motif Guidelines set color, typography and iconography for Helix, and EY's other audit analytics tools adopted them</title>
+  <defs>
+    <marker id="ey-head-a" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="32" cy="32" r="24"/>
+    <path d="M56 32H192" marker-end="url(#ey-head-a)"/>
+    <rect x="200" y="8" width="128" height="48"/>
+    <path d="M328 32H540V80" marker-end="url(#ey-head-a)"/>
+    <rect x="200" y="168" width="128" height="48"/>
+    <path d="M328 192H440" marker-end="url(#ey-head-a)"/>
+    <path d="M368 192V112H440" marker-end="url(#ey-head-a)"/>
+    <rect x="448" y="168" width="184" height="48"/>
+  </g>
+  <rect x="448" y="88" width="184" height="48" fill="currentColor"/>
+  <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
+    <text x="32" y="72">Auditors</text>
+    <text x="264" y="32">Data patterns</text>
+    <text x="264" y="192">Motif Guidelines</text>
+    <text class="knock" x="540" y="112">Helix analyzers</text>
+    <text x="540" y="192">EY audit analytics tools</text>
+  </g>
+  <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text x="124" y="20">interviews</text>
+    <text x="434" y="20">iterated on real workflows</text>
+    <text x="264" y="228">color, type, iconography</text>
+    <text x="408" y="180">adopted</text>
+  </g>
+</svg>

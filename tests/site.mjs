@@ -259,7 +259,7 @@ const CV = {
   infoxel: [2016, 'Product designer'],
   taller: [2009, 'UX/UI designer'],
 };
-const CV_PENDING = ['ey-helix', 'taller'];
+const CV_PENDING = ['taller'];
 const CV_DONE = p => CASE(p) && !CV_PENDING.includes(slugOf(p));
 // The client rows of the ledger as built, for the pager's two ends.
 const CLIENT_ROWS = (() => {
@@ -460,6 +460,7 @@ const DECISIONS = {
   omsnic: ['Progressive disclosure', 'Branching logic stays invisible'],
   valora: ['The AI suggests, the analyst commits', 'Cap tables and scenarios you can work in', 'One design system for three modules'],
   continental: ['Clarity first, to WCAG', 'Denser screens, not more whitespace', 'One accessible library under everything'],
+  'ey-helix': ["Auditors' workflows before patterns", 'Written guidelines for Helix visualizations', 'One architecture for a team of ten'],
   topicflower: ['Keep the flower, put the numbers underneath', 'From a place you checked to a place you worked', 'One design system for the new platform'],
 };
 test('decision heads name the decision', async ({ page, path }) => {
