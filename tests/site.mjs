@@ -671,12 +671,13 @@ test('side rows open their own pages, and rel=next walks them all once', async (
   await page.goto(`${base}/works.html`);
 }, p => p === '/works.html');
 
-const SIDE_ORDER = ['What it does', 'Screens', 'How it works', 'Details'];
+// The last part is one mode or none: Decisions or Process (round 7).
+const SIDE_ORDER = ['What it does', 'Screens', ['Decisions', 'Process']];
 test('side sections follow the project order', async ({ page }) => {
   const labels = await page.$$eval('main h2', hs => hs.map(h => h.textContent.trim()));
   let i = 0;
   for (const l of labels) {
-    const at = SIDE_ORDER.indexOf(l, i);
+    const at = SIDE_ORDER.findIndex((o, k) => k >= i && [o].flat().includes(l));
     if (at < 0) throw new Error(`"${l}" out of order or not allowed in [${labels.join(', ')}]`);
     i = at + 1;
   }
@@ -684,6 +685,25 @@ test('side sections follow the project order', async ({ page }) => {
   for (let k = 1; k < levels.length; k++) {
     if (levels[k] > levels[k - 1] + 1) throw new Error(`heading jumps h${levels[k - 1]} → h${levels[k]}`);
   }
+}, SIDE);
+
+// Side pages show WHAT and WHY, never HOW: no architecture, no stack.
+test('side pages have no How it works or Details heading', async ({ page }) => {
+  const how = await page.$$eval('main h2, main h3', hs => hs.map(h => h.textContent.trim()).filter(t => /^(How it works|Details)$/i.test(t)));
+  if (how.length) throw new Error(`"${how[0]}" heading on a side page`);
+}, SIDE);
+
+test('side Decisions are named in readable h3 heads', async ({ page }) => {
+  const heads = await page.$$eval('section.part', ss => ss
+    .filter(s => s.querySelector('h2')?.textContent.trim() === 'Decisions')
+    .map(s => [...s.querySelectorAll('h3')].map(h => ({ text: h.textContent.trim(), px: parseFloat(getComputedStyle(h).fontSize) }))));
+  if (!heads.length) return;
+  const n = heads[0].length;
+  if (n < 2 || n > 3) throw new Error(`${n} decisions, want 2 to 3`);
+  const small = heads[0].find(h => h.px < 20);
+  if (small) throw new Error(`"${small.text}" is ${small.px}px`);
+  const digit = heads[0].find(h => /\d/.test(h.text));
+  if (digit) throw new Error(`h3 carries a number: ${digit.text}`);
 }, SIDE);
 
 test('side pages carry no CTA row', async ({ page }) => {
@@ -858,29 +878,29 @@ test('diagram styles: ink, Inter, 1.5px hairlines, knockout, no page overflow', 
 }, p => p === '/work/murmur/');
 
 // The per-project goal: real screens where the
-// project has a UI, and always one diagram of how it works. A slug leaves
-// PENDING when its content lands; that is the project's red → green step.
-const PENDING = [
-  'subi'];
-test('side project shows its screens and a diagram', async ({ page, path }) => {
+// project has a UI; a diagram is optional and, when present, captioned.
+// SCREENS_PENDING holds projects with a UI whose real screens aren't
+// captured yet; a slug leaves it when its screens land (red → green).
+const SCREENS_PENDING = ['airnod', 'apptidy', 'figma-cdp', 'figma-plugins', 'fin', 'stow', 'subi', 'va', 'when'];
+test('side project shows its screens', async ({ page, path }) => {
   const slug = slugOf(path);
   const r = await page.evaluate(() => ({
     screens: [...document.querySelectorAll('main figure.screen')].filter(f =>
       f.querySelector('img')?.getAttribute('alt')?.trim() && f.querySelector('figcaption')?.textContent.trim()).length,
-    diagrams: [...document.querySelectorAll('main figure.diagram')].filter(f =>
-      f.querySelector('svg') && f.querySelector('figcaption')?.textContent.trim()).length }));
-  const meets = (r.screens >= 1 || r.diagrams >= 1) && r.diagrams >= 1;
-  if (PENDING.includes(slug)) {
-    if (meets) throw new Error(`${slug} is done: remove it from PENDING`);
+    uncaptioned: [...document.querySelectorAll('main figure.diagram')].filter(f =>
+      !f.querySelector('svg') || !f.querySelector('figcaption')?.textContent.trim()).length }));
+  if (r.uncaptioned) throw new Error(`${r.uncaptioned} diagrams without an SVG or caption`);
+  if (SCREENS_PENDING.includes(slug)) {
+    if (r.screens) throw new Error(`${slug} has screens: remove it from SCREENS_PENDING`);
     return;
   }
-  if (!meets) throw new Error(`${r.screens} captioned screens, ${r.diagrams} captioned diagrams: needs a diagram (and screens if it has a UI)`);
+  if (!r.screens) throw new Error('no captioned screen: add one, or list the slug in SCREENS_PENDING');
 }, SIDE);
 
-test('PENDING names only real side projects', async ({ vp }) => {
+test('SCREENS_PENDING names only real side projects', async ({ vp }) => {
   if (vp !== 'desktop') return;
-  const unknown = PENDING.filter(s => !SIDE_SLUGS.includes(s));
-  if (unknown.length) throw new Error(`unknown slugs in PENDING: ${unknown.join(', ')}`);
+  const unknown = SCREENS_PENDING.filter(s => !SIDE_SLUGS.includes(s));
+  if (unknown.length) throw new Error(`unknown slugs: ${unknown.join(', ')}`);
 }, p => p === '/works.html');
 
 // ── Toys ───────────────────────
