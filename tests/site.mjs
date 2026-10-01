@@ -113,14 +113,6 @@ test('ledger rows do not overlap', async ({ page }) => {
   }
 }, p => p === '/works.html');
 
-test('masthead end year is the newest row year', async ({ page }) => {
-  const meta = await page.$eval('.intro .mast .meta', e => e.textContent);
-  const end = Number(meta.match(/(\d{4})\D*$/)?.[1]);
-  const years = await page.$$eval('.row time', ts => ts.map(t => Number(t.textContent)).filter(Boolean));
-  const max = Math.max(...years);
-  if (end !== max) throw new Error(`masthead ends ${end}, newest row is ${max}`);
-}, p => p === '/works.html');
-
 test('email sits in the header line and the footer', async ({ page }) => {
   const r = await page.evaluate(() => ({ all: document.querySelectorAll('a[href="mailto:mateo@yadarola.com.ar"]').length,
     avail: document.querySelectorAll('p.avail a[href="mailto:mateo@yadarola.com.ar"]').length,
@@ -128,12 +120,17 @@ test('email sits in the header line and the footer', async ({ page }) => {
   if (r.avail !== 1 || r.footer !== 1 || r.all !== 2) throw new Error(`mailto links: ${r.avail} in p.avail, ${r.footer} in the footer, ${r.all} in all`);
 }, p => p === '/works.html');
 
-// The span runs from the oldest row (Infoxel, 2016) to the newest (the side
-// projects, 2026). Change it together with "masthead end year is the newest
-// row year" when the dates move.
-test('masthead reads Work, 2016–2026', async ({ page }) => {
-  const meta = (await page.$eval('.intro .mast .meta', e => e.textContent)).trim();
-  if (meta !== 'Work, 2016–2026') throw new Error(`masthead reads "${meta}"`);
+// Mateo: no tiny tracked uppercase labels on works.html (masthead, counts,
+// "CLIENT WORK"). Headings are sentence case at a real size.
+test('works.html has no small caps labels or item counts', async ({ page }) => {
+  const bad = await page.evaluate(() => [...document.querySelectorAll('main *')]
+    .filter(e => e.offsetParent !== null && [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()))
+    .filter(e => { const cs = getComputedStyle(e); return cs.textTransform === 'uppercase' || (parseFloat(cs.fontSize) < 13 && parseFloat(cs.letterSpacing) > 0.5); })
+    .map(e => e.textContent.trim().slice(0, 30)));
+  if (bad.length) throw new Error(`${bad.length} caps labels: ${bad.slice(0, 4).join(' | ')}`);
+  if (await page.locator('main .count, main .mast, main .cols').count()) throw new Error('a count, masthead or column header is still rendered');
+  const small = await page.$$eval('main h2', hs => hs.filter(h => parseFloat(getComputedStyle(h).fontSize) < 21).map(h => h.textContent.trim()));
+  if (small.length) throw new Error(`h2 under 21px: ${small.join(', ')}`);
 }, p => p === '/works.html');
 
 test('side lines are not questions', async ({ page }) => {
@@ -274,7 +271,8 @@ test('Figma facades swap in a lazy iframe on click', async ({ page }) => {
 
 test('Tab then Enter on a row opens its case page', async ({ page }) => {
   let href = null;
-  for (let i = 0; i < 15 && !href; i++) {
+  // The opening and the offers' proof links come first: up to 40 stops.
+  for (let i = 0; i < 40 && !href; i++) {
     await page.keyboard.press('Tab');
     href = await page.evaluate(() => document.activeElement?.matches('a.row') ? document.activeElement.getAttribute('href') : null);
   }
@@ -471,6 +469,91 @@ test('featured and index rows show a focus ring', async ({ page }) => {
     const style = await page.$eval(sel, a => getComputedStyle(a).outlineStyle);
     if (style === 'none') throw new Error(`${sel} has no focus outline`);
   }
+}, p => p === '/works.html');
+
+// ── Front page: what I offer, the cases as proof ─────────────
+// The copy lives in contents/front.md; build.sh renders it above the cases.
+const SCOPE_H1 = /^Mateo Yadarola, product designer and design lead\b/;
+const THESIS = 'If the agents do the building, someone designs the trust.';
+const CLOSER = 'Putting AI into a financial product people must trust?';
+
+test('front: scope h1, then the thesis, then availability', async ({ page }) => {
+  const r = await page.evaluate(() => ({
+    h1: document.querySelector('.intro h1.lead')?.textContent.trim(),
+    home: document.querySelector('.intro h1.lead a.home')?.getAttribute('href'),
+    thesis: document.querySelector('.intro .thesis')?.textContent.trim(),
+    avail: document.querySelector('.intro .avail')?.textContent.trim(),
+    order: [...document.querySelectorAll('.intro > *')].map(e => e.className) }));
+  if (!SCOPE_H1.test(r.h1 || '')) throw new Error(`h1 reads "${r.h1}"`);
+  if (r.home !== './') throw new Error('the name in the h1 does not link home');
+  if (r.thesis !== THESIS) throw new Error(`thesis reads "${r.thesis}"`);
+  if (!/remote/i.test(r.avail || '')) throw new Error(`availability reads "${r.avail}"`);
+  const i = c => r.order.findIndex(x => x.split(' ').includes(c));
+  if (!(i('lead') < i('thesis') && i('thesis') < i('avail'))) throw new Error(`intro order: ${r.order.join(', ')}`);
+}, p => p === '/works.html');
+
+test('front: 4 to 5 offers, each a bold kicker, a line and proof links to existing cases', async ({ page, base, vp }) => {
+  const offers = await page.$$eval('[aria-labelledby="g-offers"] li.offer', ls => ls.map(l => ({
+    kicker: l.querySelector('.kicker')?.textContent.trim(),
+    caps: getComputedStyle(l.querySelector('.kicker')).textTransform,
+    size: parseFloat(getComputedStyle(l.querySelector('.kicker')).fontSize),
+    weight: Number(getComputedStyle(l.querySelector('.kicker')).fontWeight),
+    line: l.querySelector('.offer-line')?.textContent.trim(),
+    links: [...l.querySelectorAll('.proof a')].map(a => a.getAttribute('href')) })));
+  if (offers.length < 4 || offers.length > 5) throw new Error(`${offers.length} offers`);
+  for (const o of offers) {
+    if (!o.kicker || o.caps === 'uppercase' || o.size < 16 || o.weight < 600) throw new Error(`kicker "${o.kicker}" is not a bold sentence-case lead-in (${o.caps}, ${o.size}px, ${o.weight})`);
+    if (!o.line) throw new Error(`"${o.kicker}" has no line`);
+    if (!o.links.length) throw new Error(`"${o.kicker}" links to no case`);
+    const bad = o.links.find(h => !/^work\/[a-z0-9-]+\/$/.test(h) || !existsSync(resolve(ROOT, h, 'index.html')));
+    if (bad) throw new Error(`"${o.kicker}" links to ${bad}, which is no case page`);
+  }
+  if (vp !== 'desktop') return;
+  for (const h of new Set(offers.flatMap(o => o.links))) {
+    const res = await page.request.get(`${base}/${h}`);
+    if (res.status() !== 200 || !(await res.text()).includes('<h1>')) throw new Error(`${h} is not a case page`);
+  }
+}, p => p === '/works.html');
+
+test('front: offers sit between the opening and the featured cases', async ({ page }) => {
+  const ok = await page.evaluate(() => {
+    const [i, o, c] = ['.intro', '[aria-labelledby="g-offers"]', '[aria-labelledby="g-client"]'].map(s => document.querySelector(s));
+    return !!(i && o && c) && (i.compareDocumentPosition(o) & 4) && (o.compareDocumentPosition(c) & 4);
+  });
+  if (!ok) throw new Error('offers are not between the intro and the client cases');
+}, p => p === '/works.html');
+
+test('front: How I work keeps the uncomfortable-questions line; contact closes on the Valora ask', async ({ page }) => {
+  const r = await page.evaluate(() => ({
+    how: document.querySelector('[aria-labelledby="g-how"] p')?.textContent.trim(),
+    ask: document.querySelector('footer.contact .ask')?.textContent.trim() }));
+  if (!r.how?.startsWith("I'm a designer. Usually that means asking uncomfortable questions until something gets simpler.")) throw new Error(`How I work reads "${r.how}"`);
+  if (!r.ask?.startsWith(CLOSER)) throw new Error(`contact ask reads "${r.ask}"`);
+}, p => p === '/works.html');
+
+test('front: no unconfirmed claims, no em dashes', async ({ page }) => {
+  const t = await page.evaluate(() => [...document.querySelectorAll('.intro, [aria-labelledby="g-offers"], [aria-labelledby="g-how"], footer.contact')].map(e => e.textContent).join(' '));
+  const m = t.match(/nine tools|70,000|\b112\b|selfie|research on unbanked|\u2014/i);
+  if (m) throw new Error(`front copy carries "${m[0]}"`);
+}, p => p === '/works.html');
+
+test('at 390 the opening and offers fit the screen', async ({ page, vp }) => {
+  if (vp !== 'mobile') return;
+  await page.setViewportSize({ width: 390, height: 844 });
+  const r = await page.evaluate(() => ({
+    over: document.documentElement.scrollWidth - innerWidth,
+    out: [...document.querySelectorAll('.intro *, [aria-labelledby="g-offers"] *, [aria-labelledby="g-how"] *, footer.contact *')]
+      .filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.left < -0.5 || b.right > innerWidth + 0.5); })
+      .map(e => e.className || e.tagName) }));
+  await page.setViewportSize({ width: 375, height: 812 });
+  if (r.over > 0) throw new Error(`page overflows by ${r.over}px`);
+  if (r.out.length) throw new Error(`${r.out.length} parts leave the screen: ${r.out[0]}`);
+}, p => p === '/works.html');
+
+test('offer proof links show a focus ring', async ({ page }) => {
+  await page.focus('[aria-labelledby="g-offers"] .proof a');
+  const style = await page.$eval('[aria-labelledby="g-offers"] .proof a', a => getComputedStyle(a).outlineStyle);
+  if (style === 'none') throw new Error('proof link has no focus outline');
 }, p => p === '/works.html');
 
 test('CV_PENDING names only known cases', async () => {

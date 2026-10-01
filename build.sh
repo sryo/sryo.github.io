@@ -46,6 +46,15 @@
 #      become the Impact band, a lone '[text](url)' line before the first
 #      heading becomes the Link, a 'CTA:' line becomes the closing row above
 #      the pager, and <!-- comments --> never render.
+#    - Optionally, add 'front.md' at the top of the content folder (not in a
+#      case folder): the front page's copy. A '# ' headline (the h1; the
+#      author's name in it links home), a scope paragraph, a '> ' thesis, an
+#      *italic* availability line, then '## What I can do' with one '### '
+#      kicker per offer, its line, and 'PROOF: slug, slug' naming the cases
+#      or side projects that prove it (an unknown slug stops the build),
+#      '## How I work' with one paragraph, and a 'CTA:' line that heads the
+#      contact footer. Format in full above front_part. Without it, the
+#      profile's first paragraph is the h1.
 #    - To add a video or other embed, include a line starting with 'EMBED:' in your .md file.
 #    - A lone '![alt](screen.png "caption")' line is a captioned screen, and a
 #      'DIAGRAM: diagram.svg "caption"' line inlines a diagram; both resolve
@@ -58,7 +67,9 @@
 #    - To use the self-destruct option (if enabled in config), run: ./build.sh -d
 
 # 4. View your portfolio:
-#    - 'works.html' is the ledger: featured client cases in featured: order,
+#    - 'works.html' opens with front.md (headline, scope, thesis,
+#      availability, then What I can do), then the ledger: featured client
+#      cases in featured: order,
 #      every other client case in a compact "Also" index, then side projects.
 #      Index and side projects run newest first. With no case featured,
 #      client work is one dated ledger.
@@ -965,7 +976,7 @@ render_featured_row() {
 # The featured client cases, in the order given, under the client heading.
 render_featured() {
     printf '<section class="group" aria-labelledby="g-client">\n'
-    printf '<div class="group-head"><h2 id="g-client">Client work</h2><span class="count">%02d</span></div>\n' $#
+    printf '<div class="group-head"><h2 id="g-client">Client work</h2></div>\n'
     echo '<ol class="ledger featured">'
     local folder
     for folder in "$@"; do
@@ -990,34 +1001,29 @@ year_span() {
     return 0
 }
 
-# One ledger group: heading, count, column header, rows. `key` is
+# One ledger group: a sentence-case heading, then rows. `key` is
 # "client", "also" or "side"; every row opens its page at work/<slug>/.
-# "also" is the compact index under the featured cases: no column header,
-# no summary line.
+# "also" is the compact index under the featured cases: no summary line.
 render_group() {
     local key=$1
     local heading=$2
-    local last_col=$3
-    shift 3
+    shift 2
     local folder href last prev_year="" year vt
 
     local cls=group brief=""
     [ "$key" = also ] && cls="group also" && brief=brief
     printf '<section class="%s" aria-labelledby="g-%s">\n' "$cls" "$key"
     if [ "$key" = "side" ]; then
-        # Side projects state their own span and count in the heading.
+        # Side projects state their own span in the heading.
         local from to
         read -r from to < <(year_span "$@")
         [ -n "$from" ] && heading+=", $from"
         [ -n "$to" ] && [ "$to" != "$from" ] && heading+="&ndash;$to"
-        printf '<div class="group-head"><h2 id="g-%s">%s &middot; %d</h2></div>\n' "$key" "$heading" $#
-    else
-        printf '<div class="group-head"><h2 id="g-%s">%s</h2><span class="count">%02d</span></div>\n' "$key" "$heading" $#
     fi
+    printf '<div class="group-head"><h2 id="g-%s">%s</h2></div>\n' "$key" "$heading"
     if [ "$key" = also ]; then
         echo '<ol class="ledger index">'
     else
-        printf '<div class="cols" aria-hidden="true"><span>Year</span><span></span><span>Name</span><span>Line</span><span>%s</span></div>\n' "$last_col"
         echo '<ol class="ledger">'
     fi
     for folder in "$@"; do
@@ -1075,23 +1081,36 @@ profile_lead() {
         { print; exit }'
 }
 
-# The ledger's header, from the profile section: its first paragraph as
-# the lead and its italic availability line, plus the years on the ledger.
+# The ledger's header. With front.md: its headline as the h1, then the
+# scope, the thesis and the availability line. Without it: the profile's
+# first paragraph as the lead and its italic availability line. No
+# masthead: where the h1 names the author, the name links home. The
+# availability line ends on About and the contact links.
 render_intro() {
-    local first=$1
-    local last=$2
-    local lead="" avail="" links
-    if [ -n "$profile" ]; then
+    local lead="" avail="" scope="" thesis="" links name h1 link
+    if [ -f "$FRONT_FILE" ]; then
+        lead=$(front_part h1)
+        scope=$(front_part scope)
+        thesis=$(front_part thesis)
+        avail=$(front_part avail)
+    elif [ -n "$profile" ]; then
         lead=$(profile_lead)
+    fi
+    if [ -z "$avail" ] && [ -n "$profile" ]; then
         avail=$(strip_frontmatter "$profile/_.md" | awk '/^\*[^*].*\*$/ { print substr($0, 2, length($0) - 2); exit }')
     fi
     [ -z "$lead" ] && lead=$AUTHOR
     links=$(contact_links)
 
+    name=$(html_escape "$AUTHOR")
+    h1=$(html_escape "$lead")
+    link="<a class=\"home\" href=\"./\">$name</a>"
+    h1=${h1/"$name"/$link}
+
     echo '<header class="intro">'
-    printf '<p class="mast"><span><a class="home" href="./">%s</a> &middot; Product designer</span> <span class="meta">Work, %s&ndash;%s</span></p>\n' \
-        "$(html_escape "$AUTHOR")" "$first" "$last"
-    printf '<h1 class="lead">%s</h1>\n' "$(html_escape "$lead")"
+    printf '<h1 class="lead">%s</h1>\n' "$h1"
+    [ -n "$scope" ] && printf '<p class="scope">%s</p>\n' "$(html_escape "$scope")"
+    [ -n "$thesis" ] && printf '<p class="thesis">%s</p>\n' "$(html_escape "$thesis")"
     if [ -n "$profile" ]; then
         printf '<p class="avail">%s <a href="work/%s/">About &rarr;</a>%s</p>\n' \
             "$(html_escape "$avail")" "$(basename "$profile")" "${links:+ &middot; $links}"
@@ -1100,11 +1119,131 @@ render_intro() {
 }
 
 # Closing footer: the same contact links, so the skim ends on a next step.
+# front.md's CTA: line, when there is one, is its heading; else "Get in touch".
 render_contact_footer() {
-    local links
+    local links ask=""
     links=$(contact_links)
     [ -n "$links" ] || return 0
-    printf '<footer class="contact"><h2 class="label">Get in touch</h2><p>%s</p></footer>\n' "$links"
+    [ -f "$FRONT_FILE" ] && ask=$(case_cta "$FRONT_FILE" | sed -e 's/^<p class="case-cta">/<h2 class="ask">/' -e 's|</p>$|</h2>|')
+    printf '<footer class="contact">%s<p>%s</p></footer>\n' "${ask:-<h2>Get in touch</h2>}" "$links"
+}
+
+# ── Front page (contents/front.md) ──────────────────────────
+# Optional. The page's opening and its offers, in the order they render:
+#   # Headline                      the h1
+#   first plain paragraph           the scope line under it
+#   > Thesis                        the thesis line
+#   *Availability*                  replaces the profile's italic line
+#   ## What I can do                one "### Kicker" per offer, its line
+#                                   below, then "PROOF: slug, slug": the
+#                                   cases (or side projects) that prove it
+#   ## How I work                   one paragraph, above the contact footer
+#   CTA: Ask? [Let's talk](url)     the contact footer's ask
+# Comments never render. Each PROOF slug must name a case or side project.
+FRONT_FILE="${CONTENT_DIR}front.md"
+
+# One part of front.md, by name: h1, scope, thesis, avail or how.
+front_part() {
+    [ -f "$FRONT_FILE" ] || return 0
+    strip_frontmatter "$FRONT_FILE" | strip_comments | awk -v part="$1" '
+        /^## / { sec = substr($0, 4); next }
+        /^CTA:/ || /^[[:space:]]*$/ { next }
+        sec == "" && part == "h1" && /^# / { print substr($0, 3); exit }
+        sec == "" && part == "thesis" && /^> / { print substr($0, 3); exit }
+        sec == "" && part == "avail" && /^\*[^*].*\*$/ { print substr($0, 2, length($0) - 2); exit }
+        sec == "" && part == "scope" && /^[^#>*<-]/ { print; exit }
+        sec == "How I work" && part == "how" && /^[^#>*<-]/ { print; exit }'
+}
+
+# The offers under "## What I can do": kicker, line, proof slugs
+# (comma-separated), $FS-separated, one offer per output line.
+front_offers() {
+    [ -f "$FRONT_FILE" ] || return 0
+    strip_frontmatter "$FRONT_FILE" | strip_comments | awk '
+        function flush() { if (k != "") printf "%s\037%s\037%s\n", k, l, p; k = l = p = "" }
+        /^## / { flush(); on = ($0 == "## What I can do"); next }
+        !on { next }
+        /^### / { flush(); k = substr($0, 5); next }
+        /^PROOF:/ { p = $0; sub(/^PROOF:[[:space:]]*/, "", p); next }
+        k != "" && NF { l = (l == "" ? $0 : l " " $0) }
+        END { flush() }'
+}
+
+# The folder a PROOF slug names: a case, or a side project under a
+# section's items/. Prints nothing when there is none.
+proof_folder() {
+    local slug=$1 f
+    [[ "$slug" =~ ^[a-z0-9][a-z0-9-]*$ ]] || return 0
+    if [ -f "$CONTENT_DIR$slug/_.md" ]; then
+        load_fm "$CONTENT_DIR$slug"
+        [ "$fm_kind" = "profile" ] || { printf '%s' "$CONTENT_DIR$slug"; return 0; }
+    fi
+    for f in "$CONTENT_DIR"*/items/"$slug"; do
+        [ -f "$f/_.md" ] && { printf '%s' "$f"; return 0; }
+    done
+    return 0
+}
+
+# Every offer needs a PROOF line, and every slug on it a page. Runs before
+# anything is written, so a typo stops the build instead of a dead link.
+check_front() {
+    local kicker line proof slug
+    while IFS=$FS read -r kicker line proof; do
+        if [ -z "$proof" ]; then
+            friendly_message "Build stopped: $FRONT_FILE offer \"$kicker\" needs a PROOF: line" "List the slugs of the cases that prove it."
+            return 1
+        fi
+        IFS=',' read -ra slugs <<< "$proof"
+        for slug in "${slugs[@]}"; do
+            slug=${slug//[[:space:]]/}
+            if [ -z "$(proof_folder "$slug")" ]; then
+                friendly_message "Build stopped: Unknown case in $FRONT_FILE PROOF: '$slug'" "Use the folder name of a case or side project."
+                return 1
+            fi
+        done
+    done < <(front_offers)
+}
+
+# "What I can do": one row per offer, kicker in caps, its line, and the
+# cases that prove it, each by its label and linking to its page.
+render_offers() {
+    local kicker line proof slug folder links n i
+    local -a offers=()
+    while IFS= read -r line; do
+        offers+=("$line")
+    done < <(front_offers)
+    n=${#offers[@]}
+    [ "$n" -gt 0 ] || return 0
+    printf '<section class="group offers" aria-labelledby="g-offers">\n'
+    printf '<div class="group-head"><h2 id="g-offers">What I can do</h2></div>\n'
+    echo '<ol class="offers-list">'
+    for line in "${offers[@]}"; do
+        IFS=$FS read -r kicker line proof <<< "$line"
+        links=""
+        IFS=',' read -ra slugs <<< "$proof"
+        # "A", "A and B", "A, B and C".
+        for i in "${!slugs[@]}"; do
+            slug=${slugs[$i]//[[:space:]]/}
+            folder=$(proof_folder "$slug")
+            load_fm "$folder"
+            if [ "$i" -gt 0 ]; then
+                if [ "$i" -eq $((${#slugs[@]} - 1)) ]; then links+=" and "; else links+=", "; fi
+            fi
+            links+="<a href=\"work/$slug/\">$(html_escape "$fm_label")</a>"
+        done
+        printf '<li class="offer"><h3 class="kicker">%s</h3><p class="offer-line">%s</p><p class="proof">See %s</p></li>\n' \
+            "$(html_escape "$kicker")" "$(html_escape "$line")" "$links"
+    done
+    echo '</ol>'
+    echo '</section>'
+}
+
+# "How I work": front.md's one paragraph under that heading.
+render_how() {
+    local how
+    how=$(front_part how)
+    [ -n "$how" ] || return 0
+    printf '<section class="group how" aria-labelledby="g-how"><div class="group-head"><h2 id="g-how">How I work</h2></div><p>%s</p></section>\n' "$(html_escape "$how")"
 }
 
 # Items (side projects on the profile) as a compact, anchored list: glyph,
@@ -1321,6 +1460,7 @@ for folder in "$CONTENT_DIR"*/ "$CONTENT_DIR"*/items/*/; do
     esac
     seen_slugs+="$slug "
 done
+check_front || exit 1
 
 # Remove old case pages so a deleted or renamed section leaves nothing
 # behind. Scoped to "$OUT_DIR/work", never anything wider.
@@ -1390,29 +1530,29 @@ for folder in "${side_folders[@]}"; do
     i=$((i + 1))
 done
 
-# Year span of everything on the ledger, client work and side projects.
-read -r oldest newest < <(year_span "${sorted_folders[@]}" "${side_folders[@]}")
-
 echo "Assembling $OUTPUT_FILE..."
 
 {
 echo "<!DOCTYPE html>"
 echo "<html lang=\"en\">"
-ledger_lead=$(profile_lead)
+ledger_lead=$(front_part h1)
+[ -n "$ledger_lead" ] || ledger_lead=$(profile_lead)
 page_head "$TITLE" "${ledger_lead:-$TITLE - Portfolio}" "$(basename "$OUTPUT_FILE")" ""
 echo "<body>"
 echo '<a class="skip" href="#main-content">Skip to content</a>'
 echo "<main id=\"main-content\">"
-render_intro "$oldest" "$newest"
+render_intro
+render_offers
 if [ ${#featured_folders[@]} -gt 0 ]; then
     render_featured "${featured_folders[@]}"
-    [ ${#index_folders[@]} -gt 0 ] && render_group also "Also" "" "${index_folders[@]}"
+    [ ${#index_folders[@]} -gt 0 ] && render_group also "Also" "${index_folders[@]}"
 else
-    render_group client "Client work" "Role" "${sorted_folders[@]}"
+    render_group client "Client work" "${sorted_folders[@]}"
 fi
 if [ ${#side_folders[@]} -gt 0 ]; then
-    render_group side "Side projects" "Medium" "${side_folders[@]}"
+    render_group side "Side projects" "${side_folders[@]}"
 fi
+render_how
 render_contact_footer
 echo "</main>"
 cat <<EOF
