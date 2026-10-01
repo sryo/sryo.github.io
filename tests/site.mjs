@@ -517,7 +517,7 @@ const DECISIONS = {
   hometown: ['The platform stays in the loop'],
   lavoz: ['We built our own paywall, Wyleex', 'Mobile-first storytelling'],
   infoxel: ['Vlic: real-time news monitoring', 'Welo: live TV clipping'],
-  omsnic: ['Progressive disclosure', 'Branching logic stays invisible'],
+  omsnic: ['A quote, not a stack of PDFs', 'Questions as sentences', 'The price moves while you answer'],
   valora: ['The AI suggests, the analyst commits', 'Cap tables and scenarios you can work in', 'One design system for three modules'],
   continental: ['Clarity first, to WCAG', 'Denser screens, not more whitespace', 'One accessible library under everything'],
   'ey-helix': ["Auditors' workflows before patterns", 'Written guidelines for Helix visualizations', 'One architecture for a team of ten'],
@@ -534,7 +534,7 @@ test('cases do not repeat themselves', async ({ page, path }) => {
   const main = await page.textContent('main');
   const html = await page.innerHTML('main');
   const context = await page.$$eval('section.part', ss => ss.find(s => s.querySelector('h2')?.textContent.trim() === 'Context')?.textContent || '');
-  if (path === '/work/omsnic/' && /<strong>[^<]*112/.test(html)) throw new Error('112 is bolded in the body');
+  if (path === '/work/omsnic/' && main.includes('112')) throw new Error('the banned 112 forms claim is back');
   if (path === '/work/bancor/' && context.includes('March 2020')) throw new Error('Context repeats March 2020');
   if (path === '/work/hometown/' && main.split('dead end').length !== 2) throw new Error('"dead end" is not said exactly once');
   const parts = (await page.$$eval('section.part', ss => ss.map(s => s.textContent))).join(' ');
