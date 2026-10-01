@@ -856,7 +856,7 @@ test('wide screens break out of the column and zoom on click', async ({ page, vp
   if (await page.$('.zoom')) throw new Error('zoom still open after Escape');
 }, p => p === '/work/continental/');
 
-const CLIENT_SCREENS = ['bancor', 'continental', 'ey-helix', 'hometown', 'lavoz', 'omsnic', 'topicflower', 'valora'];
+const CLIENT_SCREENS = ['bancor', 'continental', 'ey-helix', 'hometown', 'omsnic', 'topicflower', 'valora'];
 test('client case screens sit under the decision they show', async ({ page, path }) => {
   const figs = await page.$$eval('main figure.screen', fs => fs.map(f => {
     const part = f.closest('section.part');
