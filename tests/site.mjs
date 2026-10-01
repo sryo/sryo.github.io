@@ -731,7 +731,7 @@ test('screens are framed, captioned figures', async ({ page }) => {
   const inverted = await page.$$eval('main figure.screen img', is => is.filter(i => getComputedStyle(i).filter.includes('invert')).length);
   await page.emulateMedia({ colorScheme: 'light' });
   if (inverted) throw new Error(`${inverted} screens inverted in dark mode`);
-}, SIDE);
+}, p => SIDE(p) || CASE(p));
 
 // Two portrait screens in a row (a .screen-pair, see build.sh) sit side
 // by side on desktop, each at most 320px, and stack on a phone. Checked on
@@ -829,12 +829,38 @@ test('diagram marker ids are unique on a page', async ({ page }) => {
   if (dup) throw new Error(`marker id "${dup}" is used twice`);
 }, p => CASE(p) || SIDE(p));
 
-// Client work is under NDA: diagrams, not screens.
-test('client cases show no screens', async ({ page }) => {
-  const r = await page.evaluate(() => ({ screens: document.querySelectorAll('main figure.screen').length,
-    imgs: document.querySelectorAll('main section.part img').length }));
-  if (r.screens) throw new Error(`${r.screens} figure.screen`);
-  if (r.imgs) throw new Error(`${r.imgs} <img> in the parts`);
+// Client cases show real screens , sensitive data
+// blurred. Each screen sits inside the decision
+// it shows: under a Decisions h3, after its text. 2 to 3 per case, captions
+// of one plain line (≤ 100 characters, no em dash, no trailing period), and
+// at most one caption per page says what was blurred. Cases not listed here
+// have no screens yet.
+const CLIENT_SCREENS = ['bancor', 'continental', 'ey-helix', 'lavoz', 'omsnic', 'valora'];
+test('client case screens sit under the decision they show', async ({ page, path }) => {
+  const figs = await page.$$eval('main figure.screen', fs => fs.map(f => {
+    const part = f.closest('section.part');
+    let h3 = null;
+    for (let n = f.closest('section.part > .body > *') || f; n && !h3; n = n.previousElementSibling) if (n.matches('h3')) h3 = n;
+    return { h2: part?.querySelector('h2')?.textContent.trim(), h3: h3?.textContent.trim(),
+      alt: f.querySelector('img')?.getAttribute('alt')?.trim() || '', cap: f.querySelector('figcaption')?.textContent.trim() || '' };
+  }));
+  const slug = slugOf(path);
+  if (!CLIENT_SCREENS.includes(slug)) {
+    if (figs.length) throw new Error(`${slug} has screens: add it to CLIENT_SCREENS`);
+    return;
+  }
+  const bad = [];
+  if (figs.length < 2 || figs.length > 3) bad.push(`${figs.length} screens, want 2 to 3`);
+  for (const f of figs) {
+    if (f.h2 !== 'Decisions' || !f.h3) bad.push(`"${f.alt}" is not under a decision (h2 ${f.h2}, h3 ${f.h3})`);
+    if (f.alt.length > 125) bad.push(`alt is ${f.alt.length} characters, max 125: ${f.alt}`);
+    if (f.cap.length > 100) bad.push(`caption is ${f.cap.length} characters, max 100: ${f.cap}`);
+    if (/\u2014/.test(f.cap + f.alt)) bad.push(`em dash in: ${f.cap}`);
+    if (/\.$/.test(f.cap)) bad.push(`caption ends with a period: ${f.cap}`);
+  }
+  const notes = figs.filter(f => /blurred/i.test(f.cap)).length;
+  if (notes > 1) bad.push(`${notes} captions mention blurring, max 1`);
+  if (bad.length) throw new Error(bad.join('; '));
 }, CASE);
 
 // The stylesheet's side of the diagram contract, checked on a live side

@@ -319,6 +319,7 @@ sentinel_in $P "inline image stays inline" 'inline <img src="https://example.com
 sentinel_in work/04-noorder/index.html "contents/ path kept as is" '<figure class="screen"><img src="../../contents/04-noorder/figure.png" alt="A relative image" loading="lazy"><figcaption>A relative image</figcaption></figure>'
 warned "missing screen flagged" 'warn: contents/04-noorder/_.md: contents/04-noorder/figure.png not found'
 sentinel_in work/proj-b/index.html "two portrait screens in a row pair up" '<div class="screen-pair"><figure class="screen portrait"><img src="../../contents/02-gallery/items/proj-a/screen-2.png" alt="Tall card one"'
+sentinel_in work/01-tags/index.html "client case screen under its decision" '<h3>A decision with a screen</h3><figure class="screen"><img src="../../contents/02-gallery/items/proj-a/screen-1.png" alt="A grey test card" loading="lazy" width="120" height="60"><figcaption>The decision, on screen</figcaption></figure>'
 sentinel_in work/proj-b/index.html "the pair closes after the second" '<figcaption>The second tall card</figcaption></figure></div>'
 
 # Diagrams: DIAGRAM: file "caption" inlines the SVG in a captioned figure.
