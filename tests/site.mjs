@@ -835,7 +835,7 @@ test('diagram marker ids are unique on a page', async ({ page }) => {
 // of one plain line (≤ 100 characters, no em dash, no trailing period), and
 // at most one caption per page says what was blurred. Cases not listed here
 // have no screens yet.
-const CLIENT_SCREENS = ['bancor', 'continental', 'ey-helix', 'lavoz', 'omsnic', 'valora'];
+const CLIENT_SCREENS = ['bancor', 'continental', 'ey-helix', 'hometown', 'lavoz', 'omsnic', 'valora'];
 test('client case screens sit under the decision they show', async ({ page, path }) => {
   const figs = await page.$$eval('main figure.screen', fs => fs.map(f => {
     const part = f.closest('section.part');
