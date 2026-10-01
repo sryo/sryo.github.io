@@ -31,7 +31,8 @@
 #      a) Add a _.md file that starts with frontmatter: title, date (YYYY-MM-DD),
 #         tags, and the required label (short name), role and summary (one
 #         plain line: the ledger line, the dek and the meta description).
-#         Optional: client, link.
+#         Optional: client, link, and featured: N (a positive number) to
+#         lift the case above the rest on works.html, smallest N first.
 #      b) Optionally, add a glyph: _.svg (or _.png / _.jpg). Without one, the
 #         label's initial stands in. Glyphs are one system: a 100×100 viewBox,
 #         black fills only, no text, <style> or animation (the build warns).
@@ -57,7 +58,10 @@
 #    - To use the self-destruct option (if enabled in config), run: ./build.sh -d
 
 # 4. View your portfolio:
-#    - 'works.html' is the ledger: client work and side projects, newest first.
+#    - 'works.html' is the ledger: featured client cases in featured: order,
+#      every other client case in a compact "Also" index, then side projects.
+#      Index and side projects run newest first. With no case featured,
+#      client work is one dated ledger.
 #    - 'work/<slug>/index.html' is one page per case study (and the About page),
 #      with prev/next in ledger order. The build rewrites 'work/' every run.
 
@@ -145,13 +149,15 @@ html_escape() {
 #   email    profile only, optional: a mailto link beside LinkedIn and GitHub
 #   glyph    "colour" keeps an original colour glyph (skips the glyph check)
 #   repo     side projects, optional: the source code, the spec's Code row
+#   featured client cases, optional: a positive number; featured cases head
+#            works.html in that order, the rest go to the Also index
 # Case studies must set label, role and summary (see require_fields).
 
 # Single awk pass over the frontmatter block. Emits the fields above,
 # $FS-separated. Missing fields are empty strings.
 parse_frontmatter() {
     awk '
-    BEGIN { n = split("title date tags order label client role summary link kind email glyph repo", keys, " ") }
+    BEGIN { n = split("title date tags order label client role summary link kind email glyph repo featured", keys, " ") }
     NR==1 && /^---$/ { in_fm=1; next }
     in_fm && /^---$/ { exit }
     in_fm && match($0, /^[a-z]+:[[:space:]]*/) {
@@ -175,7 +181,7 @@ parse_frontmatter() {
 # filled in: label from the title's text before ": ", client from label.
 load_fm() {
     local folder=$1
-    IFS=$FS read -r fm_title fm_date fm_tags fm_order fm_label fm_client fm_role fm_summary fm_link fm_kind fm_email fm_glyph fm_repo \
+    IFS=$FS read -r fm_title fm_date fm_tags fm_order fm_label fm_client fm_role fm_summary fm_link fm_kind fm_email fm_glyph fm_repo fm_featured \
         < <(parse_frontmatter "$folder/_.md")
     [ -z "$fm_title" ] && fm_title=$(basename "$folder")
     [ -z "$fm_label" ] && fm_label=$(derive_label "$fm_title")
@@ -912,12 +918,14 @@ derive_medium() {
 
 # One <li> in the ledger: Year · Glyph · Name · Line · Role (or Medium).
 # A year equal to the row above's gets class="repeat" (hidden by CSS).
+# A sixth argument "brief" leaves the line out (the Also index).
 render_ledger_row() {
     local folder=$1
     local href=$2
     local last=$3
     local prev_year=$4
     local vt=$5
+    local brief=${6:-}
     local slug image_file line year repeat=""
     slug=$(basename "$folder")
     image_file=$(find_item_image "$folder")
@@ -932,9 +940,39 @@ render_ledger_row() {
     printf '<time class="yr" datetime="%s">%s</time>' "$fm_date" "$year"
     render_glyph "$image_file" "$fm_label" "$vt"
     printf '<span class="name">%s</span>' "$(html_escape "$fm_label")"
-    printf '<span class="line">%s</span>' "$(html_escape "$line")"
+    [ "$brief" = brief ] || printf '<span class="line">%s</span>' "$(html_escape "$line")"
     printf '<span class="role">%s</span>' "$(html_escape "$last")"
     printf '</a></li>\n'
+}
+
+# One featured <li>: Glyph · Name · Line (the summary), then role and
+# year as small meta. No year column: featured rows run by strength.
+render_featured_row() {
+    local folder=$1 slug image_file
+    slug=$(basename "$folder")
+    image_file=$(find_item_image "$folder")
+    load_fm "$folder"
+    echo "  > Processing: $fm_label (featured)" >&2
+    printf '<li id="%s"><a class="row" href="work/%s/">' "$slug" "$slug"
+    render_glyph "$image_file" "$fm_label" "g-$slug"
+    printf '<span class="name">%s</span>' "$(html_escape "$fm_label")"
+    printf '<span class="line">%s</span>' "$(html_escape "${fm_summary:-$(derive_line "$fm_title")}")"
+    printf '<span class="meta"><span class="role">%s</span> &middot; <time datetime="%s">%s</time></span>' \
+        "$(html_escape "$fm_role")" "$fm_date" "${fm_date%%-*}"
+    printf '</a></li>\n'
+}
+
+# The featured client cases, in the order given, under the client heading.
+render_featured() {
+    printf '<section class="group" aria-labelledby="g-client">\n'
+    printf '<div class="group-head"><h2 id="g-client">Client work</h2><span class="count">%02d</span></div>\n' $#
+    echo '<ol class="ledger featured">'
+    local folder
+    for folder in "$@"; do
+        render_featured_row "$folder"
+    done
+    echo '</ol>'
+    echo '</section>'
 }
 
 # Oldest and newest year among the folders' dates, space-separated.
@@ -953,7 +991,9 @@ year_span() {
 }
 
 # One ledger group: heading, count, column header, rows. `key` is
-# "client" or "side"; either way a row opens its page at work/<slug>/.
+# "client", "also" or "side"; every row opens its page at work/<slug>/.
+# "also" is the compact index under the featured cases: no column header,
+# no summary line.
 render_group() {
     local key=$1
     local heading=$2
@@ -961,7 +1001,9 @@ render_group() {
     shift 3
     local folder href last prev_year="" year vt
 
-    printf '<section class="group" aria-labelledby="g-%s">\n' "$key"
+    local cls=group brief=""
+    [ "$key" = also ] && cls="group also" && brief=brief
+    printf '<section class="%s" aria-labelledby="g-%s">\n' "$cls" "$key"
     if [ "$key" = "side" ]; then
         # Side projects state their own span and count in the heading.
         local from to
@@ -972,19 +1014,23 @@ render_group() {
     else
         printf '<div class="group-head"><h2 id="g-%s">%s</h2><span class="count">%02d</span></div>\n' "$key" "$heading" $#
     fi
-    printf '<div class="cols" aria-hidden="true"><span>Year</span><span></span><span>Name</span><span>Line</span><span>%s</span></div>\n' "$last_col"
-    echo '<ol class="ledger">'
+    if [ "$key" = also ]; then
+        echo '<ol class="ledger index">'
+    else
+        printf '<div class="cols" aria-hidden="true"><span>Year</span><span></span><span>Name</span><span>Line</span><span>%s</span></div>\n' "$last_col"
+        echo '<ol class="ledger">'
+    fi
     for folder in "$@"; do
         load_fm "$folder"
         year=${fm_date%%-*}
         href="work/$(basename "$folder")/"
         vt="g-$(basename "$folder")"
-        if [ "$key" = "client" ]; then
-            last=$fm_role
-        else
+        if [ "$key" = "side" ]; then
             last=${fm_role:-$(derive_medium "$fm_tags")}
+        else
+            last=$fm_role
         fi
-        render_ledger_row "$folder" "$href" "$last" "$prev_year" "$vt"
+        render_ledger_row "$folder" "$href" "$last" "$prev_year" "$vt" "$brief"
         prev_year=$year
     done
     echo '</ol>'
@@ -1267,6 +1313,9 @@ for folder in "$CONTENT_DIR"*/ "$CONTENT_DIR"*/items/*/; do
     esac
     load_fm "${folder%/}"
     check_glyph "$(find_item_image "${folder%/}")" "$slug" "$fm_glyph"
+    if [ -n "$fm_featured" ] && [[ ! "$fm_featured" =~ ^[1-9][0-9]*$ ]]; then
+        echo "warn: $slug featured: must be a positive number ($fm_featured), left unfeatured" >&2
+    fi
     case "$seen_slugs" in
         *" $slug "*) friendly_message "Build stopped: duplicate slug '$slug'" "Rename one of the folders called $slug."; exit 1 ;;
     esac
@@ -1305,6 +1354,25 @@ if [ -n "$profile" ]; then
     done < <(sort_folders "$profile"/items/*/)
 fi
 
+# Featured cases (featured: N, smallest first, date order breaking ties)
+# head works.html; the rest of client work is the Also index. The pager
+# keeps the dated order of all client work.
+declare -a featured_folders=() index_folders=()
+featured_keys=""
+i=0
+for folder in "${sorted_folders[@]}"; do
+    load_fm "$folder"
+    if [[ "$fm_featured" =~ ^[1-9][0-9]*$ ]]; then
+        featured_keys+="$fm_featured|$i|$folder"$'\n'
+    else
+        index_folders+=("$folder")
+    fi
+    i=$((i + 1))
+done
+while IFS='|' read -r _ _ folder; do
+    [ -n "$folder" ] && featured_folders+=("$folder")
+done < <(printf '%s' "$featured_keys" | LC_ALL=C sort -t'|' -k1,1n -k2,2n)
+
 pager_folders=("${sorted_folders[@]}")
 i=0
 for folder in "${sorted_folders[@]}"; do
@@ -1336,7 +1404,12 @@ echo "<body>"
 echo '<a class="skip" href="#main-content">Skip to content</a>'
 echo "<main id=\"main-content\">"
 render_intro "$oldest" "$newest"
-render_group client "Client work" "Role" "${sorted_folders[@]}"
+if [ ${#featured_folders[@]} -gt 0 ]; then
+    render_featured "${featured_folders[@]}"
+    [ ${#index_folders[@]} -gt 0 ] && render_group also "Also" "" "${index_folders[@]}"
+else
+    render_group client "Client work" "Role" "${sorted_folders[@]}"
+fi
 if [ ${#side_folders[@]} -gt 0 ]; then
     render_group side "Side projects" "Medium" "${side_folders[@]}"
 fi

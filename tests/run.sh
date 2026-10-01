@@ -365,14 +365,57 @@ else
     fail "About item sort: A=$pos_a B=$pos_b"
 fi
 
-# Ledger order: one sorted list, date descending, slug breaks ties.
+# Ledger order: featured cases by their featured: number (04-noorder is
+# older than 03-metrics but comes first), then the Also index and the side
+# projects, each date descending, slug breaking ties.
 rows=$(grep -o 'class="row" href="work/[^"]*/"' "$ACTUAL" | sed -e 's|.*href="work/||' -e 's|/"$||' | tr '\n' ' ' || true)
-want="01-tags 03-metrics 04-noorder 05-twin-a 05-twin-b proj-a proj-b proj-c "
+want="04-noorder 03-metrics 01-tags 05-twin-a 05-twin-b proj-a proj-b proj-c "
 if [ "$rows" = "$want" ]; then
-    pass "rows sorted by date desc, then slug"
+    pass "featured by number, then index and side rows by date desc, then slug"
 else
     fail "row order: got '$rows', want '$want'"
 fi
+
+echo "Featured and index..."
+sentinel_in works.html "featured list"                '<ol class="ledger featured">'
+sentinel_in works.html "featured group keeps its heading and count" '<h2 id="g-client">Client work</h2><span class="count">02</span>'
+sentinel_in works.html "featured row: glyph, name, summary, then role and year" '<li id="04-noorder"><a class="row" href="work/04-noorder/"><span class="glyph initial" style="view-transition-name: g-04-noorder" aria-hidden="true">F</span><span class="name">Fourth</span><span class="line">No order field; dated last of the four.</span><span class="meta"><span class="role">Maker</span> &middot; <time datetime="2022-11-01">2022</time></span></a></li>'
+sentinel_in works.html "index heading"                '<section class="group also" aria-labelledby="g-also">'
+sentinel_in works.html "index heading is plain"       '<h2 id="g-also">Also</h2><span class="count">03</span>'
+sentinel_in works.html "index list"                   '<ol class="ledger index">'
+sentinel_in works.html "index row: year, glyph, name, role" '<li id="05-twin-a"><a class="row" href="work/05-twin-a/"><time class="yr" datetime="2021-05-01">2021</time><span class="glyph initial" style="view-transition-name: g-05-twin-a" aria-hidden="true">T</span><span class="name">Twin A</span><span class="role">Maker</span></a></li>'
+sentinel_in works.html "index repeats hide the year"  '<li id="05-twin-b" class="repeat">'
+if grep -E '<li id="(01-tags|05-twin-a|05-twin-b)"' "$ACTUAL" | grep -qF '<span class="line">'; then
+    fail "index rows carry a summary line"
+else
+    pass "index rows carry no summary line"
+fi
+if grep -F '<ol class="ledger featured">' "$ACTUAL" >/dev/null && \
+    awk '/<ol class="ledger featured">/,/<\/ol>/' "$ACTUAL" | grep -qE 'id="(01-tags|05-twin-a|05-twin-b)"'; then
+    fail "an unfeatured case sits in the featured list"
+else
+    pass "only featured cases in the featured list"
+fi
+absent_in works.html "no Role column over featured rows" '<span>Role</span>'
+
+# Without any featured: the client group is one dated ledger, as before.
+build_shows() {
+    local desc=$1 setup=$2 check=$3 tmp
+    tmp=$(mktemp -d)
+    cp -R "$FIXTURE_DIR/." "$tmp/"
+    rm -rf "$tmp/work" "$tmp/works.html"
+    (cd "$tmp" && eval "$setup" && bash "$REPO_DIR/build.sh" >/dev/null 2>&1)
+    if (cd "$tmp" && eval "$check"); then
+        rm -rf "$tmp"; pass "$desc"
+    else
+        rm -rf "$tmp"; fail "$desc"
+    fi
+}
+build_shows "no featured: one dated client ledger, no index" \
+    'sed -i.bak "/^featured:/d" contents/03-metrics/_.md contents/04-noorder/_.md' \
+    '! grep -qF "g-also" works.html && ! grep -qF "ledger featured" works.html && grep -qF "<span>Role</span>" works.html && [ "$(grep -o "class=\"row\" href=\"work/[^\"]*/\"" works.html | head -n 5 | sed -e "s|.*work/||" -e "s|/\"||" | tr "\n" " ")" = "01-tags 03-metrics 04-noorder 05-twin-a 05-twin-b " ]'
+build_warns "featured: that isn't a number flagged" "warn: 03-metrics featured: must be a positive number (top)" \
+    'sed -i.bak "s/^featured: 2/featured: top/" contents/03-metrics/_.md'
 
 echo "Case fields..."
 build_must_fail "case without role: fails" "Missing role" \
@@ -382,7 +425,7 @@ build_must_fail "case without label: fails" "Missing label" \
 build_must_fail "case without summary: fails" "Missing summary" \
     'grep -v "^summary:" contents/01-tags/_.md > x && mv x contents/01-tags/_.md'
 SUMMARY='Tags &amp; &lt;escapes&gt; in one line'
-sentinel_in works.html "summary is the ledger line"   "<span class=\"line\">$SUMMARY</span>"
+sentinel_in works.html "summary is the featured line" '<span class="line">Numbers first, then the story.</span>'
 sentinel_in works.html "label is the ledger name, escaped" '<span class="name">Tags &amp; &lt;Co&gt;</span>'
 sentinel_in works.html "role is the last column"      '<span class="role">Designer &amp; writer</span>'
 sentinel_in work/01-tags/index.html "summary is the meta description" "<meta name=\"description\" content=\"$SUMMARY\">"

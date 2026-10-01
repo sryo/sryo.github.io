@@ -302,6 +302,73 @@ h1 {
     .row .role { grid-area: auto; grid-column: 10 / span 3; padding: 0; text-align: right; font-size: 16px; line-height: 24px; }
 }
 
+.featured .row {
+    grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-areas:
+        "glyph name"
+        "glyph line"
+        "glyph meta";
+    column-gap: 16px;
+    row-gap: 4px;
+    align-items: start;
+    padding: 24px 0;
+}
+
+.featured .row .glyph { grid-area: glyph; width: 48px; height: 48px; }
+.featured .row .name { grid-area: name; font-size: 21px; line-height: 32px; letter-spacing: -0.01em; }
+.featured .row .line { grid-area: line; }
+.featured .row .meta { grid-area: meta; font-size: 13px; line-height: 20px; color: var(--mute); }
+.featured .row .role { font-size: inherit; line-height: inherit; }
+
+.featured li:last-child .row {
+    border-bottom: 0;
+}
+
+.group.also {
+    margin-top: 24px;
+}
+
+.also .group-head {
+    border-top-width: 1px;
+}
+
+.index .row {
+    min-height: 0;
+    padding: 8px 0;
+    border-bottom: 0;
+}
+
+.index .row .glyph { width: 24px; height: 24px; }
+.index .row .name { font-weight: 400; }
+.index .row .yr { font-size: 13px; }
+
+@media (min-width: 40rem) {
+    .index .row {
+        padding: 4px 0;
+    }
+
+    .index .row .yr { font-size: inherit; }
+    .index .row .name { grid-column: 3 / span 3; }
+    .index .row .role { grid-column: 6 / span 7; text-align: left; font-size: 13px; line-height: 20px; color: var(--mute); }
+}
+
+@media (min-width: 64rem) {
+    .featured .row {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        grid-template-areas: none;
+        column-gap: var(--gap);
+        row-gap: 8px;
+        align-items: baseline;
+        padding: 32px 0;
+    }
+
+    .featured .row .glyph { grid-area: auto; grid-column: 1 / span 2; grid-row: 1 / span 2; align-self: start; width: 64px; height: 64px; margin-top: 4px; }
+    .featured .row .name { grid-area: auto; grid-column: 3 / span 3; grid-row: 1; font-size: 32px; line-height: 40px; letter-spacing: -0.025em; }
+    .featured .row .line { grid-area: auto; grid-column: 6 / span 7; grid-row: 1; font-size: 21px; line-height: 32px; letter-spacing: -0.01em; }
+    .featured .row .meta { grid-area: auto; grid-column: 6 / span 7; grid-row: 2; font-size: 16px; line-height: 24px; }
+    .featured .row .role { grid-area: auto; padding: 0; text-align: left; }
+}
+
 .glyph {
     display: grid;
     place-items: center;

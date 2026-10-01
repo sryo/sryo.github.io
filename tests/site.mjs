@@ -236,7 +236,7 @@ test('glyph parts XOR back into the glyph', async ({ page, vp }) => {
 
 test('client roles fit on one line at 1440', async ({ page, vp }) => {
   if (vp !== 'desktop') return;
-  const tall = await page.$$eval('[aria-labelledby="g-client"] .row .role', rs => rs
+  const tall = await page.$$eval('[aria-labelledby="g-client"] .row .meta, [aria-labelledby="g-also"] .row .role', rs => rs
     .filter(r => r.getBoundingClientRect().height > parseFloat(getComputedStyle(r).lineHeight) + 1)
     .map(r => r.textContent));
   if (tall.length) throw new Error(`${tall.length} roles wrap: ${tall[0]}`);
@@ -283,17 +283,20 @@ test('Tab then Enter on a row opens its case page', async ({ page }) => {
   await page.goBack();
 }, p => p === '/works.html');
 
+// The pager keeps date order (newest first), whatever the front page features.
 test('rel=next walks every client case once', async ({ page, base }) => {
-  const rows = await page.$$eval('[aria-labelledby="g-client"] a.row', as => as.map(a => a.href));
+  const rows = await page.$$eval('[aria-labelledby="g-client"] a.row, [aria-labelledby="g-also"] a.row', as => as.map(a => a.href));
   const seen = [];
-  let url = rows[0];
+  let url = `${base}/work/${Object.keys(CV)[0]}/`;
   while (url) {
     if (seen.includes(url)) throw new Error(`loop at ${url}`);
     seen.push(url);
     await page.goto(url);
     url = await page.$eval('a[rel="next"]', a => a.href).catch(() => null);
   }
-  if (seen.join() !== rows.join()) throw new Error(`walked ${seen.length}, ledger has ${rows.length}`);
+  const want = Object.keys(CV).map(s => `${base}/work/${s}/`);
+  if (seen.join() !== want.join()) throw new Error(`walked [${seen.join(', ')}], want date order`);
+  if ([...rows].sort().join() !== [...seen].sort().join()) throw new Error(`walked ${seen.length}, front page has ${rows.length}`);
   await page.goto(`${base}/works.html`);
 }, p => p === '/works.html');
 
@@ -318,12 +321,8 @@ const CV = {
 };
 const CV_PENDING = [];
 const CV_DONE = p => CASE(p) && !CV_PENDING.includes(slugOf(p));
-// The client rows of the ledger as built, for the pager's two ends.
-const CLIENT_ROWS = (() => {
-  const html = existsSync(resolve(ROOT, 'works.html')) ? readFileSync(resolve(ROOT, 'works.html'), 'utf8') : '';
-  const group = html.match(/aria-labelledby="g-client"[\s\S]*?<\/section>/)?.[0] || '';
-  return [...group.matchAll(/<a class="row[^"]*" href="work\/([a-z0-9-]+)\/"/g)].map(m => m[1]);
-})();
+// The pager's two ends: the newest and the oldest client case.
+const CLIENT_ROWS = Object.keys(CV);
 const CLIENT_ENDS = [CLIENT_ROWS[0], CLIENT_ROWS[CLIENT_ROWS.length - 1]].map(s => `/work/${s}/`);
 
 async function cvFactProblems(page, slug) {
@@ -409,14 +408,72 @@ test('CV_PENDING holds only cases still to update', async ({ page, path, vp }) =
   if (!bad.length) throw new Error(`${slug} is done: remove it from CV_PENDING`);
 }, p => CASE(p) && CV_PENDING.includes(slugOf(p)));
 
-test('client ledger is the CV, newest first', async ({ page, vp }) => {
+// Featured: a few strong cases, by strength (Mateo's call), not by year.
+const FEATURED = ['valora', 'bancor', 'continental', 'lavoz'];
+
+test('featured client cases: Valora, Bancor, Continental, La Voz', async ({ page }) => {
+  const rows = await page.$$eval('[aria-labelledby="g-client"] ol.featured > li > a.row', as => as.map(a => a.getAttribute('href')));
+  const want = FEATURED.map(s => `work/${s}/`);
+  if (rows.join() !== want.join()) throw new Error(`featured [${rows.join(', ')}], want [${want.join(', ')}]`);
+  const r = await page.$$eval('[aria-labelledby="g-client"] a.row', as => as.map(a => ({
+    line: a.querySelector('.line')?.textContent.trim(), meta: a.querySelector('.meta')?.textContent.trim() })));
+  const bad = r.filter(x => !x.line || !/\d{4}/.test(x.meta || ''));
+  if (bad.length) throw new Error(`${bad.length} featured rows without a summary line or a year`);
+}, p => p === '/works.html');
+
+test('Also lists every other client case, newest first, with working links', async ({ page, base, vp }) => {
+  const rows = await page.$$eval('[aria-labelledby="g-also"] a.row', as => as.map(a => ({
+    href: a.getAttribute('href'), name: a.querySelector('.name')?.textContent.trim(),
+    year: a.querySelector('time')?.getAttribute('datetime'), line: !!a.querySelector('.line') })));
+  const want = Object.keys(CV).filter(s => !FEATURED.includes(s)).map(s => `work/${s}/`);
+  const got = rows.map(r => r.href);
+  if (got.join() !== want.join()) throw new Error(`Also [${got.join(', ')}], want [${want.join(', ')}]`);
+  const heading = await page.$eval('#g-also', h => h.textContent.trim());
+  if (heading !== 'Also') throw new Error(`index heading reads "${heading}"`);
+  if (rows.some(r => r.line)) throw new Error('an index row carries a summary line');
+  if (rows.some(r => !r.name || !r.year)) throw new Error('an index row lacks a name or year');
   if (vp !== 'desktop') return;
-  const rows = await page.$$eval('[aria-labelledby="g-client"] a.row', as => as.map(a => a.getAttribute('href')));
-  const want = Object.keys(CV).filter(s => !CV_PENDING.includes(s)).map(s => `work/${s}/`);
-  const got = rows.filter(h => want.includes(h));
-  if (got.join() !== want.join()) throw new Error(`client rows [${got.join(', ')}], want [${want.join(', ')}]`);
-  const stray = rows.filter(h => !CV[h.split('/')[1]]);
-  if (stray.length) throw new Error(`client rows not in the CV: ${stray.join(', ')}`);
+  for (const r of rows) {
+    const res = await page.request.get(`${base}/${r.href}`);
+    if (res.status() !== 200) throw new Error(`${r.href} answered ${res.status()}`);
+    if (!(await res.text()).includes('<h1>')) throw new Error(`${r.href} has no h1`);
+  }
+}, p => p === '/works.html');
+
+test('featured rows outweigh index rows', async ({ page }) => {
+  const m = await page.evaluate(() => {
+    const f = document.querySelector('ol.featured a.row'), i = document.querySelector('ol.index a.row');
+    const px = (r, sel) => parseFloat(getComputedStyle(r.querySelector(sel)).fontSize);
+    return { fg: f.querySelector('.glyph').getBoundingClientRect().width, ig: i.querySelector('.glyph').getBoundingClientRect().width,
+      fn: px(f, '.name'), iname: px(i, '.name'), fh: f.getBoundingClientRect().height, ih: i.getBoundingClientRect().height };
+  });
+  if (!(m.fg > m.ig)) throw new Error(`featured glyph ${m.fg}px, index ${m.ig}px`);
+  if (!(m.fn > m.iname)) throw new Error(`featured name ${m.fn}px, index ${m.iname}px`);
+  if (!(m.fh > m.ih * 1.5)) throw new Error(`featured row ${m.fh}px tall, index ${m.ih}px`);
+}, p => p === '/works.html');
+
+test('at 390 featured and index rows fit the screen', async ({ page, vp }) => {
+  if (vp !== 'mobile') return;
+  await page.setViewportSize({ width: 390, height: 844 });
+  const r = await page.evaluate(() => ({
+    over: document.documentElement.scrollWidth - innerWidth,
+    out: [...document.querySelectorAll('ol.featured a.row *, ol.index a.row *')]
+      .filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.left < -0.5 || b.right > innerWidth + 0.5); })
+      .map(e => e.className || e.tagName) }));
+  await page.setViewportSize({ width: 375, height: 812 });
+  if (r.over > 0) throw new Error(`page overflows by ${r.over}px`);
+  if (r.out.length) throw new Error(`${r.out.length} row parts leave the screen: ${r.out[0]}`);
+}, p => p === '/works.html');
+
+test('featured and index rows show a focus ring', async ({ page }) => {
+  for (const sel of ['ol.featured a.row', 'ol.index a.row']) {
+    await page.focus(sel);
+    const style = await page.$eval(sel, a => getComputedStyle(a).outlineStyle);
+    if (style === 'none') throw new Error(`${sel} has no focus outline`);
+  }
+}, p => p === '/works.html');
+
+test('CV_PENDING names only known cases', async () => {
   const unknown = CV_PENDING.filter(s => !CV[s]);
   if (unknown.length) throw new Error(`unknown slugs in CV_PENDING: ${unknown.join(', ')}`);
 }, p => p === '/works.html');
@@ -616,14 +673,14 @@ test('pager ends lead back to All work', async ({ page }) => {
   if (!r.all) throw new Error('no link to works.html in the pager');
 }, p => CLIENT_ENDS.includes(p));
 
-test('pager links show the target case\'s ledger line', async ({ page, base }) => {
-  const ledger = await (await page.request.get(`${base}/works.html`)).text();
+// Index rows carry no summary, so the target page's dek is the reference.
+test('pager links show the target case\'s summary', async ({ page, base }) => {
   const links = await page.$$eval('.pn a[rel]', as => as.map(a => ({ slug: a.getAttribute('href').split('/')[1], line: a.querySelector('.pn-line')?.textContent.trim() })));
   if (!links.length) throw new Error('no pager links');
   for (const l of links) {
-    const row = ledger.match(new RegExp(`href="work/${l.slug}/".*?<span class="line">([^<]*)</span>`));
-    const want = row?.[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-    if (!l.line || l.line !== want) throw new Error(`${l.slug}: pager line "${l.line}", ledger "${want}"`);
+    const html = await (await page.request.get(`${base}/work/${l.slug}/`)).text();
+    const want = html.match(/<p class="dek">([^<]*)<\/p>/)?.[1].replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    if (!l.line || l.line !== want) throw new Error(`${l.slug}: pager line "${l.line}", dek "${want}"`);
   }
 }, p => CASE(p) || SIDE(p));
 
