@@ -128,12 +128,12 @@ test('email sits in the header line and the footer', async ({ page }) => {
   if (r.avail !== 1 || r.footer !== 1 || r.all !== 2) throw new Error(`mailto links: ${r.avail} in p.avail, ${r.footer} in the footer, ${r.all} in all`);
 }, p => p === '/works.html');
 
-// The span runs from the oldest row (Taller, 2009) to the newest (the side
+// The span runs from the oldest row (Infoxel, 2016) to the newest (the side
 // projects, 2026). Change it together with "masthead end year is the newest
 // row year" when the dates move.
-test('masthead reads Work, 2009–2026', async ({ page }) => {
+test('masthead reads Work, 2016–2026', async ({ page }) => {
   const meta = (await page.$eval('.intro .mast .meta', e => e.textContent)).trim();
-  if (meta !== 'Work, 2009–2026') throw new Error(`masthead reads "${meta}"`);
+  if (meta !== 'Work, 2016–2026') throw new Error(`masthead reads "${meta}"`);
 }, p => p === '/works.html');
 
 test('side lines are not questions', async ({ page }) => {
@@ -315,7 +315,6 @@ const CV = {
   omsnic: [2019, 'Lead UI designer'],
   lavoz: [2017, 'UX researcher and product designer'],
   infoxel: [2016, 'Product designer'],
-  taller: [2009, 'UX/UI designer'],
 };
 const CV_PENDING = [];
 const CV_DONE = p => CASE(p) && !CV_PENDING.includes(slugOf(p));
@@ -521,7 +520,6 @@ const DECISIONS = {
   valora: ['The AI suggests, the analyst commits', 'Cap tables and scenarios you can work in', 'One design system for three modules'],
   continental: ['Clarity first, to WCAG', 'Denser screens, not more whitespace', 'One accessible library under everything'],
   'ey-helix': ["Auditors' workflows before patterns", 'Written guidelines for Helix visualizations', 'One architecture for a team of ten'],
-  taller: ['Interactive apps for digital TV', 'An in-cabin console for precision agriculture', 'Leading web publishing on Agilent'],
   topicflower: ['Keep the flower, put the numbers underneath', 'From a place you checked to a place you worked', 'One design system for the new platform'],
 };
 test('decision heads name the decision', async ({ page, path }) => {
@@ -835,7 +833,7 @@ test('diagram marker ids are unique on a page', async ({ page }) => {
 // of one plain line (≤ 100 characters, no em dash, no trailing period), and
 // at most one caption per page says what was blurred. Cases not listed here
 // have no screens yet.
-const CLIENT_SCREENS = ['bancor', 'continental', 'ey-helix', 'hometown', 'lavoz', 'omsnic', 'valora'];
+const CLIENT_SCREENS = ['bancor', 'continental', 'ey-helix', 'hometown', 'omsnic', 'valora'];
 test('client case screens sit under the decision they show', async ({ page, path }) => {
   const figs = await page.$$eval('main figure.screen', fs => fs.map(f => {
     const part = f.closest('section.part');
