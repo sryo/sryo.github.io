@@ -1,40 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 272">
-  <title>GmailTidy: the timed passes that touch mail search your Gmail and write labels, archives and drafts back; the slower two ask Gemini for replies</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 176">
+  <title>GmailTidy: read mail leaves your inbox after a day, promos wait in pretrash, threads you haven't answered come back after a few days, and you reply once to the daily digest</title>
   <defs>
-    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+    <marker id="gmailtidy-head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
       <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
     </marker>
   </defs>
   <g fill="none" stroke="currentColor" stroke-width="1.5">
-    <circle cx="40" cy="136" r="24"/>
-    <path d="M64 128H192" marker-end="url(#head)"/>
-    <path d="M192 144H64" marker-end="url(#head)"/>
-    <path d="M320 136H344"/>
-    <path d="M344 40V232"/>
-    <path d="M344 40H368" marker-end="url(#head)"/>
-    <path d="M344 104H368" marker-end="url(#head)"/>
-    <path d="M344 168H368" marker-end="url(#head)"/>
-    <path d="M344 232H368" marker-end="url(#head)"/>
-    <rect x="368" y="16" width="176" height="48"/>
-    <rect x="368" y="80" width="176" height="48"/>
-    <rect x="368" y="144" width="176" height="48"/>
-    <rect x="368" y="208" width="176" height="48"/>
-    <path d="M544 168H560V232H544" stroke-dasharray="4 4"/>
-    <path d="M560 200H576" stroke-dasharray="4 4" marker-end="url(#head)"/>
-    <circle cx="600" cy="200" r="24"/>
+    <circle cx="32" cy="40" r="24"/>
+    <path d="M56 40H80" marker-end="url(#gmailtidy-head)"/>
+    <rect x="88" y="16" width="232" height="48"/>
+    <path d="M320 40H344" marker-end="url(#gmailtidy-head)"/>
+    <rect x="352" y="16" width="200" height="48"/>
+    <path d="M452 64V104" marker-end="url(#gmailtidy-head)"/>
+    <rect x="328" y="112" width="248" height="48"/>
+    <path d="M328 136H312" marker-end="url(#gmailtidy-head)"/>
+    <rect x="104" y="112" width="200" height="48"/>
   </g>
-  <rect x="192" y="112" width="128" height="48" fill="currentColor"/>
   <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
-    <text x="40" y="176">Gmail</text>
-    <text class="knock" x="256" y="136">GmailTidy</text>
-    <text x="456" y="40">cleanUp · 5 min</text>
-    <text x="456" y="104">bunch · 5 min</text>
-    <text x="456" y="168">cleanUpDeep · 15 min</text>
-    <text x="456" y="232">sendBurndown · 8:00</text>
-    <text x="600" y="240">Gemini</text>
+    <text x="32" y="40">You</text>
+    <text x="204" y="40">Read mail leaves after a day</text>
+    <text x="452" y="40">Promos wait in pretrash</text>
+    <text x="452" y="136">Unanswered threads come back</text>
+    <text x="204" y="136">Reply once to the digest</text>
   </g>
-  <g fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
-    <text class="mute" x="128" y="116">search</text>
-    <text class="mute" x="128" y="160">label, archive, draft</text>
+  <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text x="384" y="84">2 to 4 days later</text>
   </g>
 </svg>

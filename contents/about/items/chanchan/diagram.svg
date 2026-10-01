@@ -1,43 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 264">
-  <title>Chanchán: the sheet of Spanish text goes through traductor.js into Strudel code, which Strudel plays; the same text rides inside the link</title>
-  <!-- source: index.html script order; js/traductor.js (traducirLinea, armarCodigo); js/reloj.js (correr → evaluate); js/editor.js (actualizar); js/cinta.js; js/guardado.js (hashDe, CompressionStream deflate-raw) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 192">
+  <title>Chanchán: you type a beat in plain Spanish words, hear it play, swap a word from its menu, copy the link, and a friend who opens it hears the same song</title>
   <defs>
     <marker id="chanchan-head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
       <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
     </marker>
   </defs>
   <g fill="none" stroke="currentColor" stroke-width="1.5">
-    <rect x="8" y="32" width="136" height="48"/>
-    <path d="M144 56H184" marker-end="url(#chanchan-head)"/>
-    <path d="M320 56H376" marker-end="url(#chanchan-head)"/>
-    <rect x="376" y="32" width="144" height="48"/>
-    <path d="M520 56H584" marker-end="url(#chanchan-head)"/>
-    <circle cx="608" cy="56" r="24"/>
-    <path d="M252 80V112" marker-end="url(#chanchan-head)"/>
-    <rect x="184" y="112" width="136" height="48"/>
-    <path d="M608 80V136H520" marker-end="url(#chanchan-head)"/>
-    <rect x="376" y="112" width="144" height="48"/>
-    <path d="M76 80V192" marker-end="url(#chanchan-head)"/>
-    <rect x="8" y="192" width="136" height="48"/>
-    <path d="M144 216H208" stroke-dasharray="4 4" marker-end="url(#chanchan-head)"/>
-    <circle cx="232" cy="216" r="24"/>
+    <circle cx="32" cy="40" r="24"/>
+    <path d="M56 40H80" marker-end="url(#chanchan-head)"/>
+    <rect x="88" y="16" width="208" height="48"/>
+    <path d="M296 40H328" marker-end="url(#chanchan-head)"/>
+    <rect x="336" y="16" width="144" height="48"/>
+    <path d="M408 64V104" marker-end="url(#chanchan-head)"/>
+    <rect x="328" y="112" width="160" height="48"/>
+    <path d="M328 136H296" marker-end="url(#chanchan-head)"/>
+    <rect x="160" y="112" width="128" height="48"/>
+    <path d="M160 136H64" marker-end="url(#chanchan-head)"/>
+    <circle cx="32" cy="136" r="24"/>
   </g>
-  <rect x="184" y="32" width="136" height="48" fill="currentColor"/>
   <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
-    <text x="76" y="56">The sheet</text>
-    <text class="knock" x="252" y="56">traductor.js</text>
-    <text x="448" y="56">Strudel code</text>
-    <text x="608" y="16">Strudel</text>
-    <text x="252" y="136">editor.js</text>
-    <text x="448" y="136">cinta.js</text>
-    <text x="76" y="216">URL hash</text>
-    <text x="232" y="256">Another browser</text>
+    <text x="32" y="40">You</text>
+    <text x="192" y="40">Type la bata toca pum pa</text>
+    <text x="408" y="40">Hear it play</text>
+    <text x="408" y="136">Swap a word from ▾</text>
+    <text x="224" y="136">Copy the link</text>
+    <text x="32" y="176">Friend</text>
   </g>
-  <g class="mute" fill="currentColor" font-size="12" dominant-baseline="central">
-    <text x="552" y="44" text-anchor="middle">evaluate</text>
-    <text x="264" y="96">colours</text>
-    <text x="564" y="124" text-anchor="middle">hits</text>
-    <text x="88" y="136">copy link</text>
-    <text x="176" y="204" text-anchor="middle">deflate</text>
+  <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text x="112" y="124">same song</text>
   </g>
 </svg>

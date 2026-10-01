@@ -1,36 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 176">
-  <title>Va: you type an amount, pick who gets it and confirm with Face ID; Va then asks an aggregator API to move the money between your bank accounts</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 168">
+  <title>Va: you type the amount, pick who gets it and confirm with Face ID, and Va moves the money</title>
   <defs>
     <marker id="va-head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
       <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
     </marker>
   </defs>
   <g fill="none" stroke="currentColor" stroke-width="1.5">
-    <circle cx="40" cy="40" r="24"/>
-    <path d="M64 40H96" marker-end="url(#va-head)"/>
-    <rect x="96" y="16" width="152" height="48"/>
-    <path d="M248 40H280" marker-end="url(#va-head)"/>
-    <rect x="280" y="16" width="120" height="48"/>
-    <path d="M400 40H432" marker-end="url(#va-head)"/>
-    <rect x="432" y="16" width="200" height="48"/>
-    <path d="M532 64V80H120V96" marker-end="url(#va-head)"/>
-    <path d="M232 120H296" stroke-dasharray="4 4" marker-end="url(#va-head)"/>
-    <circle cx="320" cy="120" r="24"/>
-    <path d="M344 120H496" stroke-dasharray="4 4" marker-end="url(#va-head)"/>
-    <circle cx="520" cy="120" r="24"/>
+    <circle cx="32" cy="40" r="24"/>
+    <path d="M56 40H80" marker-end="url(#va-head)"/>
+    <rect x="88" y="16" width="136" height="48"/>
+    <path d="M224 40H256" marker-end="url(#va-head)"/>
+    <rect x="264" y="16" width="96" height="48"/>
+    <path d="M360 40H392" marker-end="url(#va-head)"/>
+    <rect x="400" y="16" width="176" height="48"/>
+    <path d="M488 64V104" marker-end="url(#va-head)"/>
+    <path d="M440 136H408" marker-end="url(#va-head)"/>
+    <rect x="240" y="112" width="160" height="48"/>
   </g>
-  <rect x="8" y="96" width="224" height="48" fill="currentColor"/>
+  <rect x="440" y="112" width="96" height="48" fill="currentColor"/>
   <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
-    <text x="40" y="40">You</text>
-    <text x="172" y="40">Type the amount</text>
-    <text x="340" y="40">Pick who</text>
-    <text x="532" y="40">Confirm with Face ID</text>
-    <text class="knock" x="120" y="120">Va</text>
-    <text x="320" y="160">Aggregator API</text>
-    <text x="520" y="160">Your bank accounts</text>
+    <text x="32" y="40">You</text>
+    <text x="156" y="40">Type the amount</text>
+    <text x="312" y="40">Pick who</text>
+    <text x="488" y="40">Confirm with Face ID</text>
+    <text class="knock" x="488" y="136">Va</text>
+    <text x="320" y="136">The money moves</text>
   </g>
   <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
-    <text x="264" y="108">transfer</text>
-    <text x="420" y="108">moves money</text>
+    <text x="536" y="84">three taps</text>
   </g>
 </svg>

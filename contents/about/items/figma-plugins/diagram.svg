@@ -1,37 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 224">
-  <title>Figma Plugins: you run a plugin, its code.js collects the text layers, loads their fonts, then Anchorify turns markup into hyperlinks and Word Hugger joins each paragraph's last two words</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 176">
+  <title>Figma Plugins: you select text with link markup and run Anchorify; the markup becomes clickable links and a note tells you how many it fixed</title>
   <defs>
     <marker id="figma-plugins-head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
       <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
     </marker>
   </defs>
   <g fill="none" stroke="currentColor" stroke-width="1.5">
-    <circle cx="48" cy="48" r="24"/>
-    <path d="M72 48H160" marker-end="url(#figma-plugins-head)"/>
-    <path d="M256 48H296" marker-end="url(#figma-plugins-head)"/>
-    <rect x="296" y="24" width="144" height="48"/>
-    <path d="M440 48H472" marker-end="url(#figma-plugins-head)"/>
-    <rect x="472" y="24" width="128" height="48"/>
-    <path d="M536 72V144" marker-end="url(#figma-plugins-head)"/>
-    <path d="M536 112H264V144" marker-end="url(#figma-plugins-head)"/>
-    <rect x="168" y="144" width="192" height="48"/>
-    <rect x="440" y="144" width="192" height="48"/>
+    <circle cx="32" cy="40" r="24"/>
+    <path d="M56 40H80" marker-end="url(#figma-plugins-head)"/>
+    <rect x="88" y="16" width="224" height="48"/>
+    <path d="M312 40H344" marker-end="url(#figma-plugins-head)"/>
+    <rect x="352" y="16" width="120" height="48"/>
+    <path d="M412 64V104" marker-end="url(#figma-plugins-head)"/>
+    <rect x="312" y="112" width="200" height="48"/>
+    <path d="M312 136H288" marker-end="url(#figma-plugins-head)"/>
+    <rect x="104" y="112" width="176" height="48"/>
   </g>
-  <rect x="160" y="24" width="96" height="48" fill="currentColor"/>
   <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
-    <text x="48" y="88">You</text>
-    <text class="knock" x="208" y="48">code.js</text>
-    <text x="368" y="48">Text layers</text>
-    <text x="536" y="48">loadFontAsync</text>
-    <text x="264" y="168">Markup → hyperlink</text>
-    <text x="536" y="168">Last space → U+00A0</text>
+    <text x="32" y="40">You</text>
+    <text x="200" y="40">Select text with link markup</text>
+    <text x="412" y="40">Run Anchorify</text>
+    <text x="412" y="136">The markup becomes links</text>
+    <text x="192" y="136">It tells you how many</text>
   </g>
   <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
-    <text x="116" y="36">run</text>
-    <text x="368" y="88">selection, else page</text>
-    <text x="256" y="128" text-anchor="end">Anchorify</text>
-    <text x="544" y="128" text-anchor="start">Word Hugger</text>
-    <text x="264" y="208">underlined, by range</text>
-    <text x="536" y="208">in every paragraph</text>
+    <text x="376" y="84">in place</text>
   </g>
 </svg>

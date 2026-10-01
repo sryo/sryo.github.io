@@ -1,33 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 208">
-  <title>LineAndForm: project folders, a config file and one stylesheet go through one bash script and come out as a ledger plus one page per project</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 168">
+  <title>LineAndForm: you add a folder, run one script, and the project shows up as a new row in the ledger and as a page of its own</title>
   <defs>
-    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+    <marker id="lineandform-head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
       <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
     </marker>
   </defs>
   <g fill="none" stroke="currentColor" stroke-width="1.5">
-    <rect x="8" y="16" width="160" height="48"/>
-    <rect x="8" y="80" width="160" height="48"/>
-    <rect x="8" y="144" width="160" height="48"/>
-    <path d="M168 40H184V88H208" marker-end="url(#head)"/>
-    <path d="M168 104H208" marker-end="url(#head)"/>
-    <path d="M168 168H184V120H208" marker-end="url(#head)"/>
-    <path d="M352 104H368V56H464" marker-end="url(#head)"/>
-    <path d="M368 104V152H464" marker-end="url(#head)"/>
-    <rect x="472" y="32" width="160" height="48"/>
-    <rect x="472" y="128" width="160" height="48"/>
+    <circle cx="32" cy="40" r="24"/>
+    <path d="M56 40H80" marker-end="url(#lineandform-head)"/>
+    <rect x="88" y="16" width="112" height="48"/>
+    <path d="M200 40H232" marker-end="url(#lineandform-head)"/>
+    <path d="M352 40H392" marker-end="url(#lineandform-head)"/>
+    <rect x="400" y="16" width="192" height="48"/>
+    <path d="M376 40V136H392" marker-end="url(#lineandform-head)"/>
+    <rect x="400" y="112" width="192" height="48"/>
   </g>
-  <rect x="216" y="80" width="136" height="48" fill="currentColor"/>
+  <rect x="240" y="16" width="112" height="48" fill="currentColor"/>
   <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
-    <text x="88" y="40">contents/&lt;slug&gt;/</text>
-    <text x="88" y="104">config.cfg</text>
-    <text x="88" y="168">styles.css, script.js</text>
-    <text class="knock" x="284" y="104">build.sh</text>
-    <text x="552" y="56">works.html</text>
-    <text x="552" y="152">work/&lt;slug&gt;/</text>
-  </g>
-  <g fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
-    <text class="mute" x="416" y="44">newest first</text>
-    <text class="mute" x="416" y="140">one per folder</text>
+    <text x="32" y="40">You</text>
+    <text x="144" y="40">Add a folder</text>
+    <text class="knock" x="296" y="40">LineAndForm</text>
+    <text x="496" y="40">A new row in the ledger</text>
+    <text x="496" y="136">A page of its own</text>
   </g>
 </svg>

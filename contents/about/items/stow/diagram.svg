@@ -1,42 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 248">
-  <title>Stow: the Mac app docks beside the browser and focuses or opens tabs through AppleScript, saves each change to a local data.json and syncs its model to the iPhone app through iCloud</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 168">
+  <title>Stow: you switch to Safari and the sidebar docks beside it with your workspaces, you click a saved link, and the tab that is already open comes forward</title>
   <defs>
-    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+    <marker id="stow-head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
       <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
     </marker>
   </defs>
   <g fill="none" stroke="currentColor" stroke-width="1.5">
-    <circle cx="32" cy="112" r="24"/>
-    <path d="M56 112H88" marker-end="url(#head)"/>
-    <path d="M176 88V40H312" marker-end="url(#head)"/>
-    <path d="M256 112H312" marker-end="url(#head)"/>
-    <rect x="320" y="16" width="184" height="48"/>
-    <rect x="320" y="88" width="184" height="48"/>
-    <path d="M504 40H544V76H568" marker-end="url(#head)"/>
-    <path d="M504 112H544V76"/>
-    <circle cx="600" cy="76" r="24"/>
-    <path d="M120 136V176" marker-end="url(#head)"/>
-    <rect x="8" y="184" width="136" height="48"/>
-    <path d="M216 136V208H384" stroke-dasharray="4 4" marker-end="url(#head)"/>
-    <circle cx="416" cy="208" r="24"/>
-    <path d="M440 208H464" stroke-dasharray="4 4" marker-end="url(#head)"/>
-    <rect x="472" y="184" width="160" height="48"/>
+    <circle cx="32" cy="40" r="24"/>
+    <path d="M56 40H80" marker-end="url(#stow-head)"/>
+    <rect x="88" y="16" width="144" height="48"/>
+    <path d="M232 40H344" marker-end="url(#stow-head)"/>
+    <path d="M400 64V104" marker-end="url(#stow-head)"/>
+    <rect x="320" y="112" width="160" height="48"/>
+    <path d="M320 136H240" marker-end="url(#stow-head)"/>
+    <rect x="16" y="112" width="216" height="48"/>
   </g>
-  <rect x="96" y="88" width="160" height="48" fill="currentColor"/>
+  <rect x="352" y="16" width="96" height="48" fill="currentColor"/>
   <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
-    <text x="32" y="112">You</text>
-    <text class="knock" x="176" y="112">Stow for Mac</text>
-    <text x="412" y="40">AppleScript</text>
-    <text x="412" y="112">Accessibility API</text>
-    <text x="600" y="116">Browser</text>
-    <text x="76" y="208">data.json</text>
-    <text x="416" y="168">iCloud</text>
-    <text x="552" y="208">Stow for iPhone</text>
+    <text x="32" y="40">You</text>
+    <text x="160" y="40">Switch to Safari</text>
+    <text class="knock" x="400" y="40">Stow</text>
+    <text x="400" y="136">Click a saved link</text>
+    <text x="124" y="136">The open tab comes forward</text>
   </g>
   <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
-    <text x="248" y="28">focus or open</text>
-    <text x="284" y="100">dock</text>
-    <text x="144" y="156">save</text>
-    <text x="300" y="196">CloudKit</text>
+    <text x="288" y="28">it docks there</text>
+    <text x="464" y="84">same workspaces</text>
   </g>
 </svg>
