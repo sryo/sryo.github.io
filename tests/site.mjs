@@ -165,8 +165,8 @@ test('glyphs are on-system: black fills, no text, style or animation', async ({ 
 
 // Side-project glyphs follow the original grammar: a few
 // primitives XORed in one evenodd path; straight lines and circular arcs only.
-const SIDE_GLYPHS = ['chanchan', 'stow', 'avis', 'figma-cdp', 'murmur', 'dirpad', 'when', 'trueframe', 'fin', 'subi',
-  'posta', 'apptidy', 'airnod', 'lineandform', 'spoons', 'gmailtidy', 'zentrate', 'figma-plugins', 'chronomouse'];
+const SIDE_GLYPHS = ['chanchan', 'avis', 'figma-cdp', 'murmur', 'dirpad', 'when', 'trueframe', 'fin', 'subi',
+  'posta', 'airnod', 'zentrate', 'figma-plugins'];
 test('side glyphs are basic shapes XORed in one path', async () => {
   const bad = [];
   for (const slug of SIDE_GLYPHS) {
@@ -907,7 +907,7 @@ test('diagram styles: ink, Inter, 1.5px hairlines, knockout, no page overflow', 
 // project has a UI; a diagram is optional and, when present, captioned.
 // SCREENS_PENDING holds projects with a UI whose real screens aren't
 // captured yet; a slug leaves it when its screens land (red → green).
-const SCREENS_PENDING = ['airnod', 'apptidy', 'figma-cdp', 'figma-plugins', 'fin', 'stow', 'subi', 'va', 'when'];
+const SCREENS_PENDING = ['airnod', 'figma-cdp', 'figma-plugins', 'fin', 'subi', 'va', 'when'];
 test('side project shows its screens', async ({ page, path }) => {
   const slug = slugOf(path);
   const r = await page.evaluate(() => ({
@@ -1110,7 +1110,7 @@ test('parity pull: the glyph comes apart near the pointer and keeps its holes', 
   r = await parityProbe(page);
   if (r.canvas || r.img !== '1') throw new Error('canvas left in place on pageswap');
   await page.mouse.move(0, 0);
-}, p => ['/work/continental/', '/work/lineandform/', '/work/bancor/', '/work/topicflower/'].includes(p));
+}, p => ['/work/continental/', '/work/posta/', '/work/bancor/', '/work/topicflower/'].includes(p));
 
 test('parity pull inks white in dark mode', async ({ page, vp }) => {
   if (vp !== 'desktop') return;
