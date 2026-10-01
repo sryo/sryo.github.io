@@ -902,7 +902,7 @@ derive_medium() {
             macOS|iOS|Figma|Desktop|Tauri) printf '%s' "$tag"; return ;;
             Hammerspoon) printf 'macOS'; return ;;
             Browser|JavaScript|WebRTC) printf 'Web'; return ;;
-            "Google Apps Script") printf 'Gmail'; return ;;
+            Gmail|"Google Apps Script") printf 'Gmail'; return ;;
         esac
     done
 }
