@@ -507,6 +507,52 @@ h1 {
     max-width: min(100%, 320px);
 }
 
+.body figure.wide img {
+    cursor: zoom-in;
+}
+
+@media (min-width: 40rem) {
+    .part > .body figure.wide {
+        --col: calc((100% - 6 * var(--gap)) / 7);
+        width: calc(12 * var(--col) + 11 * var(--gap));
+        margin-left: calc(-3 * (var(--col) + var(--gap)));
+    }
+
+    .part > .body figure.wide figcaption {
+        margin-left: calc(3 * (var(--col) + var(--gap)));
+        max-width: calc(7 * var(--col) + 6 * var(--gap));
+    }
+}
+
+.zoom {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    overflow: auto;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: color-mix(in srgb, var(--paper) 96%, transparent);
+    cursor: zoom-out;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.zoom.open {
+    opacity: 1;
+}
+
+.zoom img {
+    max-width: none;
+    border: 1px solid var(--hair);
+    transform: scale(0.98);
+    transition: transform 0.2s ease;
+}
+
+.zoom.open img {
+    transform: none;
+}
+
 .body .screen-pair {
     margin: 32px 0;
 }

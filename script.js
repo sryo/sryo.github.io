@@ -41,3 +41,28 @@ window.addEventListener("pagereveal", function (e) {
     root.setAttribute("data-vt", "");
     e.viewTransition.finished.finally(function () { root.removeAttribute("data-vt"); });
 });
+
+// Optional enhancement: a wide screen opens at its real size on click.
+// Fades in, and fades out before it's removed (Escape or any click).
+document.addEventListener("click", function (e) {
+    var img = e.target.closest && e.target.closest("figure.wide img");
+    if (!img) return;
+    var z = document.createElement("div");
+    z.className = "zoom";
+    z.setAttribute("role", "dialog");
+    z.setAttribute("aria-label", img.alt);
+    var big = document.createElement("img");
+    big.src = img.currentSrc || img.src;
+    big.alt = img.alt;
+    z.appendChild(big);
+    document.body.appendChild(z);
+    requestAnimationFrame(function () { z.classList.add("open"); });
+    function close() {
+        document.removeEventListener("keydown", onKey);
+        z.classList.remove("open");
+        setTimeout(function () { z.remove(); }, 200);
+    }
+    function onKey(k) { if (k.key === "Escape") close(); }
+    z.addEventListener("click", close);
+    document.addEventListener("keydown", onKey);
+});

@@ -833,6 +833,29 @@ test('diagram marker ids are unique on a page', async ({ page }) => {
 // of one plain line (≤ 100 characters, no em dash, no trailing period), and
 // at most one caption per page says what was blurred. Cases not listed here
 // have no screens yet.
+// Before/after composites (wider than 1600px) break out of the text
+// column on desktop and open full size on click; plain screens don't.
+test('wide screens break out of the column and zoom on click', async ({ page, vp }) => {
+  const r = await page.$$eval('main figure.screen', fs => fs.map(f => {
+    const body = f.closest('.body').getBoundingClientRect();
+    const img = f.querySelector('img');
+    return { wide: f.classList.contains('wide'), natural: img.naturalWidth || +img.getAttribute('width'), w: f.getBoundingClientRect().width, body: body.width };
+  }));
+  const wide = r.filter(x => x.wide);
+  if (!wide.length) throw new Error('no figure.wide on the page');
+  for (const x of r) if (x.wide !== (x.natural > 1600)) throw new Error(`a ${x.natural}px screen is ${x.wide ? '' : 'not '}wide`);
+  if (vp === 'desktop' && wide.some(x => x.w < x.body * 1.4)) throw new Error(`wide figure ${wide[0].w}px vs body ${wide[0].body}px`);
+  if (vp === 'mobile' && wide.some(x => x.w > x.body + 0.5)) throw new Error('wide figure overflows the body on a phone');
+  await page.locator('main figure.wide img').first().click();
+  await page.waitForTimeout(400);
+  const open = await page.$eval('.zoom', z => ({ shown: getComputedStyle(z).opacity === '1', w: z.querySelector('img').getBoundingClientRect().width, nat: z.querySelector('img').naturalWidth })).catch(() => null);
+  if (!open || !open.shown) throw new Error('click did not open the zoom');
+  if (vp === 'desktop' && open.w < Math.min(open.nat, 1300)) throw new Error(`zoomed image only ${open.w}px`);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
+  if (await page.$('.zoom')) throw new Error('zoom still open after Escape');
+}, p => p === '/work/continental/');
+
 const CLIENT_SCREENS = ['bancor', 'continental', 'ey-helix', 'hometown', 'omsnic', 'topicflower', 'valora'];
 test('client case screens sit under the decision they show', async ({ page, path }) => {
   const figs = await page.$$eval('main figure.screen', fs => fs.map(f => {

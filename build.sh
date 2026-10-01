@@ -326,6 +326,9 @@ render_screen() {
     fi
     read -r w h < <(image_size "$path")
     [ -n "$h" ] && [ "$h" -gt "$w" ] && cls="screen portrait"
+    # Before/after composites are exported at real size, wider than any
+    # single screen: they break out of the text column (styles.css).
+    [ -n "$w" ] && [ "$w" -gt 1600 ] && cls="screen wide"
     printf '<figure class="%s"><img src="%s" alt="%s" loading="lazy"%s><figcaption>%s</figcaption></figure>' \
         "$cls" "$(html_escape "$src")" "$(html_escape "$alt")" "${w:+ width=\"$w\" height=\"$h\"}" \
         "$(html_escape "${caption:-$alt}")"
