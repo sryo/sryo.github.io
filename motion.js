@@ -1,4 +1,4 @@
-// Motion for the portfolio pages: parity pull on the case glyph, tether on the ledger. Deferred;
+// Motion for the portfolio pages: parity pull (case glyph), tether (ledger), flow pulse (diagrams). Deferred;
 // every effect checks reduced motion itself and sleeps when idle.
 (function () {
     "use strict";
@@ -420,10 +420,200 @@
         });
     }
 
+    // ── Flow pulse ──────────────────────────────────────────────
+    // Diagrams are flows. When one comes into view, an accent pulse leaves
+    // its entry nodes, runs along the lines, splits at forks and flashes
+    // each box as it arrives, timed by distance; then the drawing rests in
+    // black. Hovering or tapping a node sends a pulse from there. The graph
+    // is read from the SVG (rects and circles are nodes, stroked paths are
+    // edges; a path that starts mid-line branches off that line). Drawn on
+    // a canvas over the SVG, in the SVG's user units; the SVG is untouched.
+
+    var SPEED = 0.26;     // user units per ms
+    var TAIL = 28;        // pulse length, user units
+    var FLASH = 600;      // ms a node's outline stays lit
+
+    function readGraph(svg) {
+        var nodes = [], edges = [];
+        svg.querySelectorAll("rect, circle").forEach(function (el) {
+            if (el.closest("defs, marker")) return;
+            var b = el.getBBox();
+            nodes.push({ el: el, x: b.x, y: b.y, w: b.width, h: b.height, round: el.tagName === "circle", out: [] });
+        });
+        svg.querySelectorAll("path").forEach(function (el) {
+            if (el.closest("defs, marker") || getComputedStyle(el).stroke === "none") return;
+            var len = el.getTotalLength();
+            if (len < 1) return;
+            edges.push({ el: el, len: len, a: el.getPointAtLength(0), b: el.getPointAtLength(len) });
+        });
+        function nodeAt(p, pad) {
+            var best = null;
+            nodes.forEach(function (n) {
+                if (p.x >= n.x - pad && p.x <= n.x + n.w + pad && p.y >= n.y - pad && p.y <= n.y + n.h + pad
+                    && (!best || n.w * n.h < best.w * best.h)) best = n;
+            });
+            return best;
+        }
+        edges.forEach(function (e) {
+            e.from = nodeAt(e.a, 4);
+            e.to = nodeAt(e.b, 12);
+            if (e.from === e.to) e.to = null;
+        });
+        // Branches: an edge starting on another edge's line, not at a node.
+        edges.forEach(function (e) {
+            if (e.from) return;
+            edges.some(function (o) {
+                if (o === e) return false;
+                for (var l = 0; l <= o.len; l += 2) {
+                    var q = o.el.getPointAtLength(l);
+                    if (Math.abs(q.x - e.a.x) + Math.abs(q.y - e.a.y) < 2) { e.parent = o; e.at = l; return true; }
+                }
+                return false;
+            });
+        });
+        edges.forEach(function (e) { if (e.from) e.from.out.push(e); });
+        return { nodes: nodes, edges: edges };
+    }
+
+    // Start and arrival times (ms) for a pulse leaving `sources` at 0.
+    function schedule(graph, sources) {
+        var t = new Map(), start = new Map(), changed = true, guard = 0;
+        sources.forEach(function (n) { t.set(n, 0); });
+        while (changed && guard++ < 50) {
+            changed = false;
+            graph.edges.forEach(function (e) {
+                var s = e.from ? t.get(e.from) : e.parent && start.has(e.parent) ? start.get(e.parent) + e.at / SPEED : undefined;
+                if (s === undefined || (start.has(e) && start.get(e) <= s)) return;
+                start.set(e, s);
+                changed = true;
+                if (e.to) {
+                    var arrive = s + e.len / SPEED;
+                    if (!t.has(e.to) || t.get(e.to) > arrive) t.set(e.to, arrive);
+                }
+            });
+        }
+        var end = 0;
+        start.forEach(function (s, e) { end = Math.max(end, s + (e.len + TAIL) / SPEED); });
+        t.forEach(function (a) { end = Math.max(end, a + FLASH); });
+        return { nodes: t, edges: start, end: end };
+    }
+
+    function flowPulse(fig) {
+        var svg = fig.querySelector(":scope > svg");
+        if (!svg || fig.hasAttribute("data-toy") || !svg.viewBox.baseVal || !svg.viewBox.baseVal.width) return;
+        var graph = null, canvas = null, ctx = null, runs = [], raf = 0, hovered = null;
+
+        function ensure() {
+            if (!graph) graph = readGraph(svg);
+            if (!canvas) {
+                canvas = document.createElement("canvas");
+                canvas.className = "pulse";
+                canvas.setAttribute("aria-hidden", "true");
+                canvas.style.cssText = "position:absolute;pointer-events:none";
+                svg.after(canvas);
+                ctx = canvas.getContext("2d", { willReadFrequently: true });
+            }
+        }
+
+        function fire(sources) {
+            ensure();
+            if (!sources) {
+                var incoming = new Set();
+                graph.edges.forEach(function (e) { if (e.to) incoming.add(e.to); });
+                sources = graph.nodes.filter(function (n) { return n.out.length && !incoming.has(n); });
+                if (!sources.length) sources = graph.nodes.slice(0, 1);
+            }
+            if (!sources.length) return;
+            runs.push({ t0: performance.now(), plan: schedule(graph, sources) });
+            if (!raf) raf = requestAnimationFrame(tick);
+        }
+
+        function segment(e, from, to) {
+            ctx.beginPath();
+            for (var l = from, first = true; ; l = Math.min(to, l + 4)) {
+                var p = e.el.getPointAtLength(l);
+                if (first) { ctx.moveTo(p.x, p.y); first = false; } else ctx.lineTo(p.x, p.y);
+                if (l >= to) break;
+            }
+            ctx.stroke();
+        }
+
+        function tick(now) {
+            raf = 0;
+            var vb = svg.viewBox.baseVal, w = svg.clientWidth, k = w / vb.width, dpr = Math.min(2, devicePixelRatio || 1);
+            var px = Math.round(w * dpr), py = Math.round(svg.clientHeight * dpr);
+            if (canvas.width !== px || canvas.height !== py) { canvas.width = px; canvas.height = py; }
+            // SVG elements have no offsetLeft/Top: place from the boxes, in the
+            // figure's scrolled coordinates (it scrolls sideways on phones).
+            var sb = svg.getBoundingClientRect(), fb = fig.getBoundingClientRect();
+            canvas.style.left = sb.left - fb.left + fig.scrollLeft + "px";
+            canvas.style.top = sb.top - fb.top + fig.scrollTop + "px";
+            canvas.style.width = w + "px";
+            canvas.style.height = svg.clientHeight + "px";
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, px, py);
+            runs = runs.filter(function (r) { return now - r.t0 < r.plan.end; });
+            if (!runs.length) return;
+            ctx.setTransform(k * dpr, 0, 0, k * dpr, -vb.x * k * dpr, -vb.y * k * dpr);
+            ctx.strokeStyle = accent();
+            ctx.lineWidth = 2 / k;
+            runs.forEach(function (r) {
+                var el = now - r.t0;
+                r.plan.edges.forEach(function (s, e) {
+                    var head = (el - s) * SPEED;
+                    if (head <= 0 || head - TAIL >= e.len) return;
+                    ctx.globalAlpha = 1;
+                    segment(e, Math.max(0, head - TAIL), Math.min(e.len, head));
+                });
+                r.plan.nodes.forEach(function (a, n) {
+                    var since = el - a;
+                    if (since < 0 || since > FLASH || a === 0) return;
+                    ctx.globalAlpha = 1 - since / FLASH;
+                    ctx.beginPath();
+                    if (n.round) ctx.arc(n.x + n.w / 2, n.y + n.h / 2, n.w / 2, 0, Math.PI * 2);
+                    else ctx.rect(n.x, n.y, n.w, n.h);
+                    ctx.stroke();
+                });
+            });
+            ctx.globalAlpha = 1;
+            raf = requestAnimationFrame(tick);
+        }
+
+        function nodeUnder(e) {
+            var m = svg.getScreenCTM();
+            if (!m || !graph) return null;
+            var p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+            for (var i = 0; i < graph.nodes.length; i++) {
+                var n = graph.nodes[i];
+                if (p.x >= n.x - 4 && p.x <= n.x + n.w + 4 && p.y >= n.y - 4 && p.y <= n.y + n.h + 4) return n;
+            }
+            return null;
+        }
+
+        function poke(e) {
+            if (reduce.matches) return;
+            ensure();
+            var n = nodeUnder(e);
+            if (n !== hovered && n && n.out.length) fire([n]);
+            hovered = n;
+        }
+        svg.addEventListener("pointermove", function (e) { if (e.pointerType === "mouse") poke(e); });
+        svg.addEventListener("pointerleave", function () { hovered = null; });
+        svg.addEventListener("pointerdown", function (e) { if (e.pointerType !== "mouse") { hovered = null; poke(e); } });
+
+        // Phones scroll the figure sideways: start once 60% of it is in view.
+        new IntersectionObserver(function (entries, io) {
+            if (!entries.some(function (en) { return en.isIntersecting; })) return;
+            io.disconnect();
+            if (!reduce.matches) fire(null);
+        }, { threshold: 0.6 }).observe(fig);
+    }
+
     function start() {
         if (reduce.matches) return;
         document.querySelectorAll(".spec .glyph").forEach(parityPull);
         document.querySelectorAll("ol.ledger").forEach(tether);
+        document.querySelectorAll("main figure.diagram").forEach(flowPulse);
     }
 
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);

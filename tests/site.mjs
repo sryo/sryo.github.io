@@ -1123,6 +1123,67 @@ test('tether stays off under reduced motion', async ({ page, vp }) => {
   }
 }, p => p === '/works.html');
 
+// Flow pulse: when a diagram comes into view, one accent pulse leaves its
+// entry node(s), runs the lines, splits at forks and flashes each box it
+// reaches, then the diagram rests in black. Hovering or tapping a node
+// sends another. Drawn on a canvas over the SVG, which stays untouched.
+async function pulsePixels(page) {
+  return page.evaluate(() => {
+    const f = document.querySelector('main figure.diagram:not([data-toy])');
+    const c = f.querySelector('canvas.pulse');
+    const d = document.createElement('i'); d.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+    document.body.append(d); const [r, g, b] = getComputedStyle(d).color.match(/\d+/g).map(Number); d.remove();
+    if (!c) return { canvas: false, svgs: f.querySelectorAll('svg').length };
+    const px = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    let any = 0, accent = 0;
+    for (let i = 0; i < px.length; i += 4) {
+      if (!px[i + 3]) continue;
+      any++;
+      if (px[i + 3] > 128 && Math.abs(px[i] - r) + Math.abs(px[i + 1] - g) + Math.abs(px[i + 2] - b) < 60) accent++;
+    }
+    const cb = c.getBoundingClientRect(), sb = f.querySelector('svg').getBoundingClientRect();
+    const over = Math.abs(cb.left - sb.left) < 1 && Math.abs(cb.top - sb.top) < 1 && Math.abs(cb.width - sb.width) < 1;
+    return { canvas: true, any, accent: over ? accent : 0, svgs: f.querySelectorAll('svg').length };
+  });
+}
+
+test('flow pulse runs a diagram once in view, and again from a hovered node', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const fig = page.locator('main figure.diagram:not([data-toy])').first();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(100);
+  await fig.evaluate(f => f.scrollIntoView({ block: 'center' }));
+  let best = 0;
+  for (let i = 0; i < 12 && best < 20; i++) { await page.waitForTimeout(100); best = Math.max(best, (await pulsePixels(page)).accent || 0); }
+  if (best < 20) throw new Error('no accent pulse after the diagram came into view');
+  await page.waitForTimeout(4500);
+  let r = await pulsePixels(page);
+  if (r.any) throw new Error(`${r.any} pixels left on the canvas at rest`);
+  if (r.svgs !== 1) throw new Error(`${r.svgs} svgs in the figure`);
+  const node = await fig.locator('svg rect, svg circle').first().boundingBox();
+  await page.mouse.move(node.x + node.width / 2, node.y + node.height / 2, { steps: 3 });
+  best = 0;
+  for (let i = 0; i < 8 && best < 20; i++) { await page.waitForTimeout(100); best = Math.max(best, (await pulsePixels(page)).accent || 0); }
+  await page.mouse.move(2, 2);
+  if (best < 20) throw new Error('hovering a node sent no pulse');
+}, p => p === '/work/continental/' || p === '/work/murmur/');
+
+test('flow pulse stays off under reduced motion', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.reload();
+  try {
+    await page.locator('main figure.diagram:not([data-toy])').first().scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+    const r = await pulsePixels(page);
+    if (r.canvas) throw new Error('pulse canvas under reduced motion');
+  } finally {
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.reload();
+  }
+}, p => p === '/work/murmur/');
+
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.gif': 'image/gif', '.woff2': 'font/woff2' };
