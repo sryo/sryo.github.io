@@ -232,6 +232,10 @@ sentinel_in work/01-tags/index.html "h2 hangs as a part label" '<section class="
 # Case header: a spec column (glyph + dl) beside the h1 and the dek.
 P=work/01-tags/index.html
 sentinel_in $P "spec column holds the glyph" '<aside class="spec"><span class="glyph" '
+# _.parts.svg rides on the spec glyph only, base64, for the parity pull.
+sentinel_in $P "spec glyph carries its parts" ' data-parts="PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMCAxMCI+PGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjUiLz48L3N2Zz4K"><img'
+absent_in works.html "ledger glyphs carry no parts" 'data-parts='
+absent_in work/proj-a/index.html "no parts without a sidecar" 'data-parts='
 sentinel_in $P "summary is the dek"          '<p class="dek">Tags &amp; &lt;escapes&gt; in one line</p>'
 sentinel_in $P "spec lists the client"       '<dt>Client</dt><dd>Tags &amp; &lt;Co&gt;</dd>'
 sentinel_in $P "spec lists the role"         '<dt>Role</dt><dd>Designer &amp; writer</dd>'
@@ -250,7 +254,7 @@ sentinel_in work/03-metrics/index.html "spec initial"   '<aside class="spec"><sp
 
 # View transition: the row's glyph and the case page's glyph share a name.
 sentinel_in works.html              "row glyph named for the transition"  '<span class="glyph" style="view-transition-name: g-01-tags">'
-sentinel_in work/01-tags/index.html "spec glyph shares the name"          '<aside class="spec"><span class="glyph" style="view-transition-name: g-01-tags">'
+sentinel_in work/01-tags/index.html "spec glyph shares the name"          '<aside class="spec"><span class="glyph" style="view-transition-name: g-01-tags"'
 sentinel_in works.html              "side rows name their glyph too"      '<span class="glyph" style="view-transition-name: g-proj-a">'
 sentinel_in work/proj-a/index.html  "side spec glyph shares the name"     '<aside class="spec"><span class="glyph" style="view-transition-name: g-proj-a">'
 

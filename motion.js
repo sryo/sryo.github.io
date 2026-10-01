@@ -19,10 +19,12 @@
     }
 
     // ── Parity pull ─────────────────────────────────────────────
-    // The spec glyph's shapes drift apart near the pointer. Each subpath is
-    // its own piece, filled on a canvas with globalCompositeOperation "xor"
-    // (alpha = a + b - 2ab), so wherever two pieces overlap there's a hole,
-    // exactly as fill-rule="evenodd" draws the glyph at rest. The canvas is
+    // The spec glyph's shapes drift apart near the pointer. Each source
+    // primitive (data-parts, from the glyph's _.parts.svg) is its own piece,
+    // or, without parts, each subpath of the glyph. Pieces are filled on a
+    // canvas with globalCompositeOperation "xor" (alpha = a + b - 2ab), so
+    // wherever two pieces overlap there's a hole, exactly as
+    // fill-rule="evenodd" draws the glyph at rest. The canvas is
     // laid over the <img> only after an arrival view transition ends, and is
     // gone before the page swaps, so the glyph's flight never sees it.
 
@@ -30,23 +32,59 @@
     var PULL = 9;         // max drift, in the glyph's 100-unit viewBox
     var PAD = 0.25;       // canvas margin around the glyph, as a share of it
 
-    // Glyph SVG (a data: URI) to pieces: one absolute subpath each. Paths
-    // with relative commands or transforms stay one piece (still correct,
-    // just not pulled apart).
-    function glyphPieces(img) {
-        var m = /^data:image\/svg\+xml;base64,(.*)$/.exec(img.getAttribute("src") || "");
-        if (!m) return null;
-        var doc = new DOMParser().parseFromString(atob(m[1]), "image/svg+xml");
-        var svg = doc.querySelector("svg");
-        if (!svg || doc.querySelector("[transform]")) return null;
+    // One _.parts.svg primitive as path data. A <path> may hold several
+    // subpaths; they fill nonzero, so they stay one solid piece.
+    function primitivePath(el) {
+        function a(k) { return +el.getAttribute(k) || 0; }
+        var rx, ry, cx = a("cx"), cy = a("cy");
+        switch (el.localName) {
+            case "circle":
+            case "ellipse":
+                rx = el.localName === "circle" ? a("r") : a("rx");
+                ry = el.localName === "circle" ? rx : a("ry");
+                return "M" + (cx - rx) + " " + cy + "A" + rx + " " + ry + " 0 1 0 " + (cx + rx) + " " + cy +
+                    "A" + rx + " " + ry + " 0 1 0 " + (cx - rx) + " " + cy + "Z";
+            case "rect":
+                return "M" + a("x") + " " + a("y") + "h" + a("width") + "v" + a("height") + "h" + -a("width") + "Z";
+            case "polygon":
+                return "M" + (el.getAttribute("points") || "").trim().split(/\s+/).join("L") + "Z";
+            case "path":
+                return el.getAttribute("d") || "";
+        }
+        return "";
+    }
+
+    // Glyph to pieces. With parts (base64 SVG), one piece per primitive.
+    // Without, the glyph SVG (a data: URI) gives one absolute subpath each;
+    // paths with relative commands or transforms stay one piece (still
+    // correct, just not pulled apart).
+    function glyphPieces(img, parts) {
+        var pieces = [], doc, svg;
+        if (parts) {
+            doc = new DOMParser().parseFromString(atob(parts), "image/svg+xml");
+            svg = doc.querySelector("svg");
+            if (!svg || doc.querySelector("[transform]")) return null;
+            Array.prototype.forEach.call(svg.children, function (el) {
+                var d = primitivePath(el);
+                if (d) pieces.push({ d: d, path: new Path2D(d) });
+            });
+        } else {
+            var m = /^data:image\/svg\+xml;base64,(.*)$/.exec(img.getAttribute("src") || "");
+            if (!m) return null;
+            doc = new DOMParser().parseFromString(atob(m[1]), "image/svg+xml");
+            svg = doc.querySelector("svg");
+            if (!svg || doc.querySelector("[transform]")) return null;
+            doc.querySelectorAll("path").forEach(function (p) {
+                var d = (p.getAttribute("d") || "").trim();
+                var subs = /[a-z]/.test(d.replace(/e/g, "")) ? [d] : d.split(/(?=M)/);
+                subs.forEach(function (sub) { if (sub.trim()) pieces.push({ d: sub, path: new Path2D(sub) }); });
+            });
+        }
         var vb = (svg.getAttribute("viewBox") || "0 0 100 100").split(/[\s,]+/).map(Number);
-        var pieces = [];
-        doc.querySelectorAll("path").forEach(function (p) {
-            var d = (p.getAttribute("d") || "").trim();
-            var parts = /[a-z]/.test(d.replace(/e/g, "")) ? [d] : d.split(/(?=M)/);
-            parts.forEach(function (sub) { if (sub.trim()) pieces.push({ d: sub, path: new Path2D(sub) }); });
-        });
         if (pieces.length < 2) return null;
+        // A piece of several subpaths fills nonzero on its own; one-subpath
+        // pieces may share a fill (see draw).
+        pieces.forEach(function (pc) { pc.solo = (pc.d.match(/[Mm]/g) || []).length > 1; });
         // Centroid and area of each piece, from a 64 px raster of it.
         var S = 64, c = document.createElement("canvas");
         c.width = c.height = S;
@@ -88,7 +126,7 @@
         function ensure() {
             if (canvas) return true;
             if (flying()) return false;
-            if (model === null) model = glyphPieces(img) || false;
+            if (model === null) model = glyphPieces(img, glyph.getAttribute("data-parts")) || false;
             if (!model) return false;
             canvas = document.createElement("canvas");
             canvas.className = "parity";
@@ -127,10 +165,21 @@
             ctx.setTransform(k * s.dpr, 0, 0, k * s.dpr, (s.pad - vb[0] * k) * s.dpr, (s.pad - vb[1] * k) * s.dpr);
             ctx.globalCompositeOperation = "xor";
             ctx.fillStyle = ink;
-            model.pieces.forEach(function (p) {
+            // Pieces sitting at the same offset fill as one evenodd path:
+            // same parity as XOR, without the half-alpha seam XOR leaves
+            // on an edge two pieces share (a dome on its base, a sector on
+            // its ring). Offsets match to 0.01 units, well under a pixel.
+            var groups = {};
+            model.pieces.forEach(function (p, i) {
+                var key = p.solo ? "s" + i : Math.round(p.x.x * 100) + "," + Math.round(p.y.x * 100);
+                var g = groups[key] || (groups[key] = { x: p.x.x, y: p.y.x, path: new Path2D(), rule: p.solo ? "nonzero" : "evenodd" });
+                g.path.addPath(p.path);
+            });
+            Object.keys(groups).forEach(function (key) {
+                var g = groups[key];
                 ctx.save();
-                ctx.translate(p.x.x, p.y.x);
-                ctx.fill(p.path);
+                ctx.translate(g.x, g.y);
+                ctx.fill(g.path, g.rule);
                 ctx.restore();
             });
             // The pulled shapes' outline is the one accent line, fading as

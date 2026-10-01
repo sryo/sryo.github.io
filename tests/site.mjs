@@ -186,6 +186,54 @@ test('side glyphs are basic shapes XORed in one path', async () => {
   if (bad.length) throw new Error(`${bad.length} glyphs off-grammar: ${bad.join('; ')}`);
 }, p => p === '/works.html');
 
+// _.parts.svg: the glyph's source primitives, one element each. XORed on a
+// canvas at 200 px they must redraw _.svg: under 0.2% of pixels may differ
+// by more than half their alpha (antialiasing differs by less; a primitive
+// off by one unit, or a missing one, differs by more).
+const GLYPHS = [...readdirSync(resolve(ROOT, 'contents')).map(s => `contents/${s}`),
+  ...SIDE_SLUGS.map(s => `contents/about/items/${s}`)].filter(d => existsSync(resolve(ROOT, d, '_.svg')));
+test('glyph parts XOR back into the glyph', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const glyphs = GLYPHS.map(d => ({ d, svg: readFileSync(resolve(ROOT, d, '_.svg'), 'utf8'),
+    parts: existsSync(resolve(ROOT, d, '_.parts.svg')) ? readFileSync(resolve(ROOT, d, '_.parts.svg'), 'utf8') : null }));
+  const missing = glyphs.filter(g => !g.parts).map(g => g.d);
+  if (missing.length) throw new Error(`no _.parts.svg: ${missing.join(', ')}`);
+  const res = await page.evaluate(async glyphs => {
+    const S = 200, out = [];
+    const toD = el => {
+      const a = k => +el.getAttribute(k), round = el.localName === 'circle';
+      switch (el.localName) {
+        case 'circle': case 'ellipse': {
+          const rx = a(round ? 'r' : 'rx'), ry = round ? rx : a('ry'), cx = a('cx'), cy = a('cy');
+          return `M${cx - rx} ${cy}A${rx} ${ry} 0 1 0 ${cx + rx} ${cy}A${rx} ${ry} 0 1 0 ${cx - rx} ${cy}Z`;
+        }
+        case 'rect': return `M${a('x')} ${a('y')}h${a('width')}v${a('height')}h${-a('width')}Z`;
+        case 'polygon': return 'M' + el.getAttribute('points').trim().split(/\s+/).join('L') + 'Z';
+        case 'path': return el.getAttribute('d');
+      }
+      return null;
+    };
+    for (const g of glyphs) {
+      const doc = new DOMParser().parseFromString(g.parts, 'image/svg+xml'), kids = [...doc.documentElement.children];
+      const odd = kids.find(el => !toD(el) || el.hasAttribute('transform') || /fill="(?!black)/.test(el.outerHTML));
+      if (kids.length < 2 || odd) { out.push(`${g.d}: ${odd ? `<${odd.localName}> not a black primitive` : 'fewer than 2 parts'}`); continue; }
+      const ref = new OffscreenCanvas(S, S).getContext('2d');
+      const im = new Image(); im.src = 'data:image/svg+xml;base64,' + btoa(g.svg); await im.decode();
+      ref.drawImage(im, 0, 0, S, S);
+      const x = new OffscreenCanvas(S, S).getContext('2d');
+      x.scale(S / 100, S / 100);
+      x.globalCompositeOperation = 'xor';
+      kids.forEach(el => x.fill(new Path2D(toD(el))));
+      const A = ref.getImageData(0, 0, S, S).data, B = x.getImageData(0, 0, S, S).data;
+      let bad = 0;
+      for (let i = 3; i < A.length; i += 4) if (Math.abs(A[i] - B[i]) > 128) bad++;
+      if (bad / (S * S) > 0.002) out.push(`${g.d}: ${(bad / (S * S) * 100).toFixed(2)}% differs`);
+    }
+    return out;
+  }, glyphs);
+  if (res.length) throw new Error(res.join('; '));
+}, p => p === '/works.html');
+
 test('client roles fit on one line at 1440', async ({ page, vp }) => {
   if (vp !== 'desktop') return;
   const tall = await page.$$eval('[aria-labelledby="g-client"] .row .role', rs => rs
@@ -1016,7 +1064,7 @@ test('parity pull: the glyph comes apart near the pointer and keeps its holes', 
   r = await parityProbe(page);
   if (r.canvas || r.img !== '1') throw new Error('canvas left in place on pageswap');
   await page.mouse.move(0, 0);
-}, p => p === '/work/continental/' || p === '/work/lineandform/');
+}, p => ['/work/continental/', '/work/lineandform/', '/work/bancor/', '/work/topicflower/'].includes(p));
 
 test('parity pull inks white in dark mode', async ({ page, vp }) => {
   if (vp !== 'desktop') return;

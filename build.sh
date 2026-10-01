@@ -35,6 +35,8 @@
 #      b) Optionally, add a glyph: _.svg (or _.png / _.jpg). Without one, the
 #         label's initial stands in. Glyphs are one system: a 100×100 viewBox,
 #         black fills only, no text, <style> or animation (the build warns).
+#         An optional _.parts.svg beside it lists the source primitives, one
+#         element each, that XOR into the glyph; the case page's pull moves them.
 #    - Mark one folder 'kind: profile' for the About page. It heads the ledger,
 #      and its 'items/' folder holds side projects: one subfolder each, with
 #      a _.md (label, link and repo optional) and an optional glyph. Each
@@ -792,9 +794,9 @@ render_case_head() {
     echo "<header class=\"case-head\">"
     printf '<aside class="spec">'
     if [ "$fm_kind" = "profile" ]; then
-        render_glyph "$image_file" "$fm_label"
+        render_glyph "$image_file" "$fm_label" "" parts
     else
-        render_glyph "$image_file" "$fm_label" "g-$(basename "$folder")"
+        render_glyph "$image_file" "$fm_label" "g-$(basename "$folder")" parts
     fi
     if [ "$fm_kind" != "profile" ]; then
         printf '<dl>'
@@ -849,11 +851,16 @@ sort_folders() {
 # The glyph cell: the folder's image, or, when it has none, the label's
 # first letter set in type so the column never has holes. An optional
 # view-transition name lets the glyph fly from its row to its case page.
+# A fourth argument "parts" adds the _.parts.svg sidecar, base64, as
+# data-parts (the spec glyph only: motion.js pulls those primitives apart).
 render_glyph() {
-    local image_file=$1 label=$2 vt=${3:+ style=\"view-transition-name: $3\"} initial cls=glyph
+    local image_file=$1 label=$2 vt=${3:+ style=\"view-transition-name: $3\"} initial cls=glyph parts=""
     [ "$fm_glyph" = colour ] && cls="glyph colour"
+    if [ "${4:-}" = parts ] && [[ "$image_file" == *.svg ]] && [ -f "${image_file%.svg}.parts.svg" ]; then
+        parts=" data-parts=\"$(base64 < "${image_file%.svg}.parts.svg" | tr -d '\n')\""
+    fi
     if [ -n "$image_file" ] && [ -f "$image_file" ]; then
-        printf '<span class="%s"%s>%s</span>' "$cls" "$vt" "$(insert_image "$image_file" "" | tr -d '\n')"
+        printf '<span class="%s"%s%s>%s</span>' "$cls" "$vt" "$parts" "$(insert_image "$image_file" "" | tr -d '\n')"
     else
         initial=$(printf '%s' "${label:0:1}" | tr '[:lower:]' '[:upper:]')
         printf '<span class="glyph initial"%s aria-hidden="true">%s</span>' "$vt" "$(html_escape "$initial")"
