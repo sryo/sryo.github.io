@@ -511,7 +511,7 @@ test('Decisions are named in readable h3 heads', async ({ page }) => {
 }, CASE);
 
 const DECISIONS = {
-  bancor: ['Logical accounts instead of paperwork', 'Peperina: the design system'],
+  bancor: ['Logical accounts instead of paperwork', 'Listening first, before the redesign', 'Peperina: the design system'],
   veng: ['Familiar e-commerce patterns for unfamiliar SAR imagery'],
   hometown: ['The platform stays in the loop'],
   lavoz: ['We built our own paywall, Wyleex', 'Mobile-first storytelling'],
@@ -556,9 +556,9 @@ test('links say where they go', async ({ page }) => {
   if (untitled) throw new Error(`${untitled} iframes without a title`);
 }, PORTFOLIO);
 
-test('Bancor walkthrough embed carries a title', async () => {
+test('Bancor promo embed carries a title', async () => {
   const md = await readFile(resolve(ROOT, 'contents/bancor/_.md'), 'utf8');
-  if (!/<iframe[^>]*\btitle="Bancor crisis features walkthrough"/.test(md)) throw new Error('Bancor iframe has no title');
+  if (!/<iframe[^>]*\btitle="Bancón 2.0 promo"/.test(md)) throw new Error('Bancor iframe has no title');
 }, p => p === '/work/bancor/');
 
 test('share cards: large image, alt, twitter image', async ({ page }) => {
