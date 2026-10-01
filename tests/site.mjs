@@ -165,7 +165,7 @@ test('glyphs are on-system: black fills, no text, style or animation', async ({ 
 
 // Side-project glyphs follow the original grammar: a few
 // primitives XORed in one evenodd path; straight lines and circular arcs only.
-const SIDE_GLYPHS = ['chanchan', 'avis', 'figma-cdp', 'murmur', 'dirpad', 'when', 'trueframe', 'fin', 'subi',
+const SIDE_GLYPHS = ['chanchan', 'avis', 'figma-cdp', 'murmur', 'dirpad', 'trueframe', 'fin', 'subi',
   'posta', 'airnod', 'zentrate', 'figma-plugins'];
 test('side glyphs are basic shapes XORed in one path', async () => {
   const bad = [];
@@ -905,7 +905,7 @@ test('diagram styles: ink, Inter, 1.5px hairlines, knockout, no page overflow', 
 // project has a UI; a diagram is optional and, when present, captioned.
 // SCREENS_PENDING holds projects with a UI whose real screens aren't
 // captured yet; a slug leaves it when its screens land (red → green).
-const SCREENS_PENDING = ['airnod', 'figma-cdp', 'figma-plugins', 'fin', 'subi', 'va', 'when'];
+const SCREENS_PENDING = ['airnod', 'figma-cdp', 'figma-plugins', 'fin', 'subi', 'va'];
 test('side project shows its screens', async ({ page, path }) => {
   const slug = slugOf(path);
   const r = await page.evaluate(() => ({
