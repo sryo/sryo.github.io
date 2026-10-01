@@ -1151,7 +1151,7 @@ EOF
     if [ -s "$JS_FILE" ]; then
         printf '    <script>\n%s\n    </script>\n' "$(cat "$JS_FILE")"
     fi
-    # motion.js: the page's motion (parity pull, tether, flow pulse), one
+    # motion.js: the page's motion (parity pull, flow pulse), one
     # deferred file for every page, so it stays out of the inlined head.
     if [ -f "$OUT_DIR/motion.js" ]; then
         echo "    <script src=\"${root}motion.js\" defer></script>"

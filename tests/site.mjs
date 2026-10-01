@@ -1169,73 +1169,13 @@ test('parity pull stays off under reduced motion', async ({ page, vp }) => {
   }
 }, p => p === '/work/continental/');
 
-// Tether: hover one ledger row, then another, and an accent rope hangs
-// between their glyphs, bowing into the gap left of the glyph column. Its
-// slack grows with the distance. Two ropes at most; the oldest falls away,
-// and they all fall when the pointer leaves the list. Fine pointers, 40rem
-// and up, no reduced motion.
-async function ropes(page, group = 'g-client') {
-  return page.evaluate(g => {
-    const ol = document.querySelector(`[aria-labelledby="${g}"] ol.ledger`);
-    const olb = ol.getBoundingClientRect();
-    const live = [...ol.querySelectorAll('svg.tether path.rope:not(.falling)')];
-    const d2 = e => (e.getAttribute('d').match(/-?[\d.]+/g) || []).map(Number);
-    return { svg: !!ol.querySelector('svg.tether'), all: ol.querySelectorAll('svg.tether path.rope').length,
-      ropes: live.map(p => { const n = d2(p); const xs = n.filter((_, i) => !(i % 2)), ys = n.filter((_, i) => i % 2);
-        return { x0: xs[0] + olb.left, y0: ys[0] + olb.top, x1: xs[xs.length - 1] + olb.left, y1: ys[ys.length - 1] + olb.top,
-          minX: Math.min(...xs) + olb.left, stroke: getComputedStyle(p).stroke, width: getComputedStyle(p).strokeWidth }; }),
-      accent: (() => { const d = document.createElement('i'); d.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent'); document.body.append(d); const c = getComputedStyle(d).color; d.remove(); return c; })() };
-  }, group);
-}
-const glyphBox = (page, n) => page.locator('[aria-labelledby="g-client"] a.row .glyph').nth(n).boundingBox();
-
-test('tether: a rope hangs between the glyphs of the last two rows hovered', async ({ page, vp }) => {
-  const rows = page.locator('[aria-labelledby="g-client"] a.row');
-  if (vp === 'mobile') {
-    await rows.nth(1).hover(); await rows.nth(3).hover(); await page.waitForTimeout(300);
-    const r = await ropes(page);
-    if (r.ropes.length) throw new Error('rope on a phone');
-    return;
-  }
-  await rows.nth(1).hover();
-  await page.waitForTimeout(500);
-  await rows.nth(4).hover();
-  await page.waitForTimeout(1500);
-  let r = await ropes(page);
-  if (r.ropes.length !== 1) throw new Error(`${r.ropes.length} ropes after two rows`);
-  const [a, b] = [await glyphBox(page, 1), await glyphBox(page, 4)];
-  const rope = r.ropes[0];
-  const near = (x, y, g) => Math.abs(x - g.x) < 8 && Math.abs(y - (g.y + g.height / 2)) < 4;
-  if (!near(rope.x0, rope.y0, a) || !near(rope.x1, rope.y1, b)) throw new Error(`rope runs ${rope.x0},${rope.y0} → ${rope.x1},${rope.y1}, glyphs at ${a.x},${a.y} and ${b.x},${b.y}`);
-  // The year's text, not its grid cell: the rope may use the cell's empty end.
-  const yearEnd = await page.$eval('[aria-labelledby="g-client"] a.row .yr', t => { const r = document.createRange(); r.selectNodeContents(t); return r.getBoundingClientRect().right; });
-  if (!(rope.minX < a.x - 8)) throw new Error(`rope does not sag left of the glyphs (min x ${rope.minX}, glyph ${a.x})`);
-  if (rope.minX < yearEnd + 4) throw new Error(`rope sags into the years (min x ${rope.minX}, years end at ${yearEnd})`);
-  if (rope.stroke !== r.accent) throw new Error(`rope is ${rope.stroke}, accent is ${r.accent}`);
-  for (const n of [6, 8]) { await rows.nth(n).hover(); await page.waitForTimeout(500); }
-  r = await ropes(page);
-  if (r.ropes.length !== 2) throw new Error(`${r.ropes.length} ropes after four rows, want 2`);
-  await page.mouse.move(2, 2);
-  await page.waitForTimeout(2000);
-  r = await ropes(page);
-  if (r.all) throw new Error(`${r.all} ropes left after the pointer left the list`);
-}, p => p === '/works.html');
-
-test('tether stays off under reduced motion', async ({ page, vp }) => {
+// No rope between hovered ledger rows: the round 7b tether was cut.
+test('hovering ledger rows draws no rope', async ({ page, vp }) => {
   if (vp !== 'desktop') return;
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.reload();
-  try {
-    const rows = page.locator('[aria-labelledby="g-client"] a.row');
-    await rows.nth(1).hover(); await page.waitForTimeout(500); await rows.nth(3).hover(); await page.waitForTimeout(300);
-    const r = await ropes(page);
-    if (r.ropes.length) throw new Error('rope under reduced motion');
-  } finally {
-    await page.mouse.move(2, 2);
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.reload();
-  }
+  const rows = page.locator('[aria-labelledby="g-client"] .row');
+  await rows.nth(0).hover(); await page.waitForTimeout(450);
+  await rows.nth(3).hover(); await page.waitForTimeout(450);
+  if (await page.$('svg.tether')) throw new Error('a tether rope is drawn');
 }, p => p === '/works.html');
 
 // Flow pulse: when a diagram comes into view, one accent pulse leaves its
