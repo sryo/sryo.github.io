@@ -1,37 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 232">
-  <title>Posta: each card hands its search query to a Rust core, which asks Google, keeps results in SQLite and syncs the board through iCloud</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 208">
+  <title>Posta: you open one board and work through it in parallel: the Hot card first, several work threads answered with one reply, the Meh card of newsletters later</title>
   <defs>
     <marker id="posta-head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
       <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
     </marker>
   </defs>
   <g fill="none" stroke="currentColor" stroke-width="1.5">
-    <rect x="8" y="88" width="160" height="48"/>
-    <path d="M168 112H232" marker-end="url(#posta-head)"/>
-    <path d="M320 136V168" marker-end="url(#posta-head)"/>
-    <rect x="240" y="176" width="160" height="48"/>
-    <path d="M280 88V32H192" stroke-dasharray="4 4" marker-end="url(#posta-head)"/>
-    <circle cx="160" cy="32" r="24"/>
-    <path d="M400 120H528" stroke-dasharray="4 4" marker-end="url(#posta-head)"/>
-    <circle cx="560" cy="120" r="24"/>
-    <path d="M400 100H464V32H528" stroke-dasharray="4 4" marker-end="url(#posta-head)"/>
-    <circle cx="560" cy="32" r="24"/>
+    <circle cx="32" cy="104" r="24"/>
+    <path d="M56 104H96" marker-end="url(#posta-head)"/>
+    <path d="M232 104H368" marker-end="url(#posta-head)"/>
+    <path d="M256 104V32H368" marker-end="url(#posta-head)"/>
+    <path d="M256 104V176H368" marker-end="url(#posta-head)"/>
+    <rect x="376" y="8" width="256" height="48"/>
+    <rect x="376" y="80" width="256" height="48"/>
+    <rect x="376" y="152" width="256" height="48"/>
   </g>
-  <rect x="240" y="88" width="160" height="48" fill="currentColor"/>
+  <rect x="104" y="80" width="128" height="48" fill="currentColor"/>
   <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
-    <text x="88" y="112">cards (SolidJS)</text>
-    <text class="knock" x="320" y="112">Rust core</text>
-    <text x="320" y="200">SQLite cache</text>
-    <text x="160" y="72">iCloud</text>
-    <text x="560" y="160">Google APIs</text>
-    <text x="560" y="72">Gemini</text>
+    <text x="32" y="104">You</text>
+    <text class="knock" x="168" y="104">Posta</text>
+    <text x="504" y="32">Hot: scan it first</text>
+    <text x="504" y="104">Pick several, reply once</text>
+    <text x="504" y="176">Meh: read it later</text>
   </g>
   <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
-    <text x="200" y="100">query</text>
-    <text x="464" y="136">search, history</text>
-    <text x="560" y="180">Gmail, Calendar, People</text>
-    <text x="512" y="20">replies</text>
-    <text x="392" y="152">threads, history id</text>
-    <text x="236" y="20">layout</text>
+    <text x="312" y="20">urgent</text>
+    <text x="312" y="92">work threads</text>
+    <text x="312" y="164">newsletters</text>
   </g>
 </svg>

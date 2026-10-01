@@ -1,47 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 248">
-  <title>Trueframe: covering the proximity sensor starts a burst with a heartbeat per shot; on lift Vision scores the frames, the policy picks the keepers and LibrarySaver writes them to Photos</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 192">
+  <title>Trueframe: you hold the phone to your chest, feel a heartbeat for every shot, lift it when the moment is over, and only the good photos fan out into your library</title>
   <defs>
-    <marker id="head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+    <marker id="trueframe-head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
       <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
     </marker>
   </defs>
   <g fill="none" stroke="currentColor" stroke-width="1.5">
-    <circle cx="32" cy="112" r="24"/>
-    <rect x="104" y="88" width="144" height="48"/>
-    <rect x="472" y="16" width="160" height="48"/>
-    <rect x="104" y="168" width="144" height="48"/>
-    <rect x="312" y="168" width="136" height="48"/>
-    <rect x="488" y="168" width="144" height="48"/>
-    <circle cx="32" cy="192" r="24"/>
-    <path d="M56 112H96" marker-end="url(#head)"/>
-    <path d="M248 112H272" marker-end="url(#head)"/>
-    <path d="M312 88V40H32V80" marker-end="url(#head)"/>
-    <path d="M416 88V40H464" marker-end="url(#head)"/>
-    <path d="M552 64V112H456" marker-end="url(#head)"/>
-    <path d="M380 136V160" marker-end="url(#head)"/>
-    <path d="M448 192H480" marker-end="url(#head)"/>
-    <path d="M600 168V128H456" marker-end="url(#head)"/>
-    <path d="M296 136V192H256" stroke-dasharray="4 4" marker-end="url(#head)"/>
-    <path d="M104 192H64" marker-end="url(#head)"/>
+    <circle cx="32" cy="40" r="24"/>
+    <path d="M56 40H80" marker-end="url(#trueframe-head)"/>
+    <rect x="88" y="16" width="192" height="48"/>
+    <path d="M280 40H312" marker-end="url(#trueframe-head)"/>
+    <rect x="320" y="16" width="224" height="48"/>
+    <path d="M432 64V104" marker-end="url(#trueframe-head)"/>
+    <rect x="344" y="112" width="176" height="48"/>
+    <path d="M344 136H320" marker-end="url(#trueframe-head)"/>
+    <rect x="88" y="112" width="224" height="48"/>
+    <path d="M88 136H64" marker-end="url(#trueframe-head)"/>
+    <circle cx="32" cy="136" r="24"/>
   </g>
-  <rect x="280" y="88" width="168" height="48" fill="currentColor"/>
   <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
-    <text x="32" y="112">You</text>
-    <text x="176" y="112">ProximityMonitor</text>
-    <text class="knock" x="364" y="112">SessionCoordinator</text>
-    <text x="552" y="40">CaptureEngine</text>
-    <text x="176" y="192">LibrarySaver</text>
-    <text x="380" y="192">PhotoScorer</text>
-    <text x="560" y="192">CurationPolicy</text>
-    <text x="32" y="232">Photos</text>
+    <text x="32" y="40">You</text>
+    <text x="184" y="40">Hold it to your chest</text>
+    <text x="432" y="40">Feel a heartbeat per shot</text>
+    <text x="432" y="136">Lift it</text>
+    <text x="200" y="136">The good ones fan out</text>
+    <text x="32" y="176">Photos</text>
   </g>
   <g class="mute" fill="currentColor" font-size="12" text-anchor="middle" dominant-baseline="central">
-    <text x="76" y="100">cover</text>
-    <text x="176" y="28">heartbeat</text>
-    <text x="440" y="28">burst</text>
-    <text x="504" y="100">frames</text>
-    <text x="416" y="152">on lift</text>
-    <text x="616" y="148">kept</text>
-    <text x="264" y="156">keepers</text>
+    <text x="512" y="84">when it's over</text>
   </g>
 </svg>
