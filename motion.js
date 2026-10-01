@@ -119,7 +119,7 @@
         var img = glyph.querySelector("img");
         if (!img || glyph.classList.contains("colour")) return;
         var model = null, canvas = null, ctx = null, raf = 0, last = 0;
-        var pointer = null, engaged = false, tapUntil = 0, ink = "#000", edge = "#000";
+        var pointer = null, engaged = false, tapUntil = 0, ink = "#000";
 
         function flying() { return document.documentElement.hasAttribute("data-vt"); }
 
@@ -158,7 +158,7 @@
             return { w: w, pad: pad, dpr: dpr };
         }
 
-        function draw(moved) {
+        function draw() {
             var s = size(), vb = model.vb, k = s.w / vb[2];
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -182,21 +182,6 @@
                 ctx.fill(g.path, g.rule);
                 ctx.restore();
             });
-            // The pulled shapes' outline is the one accent line, fading as
-            // they come home. Drawn on top, so the ink itself is never tinted.
-            ctx.globalCompositeOperation = "source-over";
-            if (moved > 0.3) {
-                ctx.strokeStyle = edge;
-                ctx.lineWidth = 1 / k;
-                ctx.globalAlpha = Math.min(1, moved / 4);
-                model.pieces.forEach(function (p) {
-                    ctx.save();
-                    ctx.translate(p.x.x, p.y.x);
-                    ctx.stroke(p.path);
-                    ctx.restore();
-                });
-                ctx.globalAlpha = 1;
-            }
         }
 
         function targets() {
@@ -247,15 +232,15 @@
             }
             canvas.style.display = "block";
             img.style.opacity = "0";
-            draw(moved);
+            draw();
             raf = requestAnimationFrame(tick);
         }
 
         function wake() {
             if (!ensure()) return;
+            // Re-read on every wake: the colour scheme can change mid-motion.
+            ink = getComputedStyle(img).filter.indexOf("invert") >= 0 ? "#fff" : "#000";
             if (!raf) {
-                ink = getComputedStyle(img).filter.indexOf("invert") >= 0 ? "#fff" : "#000";
-                edge = accent();
                 last = 0;
                 raf = requestAnimationFrame(tick);
             }

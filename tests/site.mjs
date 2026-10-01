@@ -1093,12 +1093,13 @@ async function parityProbe(page) {
     const im = new Image(); im.src = img.src; await im.decode();
     r.drawImage(im, (box.left - cb.left) * k, (box.top - cb.top) * k, box.width * k, box.height * k);
     const a = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, b = r.getImageData(0, 0, c.width, c.height).data;
-    let diff = 0, n = 0, dark = 0, opaque = 0;
+    let diff = 0, n = 0, dark = 0, opaque = 0, tinted = 0;
     for (let i = 3; i < a.length; i += 4) {
       diff += Math.abs(a[i] - b[i]); n += Math.max(a[i], b[i]) > 0 ? 1 : 0;
       if (a[i] === 255) { opaque++; dark += Math.max(a[i - 3], a[i - 2], a[i - 1]) < 60 ? 1 : 0; }
+      if (a[i] > 64 && Math.max(a[i - 3], a[i - 2], a[i - 1]) - Math.min(a[i - 3], a[i - 2], a[i - 1]) > 60) tinted++;
     }
-    return { canvas: true, shown, diff: diff / 255 / Math.max(1, n), dark: dark / Math.max(1, opaque),
+    return { canvas: true, shown, tinted, diff: diff / 255 / Math.max(1, n), dark: dark / Math.max(1, opaque),
       img: getComputedStyle(img).opacity, vt: g.style.viewTransitionName, canvasVt: getComputedStyle(c).viewTransitionName };
   });
 }
@@ -1133,6 +1134,19 @@ test('parity pull: the glyph comes apart near the pointer and keeps its holes', 
   await page.mouse.move(0, 0);
 }, p => ['/work/continental/', '/work/posta/', '/work/bancor/', '/work/topicflower/'].includes(p));
 
+// Pulled glyphs stay pure ink: no coloured outline around the pieces.
+test('parity pull draws no coloured outline', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const box = await page.locator('.spec .glyph').boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForTimeout(400);
+  const r = await parityProbe(page);
+  await page.mouse.move(0, 0);
+  if (!r.canvas) throw new Error('no parity canvas');
+  if (r.tinted > 0) throw new Error(`${r.tinted} coloured pixels on the pulled glyph`);
+}, p => p === '/work/continental/');
+
 test('parity pull inks white in dark mode', async ({ page, vp }) => {
   if (vp !== 'desktop') return;
   await page.emulateMedia({ colorScheme: 'dark' });
@@ -1143,7 +1157,7 @@ test('parity pull inks white in dark mode', async ({ page, vp }) => {
     await page.waitForTimeout(400);
     const r = await parityProbe(page);
     if (!r.canvas) throw new Error('no parity canvas');
-    // Ink is white (the accent outline aside): no black pixels left.
+    // Ink is white: no black pixels left.
     if (r.dark > 0.01) throw new Error(`${(r.dark * 100).toFixed(0)}% of the ink is black`);
   } finally {
     await page.mouse.move(0, 0);
