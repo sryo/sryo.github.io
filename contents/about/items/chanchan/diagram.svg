@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 192">
-  <title>Chanchán: you type a beat in plain Spanish words, hear it play, swap a word from its menu, copy the link, and a friend who opens it hears the same song</title>
+  <title>Chanchán: you type a beat in plain words, hear it play, swap a word from its menu, copy the link, and a friend who opens it hears the same song</title>
   <defs>
     <marker id="chanchan-head" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
       <path d="M0 0L8 4L0 8Z" fill="currentColor"/>
@@ -20,7 +20,7 @@
   </g>
   <g fill="currentColor" font-size="14" text-anchor="middle" dominant-baseline="central">
     <text x="32" y="40">You</text>
-    <text x="192" y="40">Type la bata toca pum pa</text>
+    <text x="192" y="40">Type a beat in words</text>
     <text x="408" y="40">Hear it play</text>
     <text x="408" y="136">Swap a word from ▾</text>
     <text x="224" y="136">Copy the link</text>
