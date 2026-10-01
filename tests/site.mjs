@@ -520,7 +520,7 @@ const DECISIONS = {
   valora: ['The AI suggests, the analyst commits', 'Cap tables and scenarios you can work in', 'One design system for three modules'],
   continental: ['Clarity first, to WCAG', 'Denser screens, not more whitespace', 'One accessible library under everything'],
   'ey-helix': ["Auditors' workflows before patterns", 'Written guidelines for Helix visualizations', 'One architecture for a team of ten'],
-  topicflower: ['Keep the flower, put the numbers underneath', 'From a place you checked to a place you worked', 'One design system for the new platform'],
+  topicflower: ['Keep the flower, put the numbers underneath', 'Pay in credits, share them out', 'From a place you checked to a place you worked', 'One design system for the new platform'],
 };
 test('decision heads name the decision', async ({ page, path }) => {
   const want = DECISIONS[path.split('/')[2]];
@@ -833,7 +833,7 @@ test('diagram marker ids are unique on a page', async ({ page }) => {
 // of one plain line (≤ 100 characters, no em dash, no trailing period), and
 // at most one caption per page says what was blurred. Cases not listed here
 // have no screens yet.
-const CLIENT_SCREENS = ['bancor', 'continental', 'ey-helix', 'hometown', 'omsnic', 'valora'];
+const CLIENT_SCREENS = ['bancor', 'continental', 'ey-helix', 'hometown', 'omsnic', 'topicflower', 'valora'];
 test('client case screens sit under the decision they show', async ({ page, path }) => {
   const figs = await page.$$eval('main figure.screen', fs => fs.map(f => {
     const part = f.closest('section.part');
