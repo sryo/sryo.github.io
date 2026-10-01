@@ -985,7 +985,7 @@ test('diagram styles: ink, Inter, 1.5px hairlines, knockout, no page overflow', 
 // project has a UI; a diagram is optional and, when present, captioned.
 // SCREENS_PENDING holds projects with a UI whose real screens aren't
 // captured yet; a slug leaves it when its screens land (red → green).
-const SCREENS_PENDING = ['airnod', 'figma-cdp', 'figma-plugins', 'fin', 'subi', 'va'];
+const SCREENS_PENDING = ['airnod', 'figma-plugins', 'fin'];
 test('side project shows its screens', async ({ page, path }) => {
   const slug = slugOf(path);
   const r = await page.evaluate(() => ({
