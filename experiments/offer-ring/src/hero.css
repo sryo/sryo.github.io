@@ -1,0 +1,371 @@
+
+.or-hero {
+    position: relative;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    display: grid;
+    grid-template-rows: auto auto auto;
+    overflow: clip;
+    isolation: isolate;
+    padding-bottom: 56px;
+    background: var(--paper);
+    color: var(--ink);
+}
+
+.or-bar {
+    grid-row: 1;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px 32px;
+    padding: 22px var(--gutter) 0;
+}
+
+.or-who {
+    margin: 0;
+    max-width: 52em;
+    font-size: clamp(19px, 1.75vw, 28px);
+    line-height: 1.2;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+}
+
+.or-name {
+    margin-right: 0.3em;
+    font-weight: 720;
+    text-decoration: none;
+}
+
+.or-links {
+    display: flex;
+    gap: 22px;
+    font-size: 17px;
+    line-height: 24px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.or-links a {
+    text-decoration: none;
+}
+
+.or-links a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+}
+
+.or-core {
+    grid-row: 2;
+    position: relative;
+    z-index: 2;
+    padding: clamp(20px, 3.4vh, 44px) var(--gutter) 0;
+}
+
+.or-thesis {
+    max-width: 13em;
+    margin: 0 auto;
+    text-align: center;
+    font-size: clamp(44px, min(7.5vw, 12.2vh), 136px);
+    line-height: 0.93;
+    font-weight: 720;
+    letter-spacing: -0.055em;
+    text-wrap: balance;
+}
+
+.or-offers {
+    display: grid;
+    grid-template-columns: max-content;
+    justify-content: center;
+    margin: clamp(22px, 3.6vh, 52px) auto 0;
+}
+
+.or-head {
+    margin: 0;
+    font: inherit;
+}
+
+.or-offer {
+    appearance: none;
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: clamp(26px, min(3.3vw, 5.1vh), 60px);
+    line-height: 1.08;
+    font-weight: 650;
+    letter-spacing: -0.035em;
+    text-align: left;
+    white-space: nowrap;
+    cursor: default;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.or-t {
+    display: inline-block;
+}
+
+.or-t::after {
+    content: attr(data-t);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 720;
+}
+
+.or-proof {
+
+    contain: inline-size;
+    margin: 6px 0 22px;
+    font-size: clamp(17px, 1.35vw, 21px);
+    line-height: 1.45;
+    text-wrap: pretty;
+}
+
+.or-pin p {
+    margin: 0;
+}
+
+.or-see {
+    margin-left: 0.4em;
+    white-space: nowrap;
+}
+
+.or-see a {
+
+    margin-right: 0.7em;
+    font-weight: 650;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}
+
+.or-see a:hover {
+    text-decoration-thickness: 3px;
+}
+
+.or-see a::after {
+    content: "\2009\2192";
+}
+
+.or-ring {
+    grid-row: 3;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px 40px;
+    padding: 40px var(--gutter) 0;
+}
+
+.or-static {
+    display: block;
+    width: clamp(72px, 9vw, 128px);
+    aspect-ratio: 1;
+    color: var(--ink);
+}
+
+.or-static svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.or-js .or-hero {
+
+    --x-ink: #fff;
+    grid-template-rows: auto 1fr;
+    min-height: max(100svh, 640px);
+    padding-bottom: 0;
+}
+
+.or-js .or-bar,
+.or-js .or-core {
+    color: var(--x-ink);
+    mix-blend-mode: difference;
+}
+
+.or-js .or-core {
+    align-self: start;
+
+    pointer-events: none;
+}
+
+.or-js .or-core a,
+.or-js .or-core button {
+    pointer-events: auto;
+}
+
+.or-js .or-offer {
+    font-weight: 300;
+    cursor: pointer;
+    transition: font-weight 0.4s ease;
+}
+
+.or-js .or-offer:hover {
+    font-weight: 460;
+}
+
+.or-js .or-offer[aria-expanded="true"] {
+    font-weight: 720;
+}
+
+.or-offer:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+}
+
+.or-js .or-ring {
+
+    grid-row: auto;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    padding: 0;
+    pointer-events: none;
+}
+
+.or-js .or-static {
+    display: none;
+}
+
+.or-g {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: block;
+    pointer-events: auto;
+    transform-origin: 50% 50%;
+    will-change: transform;
+}
+
+.or-g canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+@media (min-width: 960px) {
+    .or-js .or-proof {
+        grid-row: 6;
+        grid-column: 1;
+        margin: clamp(12px, 2vh, 24px) 0 0;
+        opacity: 0;
+        visibility: hidden;
+        translate: 0 -6px;
+        transition: opacity 0.15s ease, translate 0.15s ease, visibility 0s 0.15s;
+    }
+
+    .or-js .or-proof.is-on {
+        opacity: 1;
+        visibility: visible;
+        translate: 0 0;
+        transition: opacity 0.3s 0.17s ease, translate 0.5s 0.17s var(--ease-spring), visibility 0s 0.17s;
+    }
+
+    .or-js .or-proof:not(.is-on) {
+        translate: 0 8px;
+    }
+}
+
+@media (max-width: 959px) {
+    .or-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding-top: 18px;
+    }
+
+    .or-who {
+        font-size: clamp(19px, 5vw, 26px);
+    }
+
+    .or-name {
+        display: block;
+        margin: 0 0 2px;
+    }
+
+    .or-links {
+        gap: 20px;
+        font-size: 16px;
+    }
+
+    .or-core {
+        padding-top: 30px;
+    }
+
+    .or-thesis {
+        max-width: 10em;
+        margin: 0;
+        text-align: left;
+        font-size: clamp(40px, 11.6vw, 88px);
+        line-height: 0.94;
+    }
+
+    .or-offers {
+        display: block;
+        margin-top: 32px;
+    }
+
+    .or-offer {
+        font-size: clamp(25px, 6.7vw, 44px);
+        line-height: 1.12;
+        white-space: normal;
+        text-wrap: balance;
+        padding: 3px 0;
+    }
+
+    .or-proof {
+        margin: 4px 0 14px;
+        font-size: 17px;
+    }
+
+    .or-see {
+        display: block;
+        margin: 6px 0 0;
+    }
+
+    .or-js .or-hero {
+        min-height: 0;
+        padding-bottom: 40px;
+    }
+
+    .or-js .or-offers {
+        margin-top: clamp(196px, 56vw, 320px);
+    }
+
+    .or-js .or-proof {
+        display: grid;
+        grid-template-rows: 0fr;
+        margin: 0;
+        opacity: 0;
+        transition: grid-template-rows 0.42s var(--ease-spring), opacity 0.18s ease, margin 0.42s var(--ease-spring);
+    }
+
+    .or-js .or-proof.is-on {
+        grid-template-rows: 1fr;
+        margin: 2px 0 14px;
+        opacity: 1;
+        transition: grid-template-rows 0.42s var(--ease-spring), opacity 0.3s 0.12s ease, margin 0.42s var(--ease-spring);
+    }
+
+    .or-js .or-pin {
+        min-height: 0;
+        overflow: hidden;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .or-js .or-proof,
+    .or-js .or-proof.is-on,
+    .or-js .or-proof:not(.is-on),
+    .or-js .or-offer {
+        transition: none;
+        translate: none;
+    }
+}

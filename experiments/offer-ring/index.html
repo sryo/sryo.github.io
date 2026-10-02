@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mateo Yadarola / Work</title>
+    <meta name="description" content="Mateo Yadarola, product designer and design lead. 20+ years in banking, credit, audit and news, more than a decade of it leading.">
+    <link rel="canonical" href="https://yadarola.com.ar/works.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mateo Yadarola">
+    <meta property="og:title" content="Mateo Yadarola / Work">
+    <meta property="og:description" content="Mateo Yadarola, product designer and design lead. 20+ years in banking, credit, audit and news, more than a decade of it leading.">
+    <meta property="og:url" content="https://yadarola.com.ar/works.html">
+    <meta property="og:image" content="https://yadarola.com.ar/og.png">
+    <meta property="og:image:alt" content="Mateo Yadarola / Work">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://yadarola.com.ar/og.png">
+    <link rel="preload" href="fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+.or-hero {
+    position: relative;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    display: grid;
+    grid-template-rows: auto auto auto;
+    overflow: clip;
+    isolation: isolate;
+    padding-bottom: 56px;
+    background: var(--paper);
+    color: var(--ink);
+}
+
+.or-bar {
+    grid-row: 1;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px 32px;
+    padding: 22px var(--gutter) 0;
+}
+
+.or-who {
+    margin: 0;
+    max-width: 52em;
+    font-size: clamp(19px, 1.75vw, 28px);
+    line-height: 1.2;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+}
+
+.or-name {
+    margin-right: 0.3em;
+    font-weight: 720;
+    text-decoration: none;
+}
+
+.or-links {
+    display: flex;
+    gap: 22px;
+    font-size: 17px;
+    line-height: 24px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.or-links a {
+    text-decoration: none;
+}
+
+.or-links a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+}
+
+.or-core {
+    grid-row: 2;
+    position: relative;
+    z-index: 2;
+    padding: clamp(20px, 3.4vh, 44px) var(--gutter) 0;
+}
+
+.or-thesis {
+    max-width: 13em;
+    margin: 0 auto;
+    text-align: center;
+    font-size: clamp(44px, min(7.5vw, 12.2vh), 136px);
+    line-height: 0.93;
+    font-weight: 720;
+    letter-spacing: -0.055em;
+    text-wrap: balance;
+}
+
+.or-offers {
+    display: grid;
+    grid-template-columns: max-content;
+    justify-content: center;
+    margin: clamp(22px, 3.6vh, 52px) auto 0;
+}
+
+.or-head {
+    margin: 0;
+    font: inherit;
+}
+
+.or-offer {
+    appearance: none;
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: clamp(26px, min(3.3vw, 5.1vh), 60px);
+    line-height: 1.08;
+    font-weight: 650;
+    letter-spacing: -0.035em;
+    text-align: left;
+    white-space: nowrap;
+    cursor: default;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.or-t {
+    display: inline-block;
+}
+
+.or-t::after {
+    content: attr(data-t);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 720;
+}
+
+.or-proof {
+
+    contain: inline-size;
+    margin: 6px 0 22px;
+    font-size: clamp(17px, 1.35vw, 21px);
+    line-height: 1.45;
+    text-wrap: pretty;
+}
+
+.or-pin p {
+    margin: 0;
+}
+
+.or-see {
+    margin-left: 0.4em;
+    white-space: nowrap;
+}
+
+.or-see a {
+
+    margin-right: 0.7em;
+    font-weight: 650;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}
+
+.or-see a:hover {
+    text-decoration-thickness: 3px;
+}
+
+.or-see a::after {
+    content: "\2009\2192";
+}
+
+.or-ring {
+    grid-row: 3;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px 40px;
+    padding: 40px var(--gutter) 0;
+}
+
+.or-static {
+    display: block;
+    width: clamp(72px, 9vw, 128px);
+    aspect-ratio: 1;
+    color: var(--ink);
+}
+
+.or-static svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.or-js .or-hero {
+
+    --x-ink: #fff;
+    grid-template-rows: auto 1fr;
+    min-height: max(100svh, 640px);
+    padding-bottom: 0;
+}
+
+.or-js .or-bar,
+.or-js .or-core {
+    color: var(--x-ink);
+    mix-blend-mode: difference;
+}
+
+.or-js .or-core {
+    align-self: start;
+
+    pointer-events: none;
+}
+
+.or-js .or-core a,
+.or-js .or-core button {
+    pointer-events: auto;
+}
+
+.or-js .or-offer {
+    font-weight: 300;
+    cursor: pointer;
+    transition: font-weight 0.4s ease;
+}
+
+.or-js .or-offer:hover {
+    font-weight: 460;
+}
+
+.or-js .or-offer[aria-expanded="true"] {
+    font-weight: 720;
+}
+
+.or-offer:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+}
+
+.or-js .or-ring {
+
+    grid-row: auto;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    padding: 0;
+    pointer-events: none;
+}
+
+.or-js .or-static {
+    display: none;
+}
+
+.or-g {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: block;
+    pointer-events: auto;
+    transform-origin: 50% 50%;
+    will-change: transform;
+}
+
+.or-g canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+@media (min-width: 960px) {
+    .or-js .or-proof {
+        grid-row: 6;
+        grid-column: 1;
+        margin: clamp(12px, 2vh, 24px) 0 0;
+        opacity: 0;
+        visibility: hidden;
+        translate: 0 -6px;
+        transition: opacity 0.15s ease, translate 0.15s ease, visibility 0s 0.15s;
+    }
+
+    .or-js .or-proof.is-on {
+        opacity: 1;
+        visibility: visible;
+        translate: 0 0;
+        transition: opacity 0.3s 0.17s ease, translate 0.5s 0.17s var(--ease-spring), visibility 0s 0.17s;
+    }
+
+    .or-js .or-proof:not(.is-on) {
+        translate: 0 8px;
+    }
+}
+
+@media (max-width: 959px) {
+    .or-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding-top: 18px;
+    }
+
+    .or-who {
+        font-size: clamp(19px, 5vw, 26px);
+    }
+
+    .or-name {
+        display: block;
+        margin: 0 0 2px;
+    }
+
+    .or-links {
+        gap: 20px;
+        font-size: 16px;
+    }
+
+    .or-core {
+        padding-top: 30px;
+    }
+
+    .or-thesis {
+        max-width: 10em;
+        margin: 0;
+        text-align: left;
+        font-size: clamp(40px, 11.6vw, 88px);
+        line-height: 0.94;
+    }
+
+    .or-offers {
+        display: block;
+        margin-top: 32px;
+    }
+
+    .or-offer {
+        font-size: clamp(25px, 6.7vw, 44px);
+        line-height: 1.12;
+        white-space: normal;
+        text-wrap: balance;
+        padding: 3px 0;
+    }
+
+    .or-proof {
+        margin: 4px 0 14px;
+        font-size: 17px;
+    }
+
+    .or-see {
+        display: block;
+        margin: 6px 0 0;
+    }
+
+    .or-js .or-hero {
+        min-height: 0;
+        padding-bottom: 40px;
+    }
+
+    .or-js .or-offers {
+        margin-top: clamp(196px, 56vw, 320px);
+    }
+
+    .or-js .or-proof {
+        display: grid;
+        grid-template-rows: 0fr;
+        margin: 0;
+        opacity: 0;
+        transition: grid-template-rows 0.42s var(--ease-spring), opacity 0.18s ease, margin 0.42s var(--ease-spring);
+    }
+
+    .or-js .or-proof.is-on {
+        grid-template-rows: 1fr;
+        margin: 2px 0 14px;
+        opacity: 1;
+        transition: grid-template-rows 0.42s var(--ease-spring), opacity 0.3s 0.12s ease, margin 0.42s var(--ease-spring);
+    }
+
+    .or-js .or-pin {
+        min-height: 0;
+        overflow: hidden;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .or-js .or-proof,
+    .or-js .or-proof.is-on,
+    .or-js .or-proof:not(.is-on),
+    .or-js .or-offer {
+        transition: none;
+        translate: none;
+    }
+}
+</style>
+    <script>document.documentElement.classList.add("or-js");</script>
+    <script>
+// Optional enhancement: one accent colour per visit, picked from the
+// connector palette the ring used. Kept for the session so the ledger and
+// its case pages match; without JS the stylesheet's accent applies.
+(function () {
+    var LINE_COLORS = [
+        "#FF2D55", "#00C7BE", "#FFCC00",
+        "#007AFF", "#FF9500", "#AF52DE", "#34C759"
+    ];
+    var color = null;
+    try { color = sessionStorage.getItem("accent"); } catch (e) {}
+    if (LINE_COLORS.indexOf(color) < 0) {
+        color = LINE_COLORS[Math.floor(Math.random() * LINE_COLORS.length)];
+        try { sessionStorage.setItem("accent", color); } catch (e) {}
+    }
+    document.documentElement.style.setProperty("--accent", color);
+})();
+
+// Optional enhancement: a Figma facade loads its prototype in place on
+// click. Without JS the link simply opens Figma.
+document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a.embed-facade");
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    e.preventDefault();
+    var f = document.createElement("iframe");
+    f.src = a.href;
+    f.loading = "lazy";
+    f.className = "embed-live";
+    // Named after its project: the page's h1 up to the colon.
+    var h = document.querySelector(".case-title h1");
+    var name = h ? h.textContent.split(": ")[0].trim() : "";
+    f.title = name ? name + " prototype" : "Figma prototype";
+    f.allowFullscreen = true;
+    a.replaceWith(f);
+});
+
+// An arriving view transition (a glyph flying in from its row): marked on
+// <html> while it runs, so motion.js lays nothing over the glyph mid-flight.
+window.addEventListener("pagereveal", function (e) {
+    if (!e.viewTransition) return;
+    var root = document.documentElement;
+    root.setAttribute("data-vt", "");
+    e.viewTransition.finished.finally(function () { root.removeAttribute("data-vt"); });
+});
+
+// Optional enhancement: a wide screen opens at its real size on click.
+// Fades in, and fades out before it's removed (Escape or any click).
+document.addEventListener("click", function (e) {
+    var img = e.target.closest && e.target.closest("figure.wide img");
+    if (!img) return;
+    var z = document.createElement("div");
+    z.className = "zoom";
+    z.setAttribute("role", "dialog");
+    z.setAttribute("aria-label", img.alt);
+    var big = document.createElement("img");
+    big.src = img.currentSrc || img.src;
+    big.alt = img.alt;
+    z.appendChild(big);
+    document.body.appendChild(z);
+    requestAnimationFrame(function () { z.classList.add("open"); });
+    function close() {
+        document.removeEventListener("keydown", onKey);
+        z.classList.remove("open");
+        setTimeout(function () { z.remove(); }, 200);
+    }
+    function onKey(k) { if (k.key === "Escape") close(); }
+    z.addEventListener("click", close);
+    document.addEventListener("keydown", onKey);
+});
+    </script>
+    <script src="motion.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main-content">Skip to content</a>
+<main id="main-content">
+<header class="or-hero" id="top">
+<div class="or-ring" aria-hidden="true">
+<a class="or-static" href="work/valora/" tabindex="-1" aria-label="Valora"><svg viewBox="0 0 100 100"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 50A40 40 0 1 0 90 50A40 40 0 1 0 10 50ZM30 50A20 20 0 1 0 70 50A20 20 0 1 0 30 50ZM50 50V10A40 40 0 0 1 90 50Z" fill="currentColor"/></svg></a>
+<a class="or-static" href="work/bancor/" tabindex="-1" aria-label="Bancor"><svg viewBox="0 0 100 100"><path fill-rule="evenodd" clip-rule="evenodd" d="M61.7332 20.5865C61.7332 12.5047 55.1667 5.95312 47.0666 5.95312C38.9664 5.95312 32.3999 12.5047 32.3999 20.5865C32.3999 23.0047 32.9878 25.2859 34.0287 27.2955C17.6241 32.2567 6 44.6355 6 59.1211C6 77.9786 25.6995 93.2656 50 93.2656C74.3005 93.2656 94 77.9786 94 59.1211C94 43.1273 79.8294 29.7019 60.6997 25.9931C61.3666 24.3205 61.7332 22.4962 61.7332 20.5865ZM60.6997 25.9931C57.2745 25.3291 53.6903 24.9765 50 24.9765C44.3662 24.9765 38.9798 25.7982 34.0287 27.2955C36.4668 32.0024 41.3901 35.2199 47.0666 35.2199C53.2527 35.2199 58.5443 31.3988 60.6997 25.9931ZM56.8445 56.6822C58.1945 56.6822 59.2889 55.5902 59.2889 54.2433C59.2889 52.8963 58.1945 51.8044 56.8445 51.8044C55.4944 51.8044 54.4 52.8963 54.4 54.2433C54.4 55.5902 55.4944 56.6822 56.8445 56.6822ZM88.6221 54.2433C88.6221 55.5902 87.5276 56.6822 86.1776 56.6822C84.8276 56.6822 83.7332 55.5902 83.7332 54.2433C83.7332 52.8963 84.8276 51.8044 86.1776 51.8044C87.5276 51.8044 88.6221 52.8963 88.6221 54.2433ZM71.5109 66.4378C76.9111 66.4378 81.2887 63.162 81.2887 59.1211C81.2887 55.0802 76.9111 51.8044 71.5109 51.8044C66.1108 51.8044 61.7332 55.0802 61.7332 59.1211C61.7332 63.162 66.1108 66.4378 71.5109 66.4378ZM68.089 59.1211C68.089 59.9293 67.4323 60.5845 66.6223 60.5845C65.8123 60.5845 65.1556 59.9293 65.1556 59.1211C65.1556 58.3129 65.8123 57.6578 66.6223 57.6578C67.4323 57.6578 68.089 58.3129 68.089 59.1211ZM76.3998 60.5845C77.2099 60.5845 77.8665 59.9293 77.8665 59.1211C77.8665 58.3129 77.2099 57.6578 76.3998 57.6578C75.5898 57.6578 74.9332 58.3129 74.9332 59.1211C74.9332 59.9293 75.5898 60.5845 76.3998 60.5845Z" fill="currentColor" style="mix-blend-mode:multiply"/></svg></a>
+<a class="or-static" href="work/trueframe/" tabindex="-1" aria-label="Trueframe"><svg viewBox="0 0 100 100"><path fill-rule="evenodd" clip-rule="evenodd" d="M16 8L60 8L60 68L16 68ZM28 20L72 20L72 80L28 80ZM40 32L84 32L84 92L40 92Z" fill="currentColor"/></svg></a>
+<a class="or-static" href="work/continental/" tabindex="-1" aria-label="Continental"><svg viewBox="0 0 100 100"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 24H92V76H8ZM8 34H92V44H8ZM18 54H34V66H18Z" fill="currentColor"/></svg></a>
+<a class="or-static" href="work/avis/" tabindex="-1" aria-label="Avis"><svg viewBox="0 0 100 100"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 12L62 12L62 62L12 62ZM40 40L40 94L78 74Z" fill="currentColor"/></svg></a>
+<a class="or-static" href="work/ey-helix/" tabindex="-1" aria-label="EY Helix"><svg viewBox="0 0 100 100"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 46H32V90H12ZM40 34H60V90H40ZM68 14H88V90H68ZM40 34A10 10 0 1 0 60 34A10 10 0 1 0 40 34ZM12 46A10 10 0 1 0 32 46A10 10 0 1 0 12 46ZM68 14A10 10 0 1 0 88 14A10 10 0 1 0 68 14Z" fill="currentColor"/></svg></a>
+<a class="or-static" href="work/fin/" tabindex="-1" aria-label="Fin"><svg viewBox="0 0 100 100"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 12L88 12L88 88L12 88ZM56 12L64 12L64 88L56 88ZM12 50L56 50L56 58L12 58Z" fill="currentColor"/></svg></a>
+</div>
+<div class="or-bar">
+<p class="or-who"><a class="or-name" href="./">Mateo Yadarola</a> <span class="or-role">Product designer and design lead, 20+&nbsp;years. Open to remote roles, UTC&#8209;3.</span></p>
+<nav class="or-links" aria-label="Site"><a href="#g-client">Cases&nbsp;&darr;</a> <a href="work/about/">About</a> <a href="https://www.linkedin.com/in/myadarola/">LinkedIn&nbsp;&#8599;</a> <a href="mailto:mateo@yadarola.com.ar">Email</a></nav>
+</div>
+<div class="or-core">
+<h1 class="or-thesis">If the agents do the building, someone designs the&nbsp;trust.</h1>
+<div class="or-offers">
+<h2 class="or-head"><button type="button" class="or-offer" id="or-o0" data-i="0" aria-controls="or-p0"><span class="or-t" data-t="AI that a person checks before it counts">AI that a person checks before it&nbsp;counts</span></button></h2>
+<div class="or-proof" id="or-p0" data-i="0" role="region" aria-labelledby="or-o0"><div class="or-pin"><p>At Valora, analysts stopped retyping filings: the model reads each figure, an analyst confirms or overrides it before it commits. <span class="or-see"><a href="work/valora/">Valora</a> <a href="work/fin/">Fin</a></span></p></div></div>
+<h2 class="or-head"><button type="button" class="or-offer" id="or-o1" data-i="1" aria-controls="or-p1"><span class="or-t" data-t="Banking for people new to banking">Banking for people new to&nbsp;banking</span></button></h2>
+<div class="or-proof" id="or-p1" data-i="1" role="region" aria-labelledby="or-o1"><div class="or-pin"><p>When Banco de Córdoba's branches closed in 2020, the remote onboarding I owned as Product Owner opened about 380,000 accounts. <span class="or-see"><a href="work/bancor/">Bancor</a> <a href="work/continental/">Continental</a></span></p></div></div>
+<h2 class="or-head"><button type="button" class="or-offer" id="or-o2" data-i="2" aria-controls="or-p2"><span class="or-t" data-t="Dense tools for people who use them all day">Dense tools for people who use them all&nbsp;day</span></button></h2>
+<div class="or-proof" id="or-p2" data-i="2" role="region" aria-labelledby="or-o2"><div class="or-pin"><p>Consoles for support agents, analysts and auditors. At Continental the agents asked for denser screens and less scrolling, so we rebuilt for it. <span class="or-see"><a href="work/continental/">Continental</a> <a href="work/ey-helix/">EY Helix</a> <a href="work/valora/">Valora</a></span></p></div></div>
+<h2 class="or-head"><button type="button" class="or-offer" id="or-o3" data-i="3" aria-controls="or-p3"><span class="or-t" data-t="Systems other people build from">Systems other people build&nbsp;from</span></button></h2>
+<div class="or-proof" id="or-p3" data-i="3" role="region" aria-labelledby="or-o3"><div class="or-pin"><p>Peperina, Banco de Córdoba's first design system, kept 15 developers across vendors consistent. EY's audit tools adopted my visualization guidelines. <span class="or-see"><a href="work/bancor/">Bancor</a> <a href="work/ey-helix/">EY Helix</a> <a href="work/valora/">Valora</a></span></p></div></div>
+<h2 class="or-head"><button type="button" class="or-offer" id="or-o4" data-i="4" aria-controls="or-p4"><span class="or-t" data-t="Idea to working product, with coding agents">Idea to working product, with coding&nbsp;agents</span></button></h2>
+<div class="or-proof" id="or-p4" data-i="4" role="region" aria-labelledby="or-o4"><div class="or-pin"><p>Design through front-end, with coding agents writing the code. Trueframe, Avis and Fin are working software with public code. <span class="or-see"><a href="work/trueframe/">Trueframe</a> <a href="work/avis/">Avis</a> <a href="work/fin/">Fin</a></span></p></div></div>
+</div>
+</div>
+</header>
+
+<section class="group" aria-labelledby="g-client">
+<div class="group-head"><h2 id="g-client">Client work</h2></div>
+<ol class="ledger featured">
+<li id="valora"><a class="row" href="work/valora/"><span class="glyph" style="view-transition-name: g-valora"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTAgNTBBNDAgNDAgMCAxIDAgOTAgNTBBNDAgNDAgMCAxIDAgMTAgNTBaTTMwIDUwQTIwIDIwIDAgMSAwIDcwIDUwQTIwIDIwIDAgMSAwIDMwIDUwWk01MCA1MFYxMEE0MCA0MCAwIDAgMSA5MCA1MFoiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=" alt="" /></span><span class="name">Valora</span><span class="line">Sole designer: AI reads equity data off filings, an analyst confirms or overrides each.</span><span class="meta"><span class="role">Lead UX/UI designer</span> &middot; <time datetime="2024-06-01">2024</time></span></a></li>
+<li id="bancor"><a class="row" href="work/bancor/"><span class="glyph" style="view-transition-name: g-bancor"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNNjEuNzMzMiAyMC41ODY1QzYxLjczMzIgMTIuNTA0NyA1NS4xNjY3IDUuOTUzMTIgNDcuMDY2NiA1Ljk1MzEyQzM4Ljk2NjQgNS45NTMxMiAzMi4zOTk5IDEyLjUwNDcgMzIuMzk5OSAyMC41ODY1QzMyLjM5OTkgMjMuMDA0NyAzMi45ODc4IDI1LjI4NTkgMzQuMDI4NyAyNy4yOTU1QzE3LjYyNDEgMzIuMjU2NyA2IDQ0LjYzNTUgNiA1OS4xMjExQzYgNzcuOTc4NiAyNS42OTk1IDkzLjI2NTYgNTAgOTMuMjY1NkM3NC4zMDA1IDkzLjI2NTYgOTQgNzcuOTc4NiA5NCA1OS4xMjExQzk0IDQzLjEyNzMgNzkuODI5NCAyOS43MDE5IDYwLjY5OTcgMjUuOTkzMUM2MS4zNjY2IDI0LjMyMDUgNjEuNzMzMiAyMi40OTYyIDYxLjczMzIgMjAuNTg2NVpNNjAuNjk5NyAyNS45OTMxQzU3LjI3NDUgMjUuMzI5MSA1My42OTAzIDI0Ljk3NjUgNTAgMjQuOTc2NUM0NC4zNjYyIDI0Ljk3NjUgMzguOTc5OCAyNS43OTgyIDM0LjAyODcgMjcuMjk1NUMzNi40NjY4IDMyLjAwMjQgNDEuMzkwMSAzNS4yMTk5IDQ3LjA2NjYgMzUuMjE5OUM1My4yNTI3IDM1LjIxOTkgNTguNTQ0MyAzMS4zOTg4IDYwLjY5OTcgMjUuOTkzMVpNNTYuODQ0NSA1Ni42ODIyQzU4LjE5NDUgNTYuNjgyMiA1OS4yODg5IDU1LjU5MDIgNTkuMjg4OSA1NC4yNDMzQzU5LjI4ODkgNTIuODk2MyA1OC4xOTQ1IDUxLjgwNDQgNTYuODQ0NSA1MS44MDQ0QzU1LjQ5NDQgNTEuODA0NCA1NC40IDUyLjg5NjMgNTQuNCA1NC4yNDMzQzU0LjQgNTUuNTkwMiA1NS40OTQ0IDU2LjY4MjIgNTYuODQ0NSA1Ni42ODIyWk04OC42MjIxIDU0LjI0MzNDODguNjIyMSA1NS41OTAyIDg3LjUyNzYgNTYuNjgyMiA4Ni4xNzc2IDU2LjY4MjJDODQuODI3NiA1Ni42ODIyIDgzLjczMzIgNTUuNTkwMiA4My43MzMyIDU0LjI0MzNDODMuNzMzMiA1Mi44OTYzIDg0LjgyNzYgNTEuODA0NCA4Ni4xNzc2IDUxLjgwNDRDODcuNTI3NiA1MS44MDQ0IDg4LjYyMjEgNTIuODk2MyA4OC42MjIxIDU0LjI0MzNaTTcxLjUxMDkgNjYuNDM3OEM3Ni45MTExIDY2LjQzNzggODEuMjg4NyA2My4xNjIgODEuMjg4NyA1OS4xMjExQzgxLjI4ODcgNTUuMDgwMiA3Ni45MTExIDUxLjgwNDQgNzEuNTEwOSA1MS44MDQ0QzY2LjExMDggNTEuODA0NCA2MS43MzMyIDU1LjA4MDIgNjEuNzMzMiA1OS4xMjExQzYxLjczMzIgNjMuMTYyIDY2LjExMDggNjYuNDM3OCA3MS41MTA5IDY2LjQzNzhaTTY4LjA4OSA1OS4xMjExQzY4LjA4OSA1OS45MjkzIDY3LjQzMjMgNjAuNTg0NSA2Ni42MjIzIDYwLjU4NDVDNjUuODEyMyA2MC41ODQ1IDY1LjE1NTYgNTkuOTI5MyA2NS4xNTU2IDU5LjEyMTFDNjUuMTU1NiA1OC4zMTI5IDY1LjgxMjMgNTcuNjU3OCA2Ni42MjIzIDU3LjY1NzhDNjcuNDMyMyA1Ny42NTc4IDY4LjA4OSA1OC4zMTI5IDY4LjA4OSA1OS4xMjExWk03Ni4zOTk4IDYwLjU4NDVDNzcuMjA5OSA2MC41ODQ1IDc3Ljg2NjUgNTkuOTI5MyA3Ny44NjY1IDU5LjEyMTFDNzcuODY2NSA1OC4zMTI5IDc3LjIwOTkgNTcuNjU3OCA3Ni4zOTk4IDU3LjY1NzhDNzUuNTg5OCA1Ny42NTc4IDc0LjkzMzIgNTguMzEyOSA3NC45MzMyIDU5LjEyMTFDNzQuOTMzMiA1OS45MjkzIDc1LjU4OTggNjAuNTg0NSA3Ni4zOTk4IDYwLjU4NDVaIiBmaWxsPSJibGFjayIgc3R5bGU9Im1peC1ibGVuZC1tb2RlOm11bHRpcGx5Ii8+Cjwvc3ZnPgo=" alt="" /></span><span class="name">Bancor</span><span class="line">~380K accounts opened remotely in 2020; 845K individuals and 18.2K companies on the app</span><span class="meta"><span class="role">Product owner and lead designer</span> &middot; <time datetime="2020-06-01">2020</time></span></a></li>
+<li id="continental"><a class="row" href="work/continental/"><span class="glyph" style="view-transition-name: g-continental"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNOCAyNEg5MlY3Nkg4Wk04IDM0SDkyVjQ0SDhaTTE4IDU0SDM0VjY2SDE4WiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==" alt="" /></span><span class="name">Continental</span><span class="line">100+ screens shipped; support agents got denser screens and faster filters.</span><span class="meta"><span class="role">Lead UX/UI designer</span> &middot; <time datetime="2022-07-01">2022</time></span></a></li>
+<li id="lavoz"><a class="row" href="work/lavoz/"><span class="glyph" style="view-transition-name: g-lavoz"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNNTkgNzcuMzMzM0wyMCA4OFYxOS44MTgyTDIwLjcyOTkgMTkuNzQzNEw1OSAyMi40MTk2Vjc3LjMzMzNaTTU5IDE1LjgyMDFMMjAuNzI5OSAxOS43NDM0TDIwIDE5LjY5MjNWMTkuNjY2N0w1OSA5VjE1LjgyMDFaTTY3IDIyLjk3OVY4My4xODE4TDIwIDg4Vjg4LjE1MzhMNzUgOTJWMjMuNTM4NUw2NyAyMi45NzlaTTY3IDIyLjk3OVYxNUw1OSAxNS44MjAxVjIyLjQxOTZMNjcgMjIuOTc5WiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==" alt="" /></span><span class="name">La Voz</span><span class="line">Print ads fell 40%; an in-house paywall won 10K subscribers in 6 months, 25K in 2 years.</span><span class="meta"><span class="role">UX researcher and product designer</span> &middot; <time datetime="2017-08-01">2017</time></span></a></li>
+</ol>
+</section>
+<section class="group also" aria-labelledby="g-also">
+<div class="group-head"><h2 id="g-also">Also</h2></div>
+<ol class="ledger index">
+<li id="ey-helix"><a class="row" href="work/ey-helix/"><time class="yr" datetime="2021-11-01">2021</time><span class="glyph" style="view-transition-name: g-ey-helix"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTIgNDZIMzJWOTBIMTJaTTQwIDM0SDYwVjkwSDQwWk02OCAxNEg4OFY5MEg2OFpNNDAgMzRBMTAgMTAgMCAxIDAgNjAgMzRBMTAgMTAgMCAxIDAgNDAgMzRaTTEyIDQ2QTEwIDEwIDAgMSAwIDMyIDQ2QTEwIDEwIDAgMSAwIDEyIDQ2Wk02OCAxNEExMCAxMCAwIDEgMCA4OCAxNEExMCAxMCAwIDEgMCA2OCAxNFoiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=" alt="" /></span><span class="name">EY Helix</span><span class="role">Lead UX designer</span></a></li>
+<li id="veng"><a class="row" href="work/veng/"><time class="yr" datetime="2019-06-01">2019</time><span class="glyph" style="view-transition-name: g-veng"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0zMC41MzExIDc5LjY0MTZDMzIuMzU1IDgwLjY5NDcgMzQuNjg3MSA4MC4wNjk3IDM1Ljc0MDIgNzguMjQ1OUMzNi43OTMyIDc2LjQyMiAzNi4xNjgzIDc0LjA4OTggMzQuMzQ0NCA3My4wMzY4QzMyLjUyMDUgNzEuOTgzOCAzMC4xODg0IDcyLjYwODcgMjkuMTM1MyA3NC40MzI2QzI4LjA4MjMgNzYuMjU2NSAyOC43MDcyIDc4LjU4ODYgMzAuNTMxMSA3OS42NDE2WiIgZmlsbD0iYmxhY2siIHN0eWxlPSJtaXgtYmxlbmQtbW9kZTptdWx0aXBseSIvPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTk1LjkwNDkgNTkuNDM5OUwxNS45OTMyIDEzLjMwMjhMMy43MDU5IDM0LjU4NUwzMS4yNTc0IDUwLjQ5MThDMjYuOTUxMSA1MS45MTM0IDIzLjMyMzEgNTQuODQxNCAyMS4wNjM2IDU4Ljc1NDlMMzUuMDQzNSA2Ni44MjYyTDMwLjA2MSA3NS40NTYyTDM0LjM5MTEgNzcuOTU2MkwzOS4zNzM2IDY5LjMyNjJMNTQuMDg3NiA3Ny44MjEzQzU2LjM0NzEgNzMuOTA3OCA1Ny4wNjg4IDY5LjMwMTggNTYuMTQ2OCA2NC44NjE3TDgzLjYxNzcgODAuNzIyTDk1LjkwNDkgNTkuNDM5OVpNMzkuMzczNiA2OS4zMjYyTDQyLjAxNzcgNjQuNzQ2NkwzNy42ODc1IDYyLjI0NjZMMzUuMDQzNSA2Ni44MjYyTDM3LjU3NTYgNjguMjg4MUwzOS4zNzM2IDY5LjMyNjJaTTU2LjE0NjggNjQuODYxN0wzMS4yNTc0IDUwLjQ5MThDMzEuNjYyOCA1MC4zNTggMzIuMDc0MiA1MC4yMzc1IDMyLjQ5MTEgNTAuMTMwOEMzNy4zMzU4IDQ4Ljg5MDkgNDIuNTE3NyA0OS42MTQ3IDQ2Ljg5NyA1Mi4xNDNDNTEuMjc2MyA1NC42NzE0IDU0LjQ5NDEgNTguNzk3MiA1NS44NDI2IDYzLjYxMjhDNTUuOTU4NiA2NC4wMjcyIDU2LjA2IDY0LjQ0MzcgNTYuMTQ2OCA2NC44NjE3WiIgZmlsbD0iYmxhY2siIHN0eWxlPSJtaXgtYmxlbmQtbW9kZTptdWx0aXBseSIvPgo8L3N2Zz4K" alt="" /></span><span class="name">VENG</span><span class="role">Lead UX designer</span></a></li>
+<li id="hometown" class="repeat"><a class="row" href="work/hometown/"><time class="yr" datetime="2019-05-01">2019</time><span class="glyph" style="view-transition-name: g-hometown"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMjEuMzMzMSA0Ni40QzI1LjI5MTEgNDYuNCAyOC40OTk3IDQzLjE3NjUgMjguNDk5NyAzOS4ySDMzLjI3NzlDMzMuMjc3OSA0My4xNzY1IDM2LjQ4NjUgNDYuNCA0MC40NDQ1IDQ2LjRDNDQuNDAyNiA0Ni40IDQ3LjYxMTIgNDMuMTc2NSA0Ny42MTEyIDM5LjJINTIuMzg4OUM1Mi4zODg5IDQzLjE3NjUgNTUuNTk3NiA0Ni40IDU5LjU1NTYgNDYuNEM2My41MTM2IDQ2LjQgNjYuNzIyMyA0My4xNzY1IDY2LjcyMjMgMzkuMkg3MS41QzcxLjUgNDMuMTc2NSA3NC43MDg2IDQ2LjQgNzguNjY2NyA0Ni40QzgyLjYyNDcgNDYuNCA4NS44MzMzIDQzLjE3NjUgODUuODMzMyAzOS4yTDkzIDM5LjJWNjhIN0w3IDM5LjJMMTQuMTY2NCAzOS4yQzE0LjE2NjQgNDMuMTc2NSAxNy4zNzUgNDYuNCAyMS4zMzMxIDQ2LjRaTTg1LjgzMzMgMzkuMkg3MS41QzcxLjUgMzUuMjIzNSA3NC43MDg2IDMyIDc4LjY2NjcgMzJDODIuNjI0NyAzMiA4NS44MzMzIDM1LjIyMzUgODUuODMzMyAzOS4yWk02Ni43MjIzIDM5LjJINTIuMzg4OUM1Mi4zODg5IDM1LjIyMzUgNTUuNTk3NiAzMiA1OS41NTU2IDMyQzYzLjUxMzYgMzIgNjYuNzIyMyAzNS4yMjM1IDY2LjcyMjMgMzkuMlpNNDcuNjExMiAzOS4ySDMzLjI3NzlDMzMuMjc3OSAzNS4yMjM1IDM2LjQ4NjUgMzIgNDAuNDQ0NSAzMkM0NC40MDI2IDMyIDQ3LjYxMTIgMzUuMjIzNSA0Ny42MTEyIDM5LjJaTTE0LjE2NjQgMzkuMkMxNC4xNjY0IDM1LjIyMzUgMTcuMzc1IDMyIDIxLjMzMzEgMzJDMjUuMjkxMSAzMiAyOC40OTk3IDM1LjIyMzUgMjguNDk5NyAzOS4ySDE0LjE2NjRaIiBmaWxsPSJibGFjayIgc3R5bGU9Im1peC1ibGVuZC1tb2RlOm11bHRpcGx5Ii8+Cjwvc3ZnPgo=" alt="" /></span><span class="name">HometownLocal</span><span class="role">Senior UX designer</span></a></li>
+<li id="topicflower" class="repeat"><a class="row" href="work/topicflower/"><time class="yr" datetime="2019-03-01">2019</time><span class="glyph" style="view-transition-name: g-topicflower"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMzguNTU5MyAzMS4wNjA1QzM5LjUyNiAzMi4wMjcyIDQwLjU4ODIgMzIuODQwNCA0MS43MTU0IDMzLjVDNDAuNTg4MiAzNC4xNTk2IDM5LjUyNiAzNC45NzI4IDM4LjU1OTMgMzUuOTM5NUMzNC44MTkyIDM5LjY3OTYgMzMuMzc3NSA0NC44NDc4IDM0LjIzNDEgNDkuNjg4OUMzMC44NjcxIDQ5LjI5ODIgMjcuNjAzMiA0Ny44MTE1IDI1LjAyMDMgNDUuMjI4NkMxOC45MzQgMzkuMTQyMyAxOC45MzQgMjkuMjc0NSAyNS4wMjAzIDIzLjE4ODJDMjcuNTU1NSAyMC42NTMgMzAuNzQ2OSAxOS4xNzM4IDM0LjA0NzggMTguNzUwN0MzMy42ODQgMjMuMTU3MyAzNS4xODc5IDI3LjY4OTEgMzguNTU5MyAzMS4wNjA1Wk00OS41MDAyIDQyLjA3MjRDNDguODQwNSA0My4xOTk3IDQ4LjAyNzMgNDQuMjYxOCA0Ny4wNjA2IDQ1LjIyODZDNDMuNTU3MiA0OC43MzE5IDM4LjgwMDkgNTAuMjE4NyAzNC4yMzQxIDQ5LjY4ODlDMzQuNzcxNCA1Mi43MjU2IDM2LjIxMzIgNTUuNjMzNyAzOC41NTkzIDU3Ljk3OThDNDEuMzAxOSA2MC43MjI0IDQ0LjgxMjQgNjIuMjI5MiA0OC4zOTg3IDYyLjVINDdMNDcgOTIuNUg1Mkw1MiA3MC40NTA5QzUyLjAwMTkgNzMuMzY1NyA1My4xNjA2IDc2LjE2MDYgNTUuMjIxOCA3OC4yMjE4QzU3LjI4NDcgODAuMjg0NyA2MC4wODI2IDgxLjQ0MzYgNjMgODEuNDQzNkM2NS45MTc0IDgxLjQ0MzYgNjguNzE1MyA4MC4yODQ3IDcwLjc3ODIgNzguMjIxOEM3Mi44NDExIDc2LjE1ODkgNzQgNzMuMzYxIDc0IDcwLjQ0MzdMNjMgNzAuNDQzNkg1Mkw1MiA2Mi41SDUwLjc2MDNDNTQuMzQ2NiA2Mi4yMjkyIDU3Ljg1NzEgNjAuNzIyNCA2MC41OTk3IDU3Ljk3OThDNjIuOTUwOSA1NS42Mjg2IDY0LjM5MzggNTIuNzEzMSA2NC45Mjg0IDQ5LjY2OTJDNjguMjM3OSA0OS4yNTAyIDcxLjQzODYgNDcuNzcgNzMuOTggNDUuMjI4NkM4MC4wNjYzIDM5LjE0MjMgODAuMDY2MyAyOS4yNzQ1IDczLjk4IDIzLjE4ODJDNzEuNDg1OSAyMC42OTQxIDY4LjM1NjcgMTkuMjIyMSA2NS4xMTMgMTguNzcyMUM2NC44MjQ0IDE1LjIxNjIgNjMuMzIgMTEuNzQwNSA2MC41OTk3IDkuMDIwMThDNTQuNTEzNCAyLjkzMzkxIDQ0LjY0NTYgMi45MzM5MSAzOC41NTkzIDkuMDIwMThDMzUuODQ0NSAxMS43MzUgMzQuMzQwNiAxNS4yMDIzIDM0LjA0NzggMTguNzUwN0MzOC42NzEyIDE4LjE1OCA0My41MDk2IDE5LjYzNzIgNDcuMDYwNiAyMy4xODgyQzQ4LjAyNzMgMjQuMTU1IDQ4Ljg0MDUgMjUuMjE3MSA0OS41MDAyIDI2LjM0NDRDNDguNTU1NSAyNy45NTg3IDQ3LjkyNTggMjkuNzA2NSA0Ny42MTEgMzEuNDk4OUM0NS41NjA0IDMxLjc1ODUgNDMuNTUxNSAzMi40MjU1IDQxLjcxNTQgMzMuNUM0My40OTY0IDM0LjU0MjIgNDUuNDM5OSAzNS4yMDExIDQ3LjQyNjQgMzUuNDc2N0M0Ny42MTI0IDM3Ljc2ODggNDguMzAzNyA0MC4wMjc3IDQ5LjUwMDIgNDIuMDcyNFpNNTEuNTcyMiAzNS40OTgxQzUwLjE5NjEgMzUuNjc0NSA0OC44MDA5IDM1LjY2NzMgNDcuNDI2NCAzNS40NzY3QzQ3LjMxODcgMzQuMTUwMiA0Ny4zODAzIDMyLjgxMjYgNDcuNjExIDMxLjQ5ODlDNDguODYzNyAzMS4zNDAzIDUwLjEzMTkgMzEuMzMzNyA1MS4zODU5IDMxLjQ3OTJDNTEuNjIwNyAzMi44MDYzIDUxLjY4MjggMzQuMTU4IDUxLjU3MjIgMzUuNDk4MVpNNTcuNDQzNiAzMy41QzU4LjU3MDggMzQuMTU5NiA1OS42MzMgMzQuOTcyOCA2MC41OTk3IDM1LjkzOTVDNjQuMzM0NyAzOS42NzQ2IDY1Ljc3NzYgNDQuODMzOCA2NC45Mjg0IDQ5LjY2OTJDNjAuMzEyMiA1MC4yNTM2IDU1LjQ4NDYgNDguNzczNCA1MS45Mzk3IDQ1LjIyODZDNTAuOTczIDQ0LjI2MTggNTAuMTU5OCA0My4xOTk3IDQ5LjUwMDIgNDIuMDcyNEM1MC42OTI5IDQwLjAzNDEgNTEuMzgzNiAzNy43ODI5IDUxLjU3MjIgMzUuNDk4MUM1My42MTQ0IDM1LjIzNjMgNTUuNjE0NyAzNC41NzAzIDU3LjQ0MzYgMzMuNVpNNTcuNDQzNiAzMy41QzU1LjU1OTEgMzIuMzk3MiA1My40OTI2IDMxLjcyMzYgNTEuMzg1OSAzMS40NzkyQzUxLjA2OTkgMjkuNjkzOCA1MC40NDE0IDI3Ljk1MjggNDkuNTAwMiAyNi4zNDQ0QzUwLjE1OTggMjUuMjE3MSA1MC45NzMgMjQuMTU1IDUxLjkzOTcgMjMuMTg4MkM1NS41MzE4IDE5LjU5NjEgNjAuNDQxMiAxOC4xMjQxIDY1LjExMyAxOC43NzIxQzY1LjQ3MDEgMjMuMTcyIDYzLjk2NTYgMjcuNjk0NSA2MC41OTk3IDMxLjA2MDVDNTkuNjMzIDMyLjAyNzIgNTguNTcwOCAzMi44NDA0IDU3LjQ0MzYgMzMuNVpNNDguMzk4NyA2Mi41QzQ5LjE4NDcgNjIuNTU5NCA0OS45NzQzIDYyLjU1OTQgNTAuNzYwMyA2Mi41SDQ4LjM5ODdaTTI1IDcwLjQ0MzZDMjUgNzMuMzYxIDI2LjE1ODkgNzYuMTU4OSAyOC4yMjE4IDc4LjIyMThDMzAuMjg0NyA4MC4yODQ3IDMzLjA4MjYgODEuNDQzNiAzNiA4MS40NDM2QzM4LjkxNzQgODEuNDQzNiA0MS43MTUzIDgwLjI4NDcgNDMuNzc4MiA3OC4yMjE4QzQ1Ljg0MTEgNzYuMTU4OSA0NyA3My4zNjEgNDcgNzAuNDQzN0wzNiA3MC40NDM2SDI1WiIgZmlsbD0iYmxhY2siIHN0eWxlPSJtaXgtYmxlbmQtbW9kZTptdWx0aXBseSIvPgo8L3N2Zz4K" alt="" /></span><span class="name">TopicFlower</span><span class="role">Senior UX designer</span></a></li>
+<li id="omsnic" class="repeat"><a class="row" href="work/omsnic/"><time class="yr" datetime="2019-02-01">2019</time><span class="glyph" style="view-transition-name: g-omsnic"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNODcuOTk5OCA0Ny4xMjE0Qzg3Ljk5OTggMzcuMTUxNiA4NC4wMzkzIDI3LjU5MDIgNzYuOTg5NyAyMC41NDA1QzY5Ljk0IDEzLjQ5MDkgNjAuMzc4NiA5LjUzMDQgNTAuNDA4OCA5LjUzMDRDNDAuNDM5MSA5LjUzMDQgMzAuODc3NyAxMy40OTA5IDIzLjgyOCAyMC41NDA1QzE2Ljc3ODMgMjcuNTkwMiAxMi44MTc5IDM3LjE1MTYgMTIuODE3OSA0Ny4xMjE0TDQ4IDQ3LjEyMTRWNzlDNDggODAuMzI2MSA0OC41Nzk1IDgxLjU5NzkgNDkuNjEwOSA4Mi41MzU1QzUwLjY0MjQgODMuNDczMiA1Mi4wNDEzIDg0IDUzLjUgODRDNTQuOTU4NyA4NCA1Ni4zNTc2IDgzLjQ3MzIgNTcuMzg5MSA4Mi41MzU1QzU4LjQyMDUgODEuNTk3OSA1OSA4MC4zMjYxIDU5IDc5SDUzLjVINTNWNDcuMTIxNEg4Ny45OTk4Wk01MyA0Ny4xMjE0SDUwLjQwODhINDhWMzhINTNWNDcuMTIxNFoiIGZpbGw9ImJsYWNrIiBzdHlsZT0ibWl4LWJsZW5kLW1vZGU6bXVsdGlwbHkiLz4KPC9zdmc+Cg==" alt="" /></span><span class="name">OMSNIC</span><span class="role">Lead UI designer</span></a></li>
+<li id="infoxel"><a class="row" href="work/infoxel/"><time class="yr" datetime="2016-11-01">2016</time><span class="glyph" style="view-transition-name: g-infoxel"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNNjUuMDAwOSAxOC4zNTg5QzY0Ljk1MzMgMTguNTM2NCA2NC44OTgzIDE4LjcwOTkgNjQuODM2MiAxOC44NzkyQzYzLjIxOTUgMTguMDc1OSA2MS40OTkzIDE3LjQyMDcgNTkuNjg4MyAxNi45MzU0QzU3LjU0MTggMTYuMzYwMyA1NS4zODY3IDE2LjA1NTcgNTMuMjU4OSAxNi4wMDA3QzUzLjI5MyAxNS43NTE3IDUzLjM0MyAxNS41MDIxIDUzLjQwOTggMTUuMjUzMUM1NC4yNjc0IDEyLjA1MjMgNTcuNTU3NCAxMC4xNTI4IDYwLjc1ODIgMTEuMDEwNUM2My45NTkgMTEuODY4MSA2NS44NTg1IDE1LjE1ODEgNjUuMDAwOSAxOC4zNTg5Wk00Ni4yMjc5IDcwLjI2ODlMMTguODkwMyA2Mi45NDM4TDI2LjAwNzggMzYuMzgwOUMyOS4zNjM2IDIzLjg1NyA0MC44NDQxIDE1LjY3OTggNTMuMjU4OSAxNi4wMDA3QzUyLjg1NTYgMTguOTUxMSA1NC43MDA2IDIxLjgxMDYgNTcuNjUyNCAyMi42MDE2QzYwLjY3NTcgMjMuNDExNyA2My43Nzg2IDIxLjc2MTkgNjQuODM2MiAxOC44NzkyQzc2LjMxNTUgMjQuNTgzMSA4Mi41NzkzIDM3Ljc1NjYgNzkuMTMzNyA1MC42MTU5TDcyLjAxNjIgNzcuMTc4OUw2NC4xODE2IDc1LjA3OTZDNjMuNzE2NCA3MS4xMzMxIDYwLjkwNzkgNjcuNjc5NCA1Ni44MzU1IDY2LjU4ODJDNTIuNzYzMSA2NS40OTcgNDguNjA0IDY3LjA4MzcgNDYuMjI3OSA3MC4yNjg5Wk00Ni4yMjc5IDcwLjI2ODlMNjQuMTgxNiA3NS4wNzk2QzY0LjMyNTggNzYuMzAyOCA2NC4yNDQ4IDc3LjU3MzQgNjMuOTA2NiA3OC44MzU2QzYyLjQ3NzIgODQuMTcwMyA1Ni45OTM4IDg3LjMzNjEgNTEuNjU5MSA4NS45MDY3QzQ2LjMyNDUgODQuNDc3MyA0My4xNTg3IDc4Ljk5MzkgNDQuNTg4MSA3My42NTkyQzQ0LjkyNjMgNzIuMzk3IDQ1LjQ5MTUgNzEuMjU2MiA0Ni4yMjc5IDcwLjI2ODlaIiBmaWxsPSJibGFjayIvPgo8L3N2Zz4K" alt="" /></span><span class="name">Infoxel</span><span class="role">Product designer</span></a></li>
+</ol>
+</section>
+<section class="group" aria-labelledby="g-side">
+<div class="group-head"><h2 id="g-side">Side projects, 2023&ndash;2026</h2></div>
+<ol class="ledger">
+<li id="chanchan"><a class="row" href="work/chanchan/"><time class="yr" datetime="2026-08-22">2026</time><span class="glyph" style="view-transition-name: g-chanchan"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTUgNjhBMjEgMjEgMCAxIDAgNTcgNjhBMjEgMjEgMCAxIDAgMTUgNjhaTTQ2IDE0TDU4IDE0TDU4IDcyTDQ2IDcyWk01OCAxNEw4NCAzNEw1OCA0NFoiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=" alt="" /></span><span class="name">Chanchán</span><span class="line">Music for people who don't know music: type the sounds, pum pa, and it plays them</span><span class="role">Web</span></a></li>
+<li id="va" class="repeat"><a class="row" href="work/va/"><time class="yr" datetime="2026-05-17">2026</time><span class="glyph" style="view-transition-name: g-va"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNNzUuNTQ1MyA2Ni4wNjU4Qzg4LjY0NTEgNjYuMDY1OCA5OS4yNjQ3IDU1LjQ0NjQgOTkuMjY0NyA0Mi4zNDY2Qzk5LjI2NDcgMjkuMjQ2OSA4OC42NDUxIDE4LjYyNzUgNzUuNTQ1MyAxOC42Mjc1QzY1LjIyMzUgMTguNjI3NSA1Ni40NDE3IDI1LjIyMDUgNTMuMTgxMyAzNC40MjQ5TDAgNjUuMTI5MUwyLjQ1MSA2OS4zNzQzTDUxLjg3MzIgNDAuODQwNEM1MS44NDIgNDEuMzM4NCA1MS44MjYyIDQxLjg0MDcgNTEuODI2MiA0Mi4zNDY2QzUxLjgyNjIgNDUuODcyMiA1Mi41OTU0IDQ5LjIxOCA1My45NzUxIDUyLjIyNTdMMjAuMjMxMiA3MS43MDc2TDIyLjY4MjIgNzUuOTUyOUw1Ni40Njk1IDU2LjQ0NThDNTguODA0NCA1OS41OTk1IDYxLjkwMjYgNjIuMTUzOCA2NS40OTE0IDYzLjgzNThMNDMuMjAxMiA3Ni43MDVMNDUuNjUyMiA4MC45NTAyTDcxLjkxMTggNjUuNzg5MkM3My4wOTY0IDY1Ljk3MTMgNzQuMzA5OCA2Ni4wNjU4IDc1LjU0NTMgNjYuMDY1OFpNNzEuOTExOCA2NS43ODkyTDc2LjQ2NDMgNjMuMTYwOEw3NC4wMTMzIDU4LjkxNTZMNjUuNDkxNCA2My44MzU4QzY3LjQ5NDUgNjQuNzc0NiA2OS42NTA1IDY1LjQ0MTYgNzEuOTExOCA2NS43ODkyWk01Ni40Njk1IDU2LjQ0NThMNjguNTU3OSA0OS40NjY1TDY2LjEwNyA0NS4yMjEzTDUzLjk3NTEgNTIuMjI1N0M1NC42NjE4IDUzLjcyMjYgNTUuNDk5OCA1NS4xMzU5IDU2LjQ2OTUgNTYuNDQ1OFpNNTEuODczMiA0MC44NDA0TDYwLjY1MTYgMzUuNzcyMkw1OC4yMDA2IDMxLjUyN0w1My4xODEzIDM0LjQyNDlDNTIuNDYzNSAzNi40NTExIDUyLjAxMzMgMzguNjAzNyA1MS44NzMyIDQwLjg0MDRaIiBmaWxsPSJibGFjayIgc3R5bGU9Im1peC1ibGVuZC1tb2RlOm11bHRpcGx5Ii8+Cjwvc3ZnPgo=" alt="" /></span><span class="name">Va</span><span class="line">A payments app that starts with the amount: type it, pick who, confirm with Face ID</span><span class="role">iOS</span></a></li>
+<li id="avis" class="repeat"><a class="row" href="work/avis/"><time class="yr" datetime="2026-05-14">2026</time><span class="glyph" style="view-transition-name: g-avis"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTIgMTJMNjIgMTJMNjIgNjJMMTIgNjJaTTQwIDQwTDQwIDk0TDc4IDc0WiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==" alt="" /></span><span class="name">Avis</span><span class="line">Lets you point at elements on a webpage so Claude Code knows which button you mean</span><span class="role">Web</span></a></li>
+<li id="figma-cdp" class="repeat"><a class="row" href="work/figma-cdp/"><time class="yr" datetime="2026-03-17">2026</time><span class="glyph" style="view-transition-name: g-figma-cdp"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTAgMjZMNTggMjZMNTggNzRMMTAgNzRaTTM4IDUwQTI2IDI2IDAgMSAwIDkwIDUwQTI2IDI2IDAgMSAwIDM4IDUwWiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==" alt="" /></span><span class="name">Figma-CDP</span><span class="line">A Claude Code skill that updates Figma frames to match the code that shipped</span><span class="role">Figma</span></a></li>
+<li id="murmur" class="repeat"><a class="row" href="work/murmur/"><time class="yr" datetime="2026-02-12">2026</time><span class="glyph" style="view-transition-name: g-murmur"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTAgMTRMNjAgMTRMNjAgNThMMTAgNThaTTEyIDU4TDM4IDU4TDEyIDg0Wk0zOCA1OEEyNiAyNiAwIDEgMCA5MCA1OEEyNiAyNiAwIDEgMCAzOCA1OFoiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=" alt="" /></span><span class="name">Murmur</span><span class="line">Push-to-talk voice chat in the browser that needs no accounts or server</span><span class="role">Web</span></a></li>
+<li id="dirpad" class="repeat"><a class="row" href="work/dirpad/"><time class="yr" datetime="2026-02-07">2026</time><span class="glyph" style="view-transition-name: g-dirpad"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTAgMjZMNzQgMjZMNzQgNjZMMTAgNjZaTTMwIDUwTDkwIDUwTDYwIDkwWiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==" alt="" /></span><span class="name">Dirpad</span><span class="line">Maps trackpad swipes to arrow keys, so a list of fzf matches moves at a flick</span><span class="role">macOS</span></a></li>
+<li id="trueframe" class="repeat"><a class="row" href="work/trueframe/"><time class="yr" datetime="2026-01-09">2026</time><span class="glyph" style="view-transition-name: g-trueframe"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTYgOEw2MCA4TDYwIDY4TDE2IDY4Wk0yOCAyMEw3MiAyMEw3MiA4MEwyOCA4MFpNNDAgMzJMODQgMzJMODQgOTJMNDAgOTJaIiBmaWxsPSJibGFjayIvPgo8L3N2Zz4K" alt="" /></span><span class="name">Trueframe</span><span class="line">Hold the phone to your chest; it shoots a burst and keeps only the good frames</span><span class="role">iOS</span></a></li>
+<li id="fin"><a class="row" href="work/fin/"><time class="yr" datetime="2025-12-29">2025</time><span class="glyph" style="view-transition-name: g-fin"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTIgMTJMODggMTJMODggODhMMTIgODhaTTU2IDEyTDY0IDEyTDY0IDg4TDU2IDg4Wk0xMiA1MEw1NiA1MEw1NiA1OEwxMiA1OFoiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=" alt="" /></span><span class="name">Fin</span><span class="line">Scans a receipt with an on-device ML model and shows spending as a treemap</span><span class="role">iOS</span></a></li>
+<li id="subi" class="repeat"><a class="row" href="work/subi/"><time class="yr" datetime="2025-12-29">2025</time><span class="glyph" style="view-transition-name: g-subi"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTAgMjJMOTAgMjJMOTAgNzRMMTAgNzRaTTE4IDMwTDgyIDMwTDgyIDQ2TDE4IDQ2Wk0xOSA3NEExMSAxMSAwIDEgMCA0MSA3NEExMSAxMSAwIDEgMCAxOSA3NFpNNTkgNzRBMTEgMTEgMCAxIDAgODEgNzRBMTEgMTEgMCAxIDAgNTkgNzRaIiBmaWxsPSJibGFjayIvPgo8L3N2Zz4K" alt="" /></span><span class="name">Subí</span><span class="line">An alternative frontend for Córdoba's bus tracker: real-time arrivals and a cleaner map</span><span class="role">iOS</span></a></li>
+<li id="posta" class="repeat"><a class="row" href="work/posta/"><time class="yr" datetime="2025-12-22">2025</time><span class="glyph" style="view-transition-name: g-posta"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTAgMzBMOTAgMzBMOTAgODBMMTAgODBaTTEwIDE0TDkwIDE0TDUwIDU4WiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==" alt="" /></span><span class="name">Posta</span><span class="line">A desktop Gmail client of cards, each a saved search, side by side like a Kanban board</span><span class="role">Desktop</span></a></li>
+<li id="airnod" class="repeat"><a class="row" href="work/airnod/"><time class="yr" datetime="2025-11-22">2025</time><span class="glyph" style="view-transition-name: g-airnod"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTYgMzZBMjQgMjQgMCAxIDAgNjQgMzZBMjQgMjQgMCAxIDAgMTYgMzZaTTQxLjIxIDUxLjY5TDU0Ljc5IDQ4LjMxTDY1LjkyIDkyLjk0TDUyLjM0IDk2LjMzWiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==" alt="" /></span><span class="name">AirNod</span><span class="line">Turns AirPods head tilts into scrolls and clicks, for people who can't use a mouse</span><span class="role">macOS</span></a></li>
+<li id="zentrate"><a class="row" href="work/zentrate/"><time class="yr" datetime="2023-09-01">2023</time><span class="glyph" style="view-transition-name: g-zentrate"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNOCA2OUE0MiAxNyAwIDEgMCA5MiA2OUE0MiAxNyAwIDEgMCA4IDY5Wk0xOSA0NEEzMSAxNCAwIDEgMCA4MSA0NEEzMSAxNCAwIDEgMCAxOSA0NFpNMzEgMjVBMTkgMTEgMCAxIDAgNjkgMjVBMTkgMTEgMCAxIDAgMzEgMjVaIiBmaWxsPSJibGFjayIvPgo8L3N2Zz4K" alt="" /></span><span class="name">ZenTrate</span><span class="line">Scriptable widgets that replace iOS home screen icons with verbs like Pay or Set Timer</span><span class="role">iOS</span></a></li>
+<li id="figma-plugins" class="repeat"><a class="row" href="work/figma-plugins/"><time class="yr" datetime="2023-08-01">2023</time><span class="glyph" style="view-transition-name: g-figma-plugins"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNODQgNTJBMzQgMzQgMCAwIDEgMTYgNTJaTTMwIDE4TDQwIDE4TDQwIDcyTDMwIDcyWk02MCAxOEw3MCAxOEw3MCA3Mkw2MCA3MloiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=" alt="" /></span><span class="name">Figma Plugins</span><span class="line">Two Figma plugins: Anchorify turns link markup into hyperlinks, Word Hugger fixes orphans</span><span class="role">Figma</span></a></li>
+</ol>
+</section>
+<section class="group how" aria-labelledby="g-how"><div class="group-head"><h2 id="g-how">How I work</h2></div><p>I'm a designer. Usually that means asking uncomfortable questions until something gets simpler. I interview the people who use the thing: support agents at Continental, auditors at EY, and with a research team of five, 18 Bancón users at Banco de Córdoba.</p></section>
+<footer class="contact"><h2 class="ask">Putting AI into a financial product people must trust? <a href="https://www.linkedin.com/in/myadarola/" aria-label="Let's talk on LinkedIn">Let's talk</a>.</h2><p><a href="https://www.linkedin.com/in/myadarola/">LinkedIn&nbsp;&#8599;</a> &middot; <a href="https://github.com/sryo">GitHub&nbsp;&#8599;</a> &middot; <a href="mailto:mateo@yadarola.com.ar">mateo@yadarola.com.ar</a></p></footer>
+</main>
+<script type="application/json" id="or-data">{"glyphs": [{"slug": "valora", "name": "Valora", "href": "work/valora/", "parts": "<circle cx=\"50\" cy=\"50\" r=\"40\"/> <circle cx=\"50\" cy=\"50\" r=\"20\"/> <path d=\"M50 50V10A40 40 0 0 1 90 50Z\"/>"}, {"slug": "bancor", "name": "Bancor", "href": "work/bancor/", "parts": "<ellipse cx=\"47.0666\" cy=\"20.5865\" rx=\"14.6666\" ry=\"14.6334\"/> <ellipse cx=\"50\" cy=\"59.1211\" rx=\"44\" ry=\"34.1445\"/> <ellipse cx=\"56.8445\" cy=\"54.2433\" rx=\"2.4444\" ry=\"2.4389\"/> <ellipse cx=\"86.1776\" cy=\"54.2433\" rx=\"2.4444\" ry=\"2.4389\"/> <ellipse cx=\"71.5109\" cy=\"59.1211\" rx=\"9.7778\" ry=\"7.3167\"/> <ellipse cx=\"66.6223\" cy=\"59.1211\" rx=\"1.4667\" ry=\"1.4634\"/> <ellipse cx=\"76.3998\" cy=\"59.1211\" rx=\"1.4667\" ry=\"1.4634\"/>"}, {"slug": "trueframe", "name": "Trueframe", "href": "work/trueframe/", "parts": "<rect x=\"16\" y=\"8\" width=\"44\" height=\"60\"/> <rect x=\"28\" y=\"20\" width=\"44\" height=\"60\"/> <rect x=\"40\" y=\"32\" width=\"44\" height=\"60\"/>"}, {"slug": "continental", "name": "Continental", "href": "work/continental/", "parts": "<rect x=\"8\" y=\"24\" width=\"84\" height=\"52\"/> <rect x=\"8\" y=\"34\" width=\"84\" height=\"10\"/> <rect x=\"18\" y=\"54\" width=\"16\" height=\"12\"/>"}, {"slug": "avis", "name": "Avis", "href": "work/avis/", "parts": "<rect x=\"12\" y=\"12\" width=\"50\" height=\"50\"/> <polygon points=\"40,40 40,94 78,74\"/>"}, {"slug": "ey-helix", "name": "EY Helix", "href": "work/ey-helix/", "parts": "<rect x=\"12\" y=\"46\" width=\"20\" height=\"44\"/> <rect x=\"40\" y=\"34\" width=\"20\" height=\"56\"/> <rect x=\"68\" y=\"14\" width=\"20\" height=\"76\"/> <circle cx=\"22\" cy=\"46\" r=\"10\"/> <circle cx=\"50\" cy=\"34\" r=\"10\"/> <circle cx=\"78\" cy=\"14\" r=\"10\"/>"}, {"slug": "fin", "name": "Fin", "href": "work/fin/", "parts": "<rect x=\"12\" y=\"12\" width=\"76\" height=\"76\"/> <rect x=\"56\" y=\"12\" width=\"8\" height=\"76\"/> <rect x=\"12\" y=\"50\" width=\"44\" height=\"8\"/>"}], "offers": [["valora", "fin"], ["bancor", "continental"], ["continental", "ey-helix", "valora"], ["bancor", "ey-helix", "valora"], ["trueframe", "avis", "fin"]]}</script>
+<script>
+// Offer ring: proof glyphs orbit the thesis; lighting an offer swings its proof glyphs to the front, where they pull apart and recombine.
+(function () {
+    "use strict";
+
+    var hero = document.querySelector(".or-hero");
+    var ring = hero && hero.querySelector(".or-ring");
+    var data = document.getElementById("or-data");
+    if (!ring || !data) return;
+    document.documentElement.classList.add("or-js");
+
+    var DATA = JSON.parse(data.textContent);
+    var thesis = hero.querySelector(".or-thesis");
+    var list = hero.querySelector(".or-offers");
+    var buttons = [].slice.call(hero.querySelectorAll(".or-offer"));
+    var proofs = [].slice.call(hero.querySelectorAll(".or-proof"));
+    var reduceMQ = matchMedia("(prefers-reduced-motion: reduce)");
+    var reduce = reduceMQ.matches;
+    var TAU = Math.PI * 2;
+    var FRONT = Math.PI / 2;   // angle 90° is the bottom of the ellipse: nearest the viewer
+    var PAD = 0.3;             // canvas margin around a glyph, so pulled pieces stay inside
+    var PULL = 15;             // drift of a piece at full pull, in the glyph's 100-unit box
+    var PULSE = 700;           // ms a pulse holds the pieces apart before they recombine
+
+    function spring(s, target, dtn, k, damp) {
+        s.v += (target - s.x) * k * dtn;
+        s.v *= Math.pow(damp, dtn);
+        s.x += s.v * dtn;
+    }
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function wrap(a) { a %= TAU; return a < 0 ? a + TAU : a; }
+    // The copy of `target` (± whole turns) nearest `from`, so a glyph never laps the ring.
+    function near(target, from) { return target + TAU * Math.round((from - target) / TAU); }
+
+    // ── Glyph models: one Path2D per _.parts.svg primitive ────────
+    function primitivePath(el) {
+        function a(k) { return +el.getAttribute(k) || 0; }
+        var rx, ry, cx = a("cx"), cy = a("cy");
+        switch (el.localName) {
+            case "circle":
+            case "ellipse":
+                rx = el.localName === "circle" ? a("r") : a("rx");
+                ry = el.localName === "circle" ? rx : a("ry");
+                return "M" + (cx - rx) + " " + cy + "A" + rx + " " + ry + " 0 1 0 " + (cx + rx) + " " + cy +
+                    "A" + rx + " " + ry + " 0 1 0 " + (cx - rx) + " " + cy + "Z";
+            case "rect":
+                return "M" + a("x") + " " + a("y") + "h" + a("width") + "v" + a("height") + "h" + -a("width") + "Z";
+            case "polygon":
+                return "M" + (el.getAttribute("points") || "").trim().split(/[\s]+/).join("L") + "Z";
+            case "path":
+                return el.getAttribute("d") || "";
+        }
+        return "";
+    }
+
+    var probe = document.createElement("canvas");
+    probe.width = probe.height = 64;
+    var pctx = probe.getContext("2d", { willReadFrequently: true });
+
+    function model(parts) {
+        var doc = new DOMParser().parseFromString('<svg xmlns="http://www.w3.org/2000/svg">' + parts + "</svg>", "image/svg+xml");
+        var pieces = [];
+        [].forEach.call(doc.documentElement.children, function (el) {
+            var d = primitivePath(el);
+            if (d) pieces.push({ d: d, path: new Path2D(d), solo: (d.match(/[Mm]/g) || []).length > 1 });
+        });
+        // Centroid and area from a 64 px raster, as the case page's parity pull does.
+        pieces.forEach(function (pc) {
+            pctx.setTransform(1, 0, 0, 1, 0, 0);
+            pctx.clearRect(0, 0, 64, 64);
+            pctx.setTransform(0.64, 0, 0, 0.64, 0, 0);
+            pctx.fill(pc.path);
+            var px = pctx.getImageData(0, 0, 64, 64).data, a = 0, sx = 0, sy = 0;
+            for (var i = 3; i < px.length; i += 4) {
+                if (!px[i]) continue;
+                var j = (i - 3) / 4, w = px[i] / 255;
+                a += w; sx += w * (j % 64); sy += w * Math.floor(j / 64);
+            }
+            pc.area = a;
+            pc.cx = a ? (sx / a + 0.5) / 0.64 : 50;
+            pc.cy = a ? (sy / a + 0.5) / 0.64 : 50;
+        });
+        var max = Math.max.apply(null, pieces.map(function (p) { return p.area; })) || 1;
+        pieces.forEach(function (pc, i) {
+            pc.weight = 0.6 + 0.8 * (1 - pc.area / max);
+            pc.angle = i * 2.39996;
+            pc.x = { x: 0, v: 0 };
+            pc.y = { x: 0, v: 0 };
+        });
+        return pieces;
+    }
+
+    // ── Build the ring ───────────────────────────────────────────
+    var G = DATA.glyphs.map(function (g, i) {
+        var a = document.createElement("a");
+        a.className = "or-g";
+        a.href = g.href;
+        a.tabIndex = -1;
+        a.setAttribute("aria-label", g.name);
+        var c = document.createElement("canvas");
+        a.append(c);
+        ring.append(a);
+        return {
+            slug: g.slug, name: g.name, el: a, canvas: c, ctx: c.getContext("2d"),
+            pieces: model(g.parts), i: i, k: i,
+            ang: { x: 0, v: 0 }, sc: { x: 0, v: 0 }, pull: { x: 0, v: 0 },
+            arrT: 0,
+            pulseT: -1e9, tAng: 0, goal: 0, delay: 0, drawn: "", hover: false, sel: false
+        };
+    });
+
+    var ink = "#111", geo = null, active = -1, pointer = null;
+
+    function readInk() {
+        ink = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#111";
+        G.forEach(function (g) { g.drawn = ""; });
+    }
+    readInk();
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { readInk(); kick(); });
+
+    // Height on the ring. The near half is flattened at the front (s + s³(1 - s) has zero slope at s = 1),
+    // so the proofs sit in a row while the sides keep their plain ellipse height.
+    function flat(c) { return c + c * c * c * (1 - c); }
+    function ringY(a) { var s = Math.sin(a); return geo.cy + geo.ry * (s > 0 ? flat(s) : s); }
+
+    // Perspective: a glyph at the front of the ring is full size, at the back 45%.
+    function persp(a) { return 0.45 + 0.55 * (Math.sin(a) + 1) / 2; }
+
+    // Geometry from the laid-out text. Wide: the ring circles the hero, proofs at its foot under the list,
+    // the rest parked in the margins beside the list. Narrow: a band between the thesis and the offers.
+    function measure() {
+        hero.style.minHeight = "";
+        var hr = hero.getBoundingClientRect();
+        var tr = thesis.getBoundingClientRect(), lr = list.getBoundingClientRect();
+        var W = hr.width, H = hr.height, g = { W: W, H: H, wide: W >= 960, cx: W / 2 };
+        g.intro = { l: tr.left - hr.left, r: tr.right - hr.left, y: (tr.top + tr.bottom) / 2 - hr.top, h: tr.height };
+        var nRest = G.length - 2;
+        if (g.wide) {
+            var top = lr.top - hr.top, bot = lr.bottom - hr.top, left = buttons[0].getBoundingClientRect().left - hr.left;
+            // The proofs fill the room under the list, 150 to 280 px. A short window grows the hero instead.
+            var room = H - bot - 30;
+            if (room < 150) { H = bot + 180; g.H = H; hero.style.minHeight = H + "px"; room = 150; }
+            // A glyph's art sits inside a margin of its 100-unit box, so the box may run a little past the room.
+            var size = Math.min(room * 1.12, 300);
+            g.cy = (top + bot) / 2;
+            g.rest = clamp(Math.min(size * 0.46, left * 0.7), 56, 120);
+            g.frontY = (bot + 14 + H - 16) / 2;
+            g.ry = g.frontY - g.cy;
+            g.dA = g.rest * 1.3 / g.ry;
+            // Rx puts the innermost parked glyph's centre halfway into the margin.
+            g.rx = (g.cx - left / 2) / Math.cos((Math.ceil(nRest / 2) - 1) / 2 * g.dA);
+            for (var it = 0; it < 4; it++) {
+                g.step = size * 1.08 / g.rx;
+                // The outer proofs ride up the arc: keep their tops clear of the proof sentence.
+                var outerTop = g.frontY - g.ry * (1 - flat(Math.cos(g.step))) - size * persp(FRONT + g.step) / 2;
+                if (outerTop >= bot + 4) break;
+                size -= bot + 4 - outerTop;
+            }
+            g.size = size;
+            g.parkMid = Math.PI;
+        } else {
+            var tb = tr.bottom - hr.top, ot = lr.top - hr.top;
+            g.size = Math.min(150, (W / 2 - 16) / 1.62);
+            g.rest = g.size * 0.44;
+            g.frontY = ot - 12 - g.size / 2;
+            var backY = tb + 18 + g.rest / 2;
+            g.ry = (g.frontY - backY) / 2;
+            g.cy = backY + g.ry;
+            g.rx = W * 0.4;
+            g.step = g.size * 1.06 / g.rx;
+            g.dA = g.rest * 1.55 / g.rx;
+            g.parkMid = Math.PI * 1.5;
+        }
+        g.restSc = g.rest / (g.size * persp(g.parkMid));
+        g.S = Math.ceil(g.size * 1.3 * (1 + 2 * PAD));
+        g.dpr = Math.min(2, devicePixelRatio || 1);
+        geo = g;
+        G.forEach(function (x) {
+            x.el.style.width = x.el.style.height = g.S + "px";
+            var px = Math.round(g.S * g.dpr);
+            if (x.canvas.width !== px) { x.canvas.width = x.canvas.height = px; x.drawn = ""; }
+        });
+        layout(false);
+    }
+
+    // Parking angles for the glyphs that aren't proof, ascending from the front.
+    function slots(n) {
+        var out = [], j;
+        if (geo.wide) {
+            var nl = Math.ceil(n / 2), nr = n - nl;
+            for (j = 0; j < nl; j++) out.push(Math.PI + (j - (nl - 1) / 2) * geo.dA);
+            for (j = 0; j < nr; j++) out.push(TAU + (j - (nr - 1) / 2) * geo.dA);
+        } else {
+            for (j = 0; j < n; j++) out.push(Math.PI * 1.5 + (j - (n - 1) / 2) * geo.dA);
+        }
+        return out;
+    }
+
+    // The lit offer's proofs gather at the front; the rest park out of the text's way.
+    // The ring turns by one amount, so every glyph keeps its order like a carousel.
+    function layout(swing) {
+        var proof = DATA.offers[active] || [];
+        G.forEach(function (g) { g.sel = proof.indexOf(g.slug) >= 0; });
+        var sel = G.filter(function (g) { return g.sel; });
+        var rest = G.filter(function (g) { return !g.sel; });
+        var sx = 0, sy = 0;
+        sel.forEach(function (g) { sx += Math.cos(g.tAng); sy += Math.sin(g.tAng); });
+        var mean = Math.atan2(sy, sx);
+        function rel(g) { return wrap(g.tAng - mean + Math.PI) - Math.PI; }
+        var turn = wrap(FRONT - mean + Math.PI) - Math.PI;
+        var k = sel.length;
+        sel.sort(function (a, b) { return rel(a) - rel(b); }).forEach(function (g, j) {
+            g.goal = FRONT + (j - (k - 1) / 2) * geo.step;
+        });
+        var sl = slots(rest.length);
+        rest.sort(function (a, b) { return wrap(rel(a)) - wrap(rel(b)); }).forEach(function (g, j) { g.goal = sl[j]; });
+        G.forEach(function (g) { g.goal = near(g.goal, g.tAng + turn); });
+        if (!swing) G.forEach(function (g) { g.ang.x = g.tAng = g.goal; g.ang.v = 0; g.sc.x = g.sel ? 1 : geo.restSc; g.sc.v = 0; });
+    }
+
+    // Pieces of the lit glyphs drift apart, then recombine into the whole mark.
+    function pulse(delay) {
+        if (reduce) return;
+        var t = performance.now() + (delay || 0);
+        G.forEach(function (g) { if (g.sel) g.pulseT = t; });
+        kick();
+    }
+
+    function setActive(i, swing) {
+        if (i === active) return;
+        active = i;
+        buttons.forEach(function (b, j) { b.setAttribute("aria-expanded", j === i ? "true" : "false"); });
+        proofs.forEach(function (p, j) { p.classList.toggle("is-on", j === i); });
+        layout(swing && !reduce);
+        pulse(swing ? 200 : 0);
+        kick();
+    }
+
+    // ── Drawing: XOR, so overlaps are holes, whole and mid-pull ────
+    function draw(g) {
+        var key = ink + g.pieces.map(function (p) { return Math.round(p.x.x * 10) + "," + Math.round(p.y.x * 10); }).join(";");
+        if (key === g.drawn) return;
+        g.drawn = key;
+        var c = g.ctx, px = g.canvas.width, k = px / (100 * (1 + 2 * PAD));
+        c.setTransform(1, 0, 0, 1, 0, 0);
+        c.clearRect(0, 0, px, px);
+        c.setTransform(k, 0, 0, k, PAD * 100 * k, PAD * 100 * k);
+        c.globalCompositeOperation = "xor";
+        c.fillStyle = ink;
+        // Pieces at the same offset fill as one evenodd path: same parity, no seam.
+        var groups = {};
+        g.pieces.forEach(function (p, i) {
+            // Offsets snap to a tenth of a unit, so a settled glyph is one path with no hairline seams.
+            var key2 = p.solo ? "s" + i : Math.round(p.x.x * 10) + "," + Math.round(p.y.x * 10);
+            var q = groups[key2] || (groups[key2] = { x: Math.round(p.x.x * 10) / 10, y: Math.round(p.y.x * 10) / 10, path: new Path2D(), rule: p.solo ? "nonzero" : "evenodd" });
+            q.path.addPath(p.path);
+        });
+        Object.keys(groups).forEach(function (key2) {
+            var q = groups[key2];
+            c.save();
+            c.translate(q.x, q.y);
+            c.fill(q.path, q.rule);
+            c.restore();
+        });
+    }
+
+    // ── Frame loop: runs while something moves, then stops ─────────
+    var raf = 0, last = 0, visible = true;
+
+    var HOLD = 420, ARRIVE = 1400;   // ms: an arriving glyph sits on the thesis, then reaches its place
+    function easeInOut(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+    // Overshoots a little before settling, like the springs.
+    function popIn(t) { var c = 1.7; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); }
+
+    function kick() { if (!raf && visible) raf = requestAnimationFrame(tick); }
+
+    function pieceTargets(g, f) {
+        var cx = 50, cy = 50, px = cx, py = cy;
+        if (g.hover && pointer) {
+            var b = g.el.getBoundingClientRect();
+            var k = 100 * (1 + 2 * PAD) / b.width;
+            px = cx + (pointer.x - (b.left + b.width / 2)) * k;
+            py = cy + (pointer.y - (b.top + b.height / 2)) * k;
+        }
+        return g.pieces.map(function (p) {
+            if (f < 0.001) return [0, 0];
+            var ux = p.cx - px + 0.35 * (p.cx - cx), uy = p.cy - py + 0.35 * (p.cy - cy);
+            var len = Math.hypot(ux, uy);
+            if (len < 1) { ux = Math.cos(p.angle); uy = Math.sin(p.angle); len = 1; }
+            var m = PULL * f * p.weight;
+            return [ux / len * m, uy / len * m];
+        });
+    }
+
+    function tick(now) {
+        raf = 0;
+        if (!geo) return;
+        var dtn = reduce ? 1 : Math.min(3, (now - (last || now)) / 16.667 || 1);
+        last = now;
+        var busy = false, n = G.length;
+
+        G.forEach(function (g) {
+            var started = reduce || now > g.arrT;
+            var goalSc = g.sel ? 1 : geo.restSc;
+            var age = now - g.pulseT;
+            var goalPull = age >= 0 && age < PULSE ? 1 : 0;
+            if (g.hover) goalPull = 0.85;
+            if (age < 0) busy = true;
+            if (reduce) {
+                g.ang.x = g.goal; g.sc.x = goalSc; g.pull.x = 0;
+                g.ang.v = g.sc.v = g.pull.v = 0;
+            } else {
+                spring(g.ang, g.goal, dtn, 0.05, 0.78);
+                spring(g.sc, goalSc, dtn, 0.07, 0.76);
+                spring(g.pull, goalPull, dtn, 0.07, 0.8);
+            }
+            g.tAng = g.ang.x;
+            var a = g.ang.x;
+            var x = geo.cx + Math.cos(a) * geo.rx;
+            var y = ringY(a);
+            var size = geo.size * persp(a) * g.sc.x;
+            // Arrival: each glyph pops up large over the thesis, XORing it, holds, then glides out to its place.
+            var e = reduce ? 1e9 : now - g.arrT;
+            if (e < ARRIVE) {
+                busy = true;
+                var f = e < HOLD ? 1 : 1 - easeInOut((e - HOLD) / (ARRIVE - HOLD));
+                var span = geo.intro.r - geo.intro.l;
+                var ix = geo.intro.l + (g.k + 0.5) / n * span;
+                var iy = geo.intro.y + (g.k % 2 ? -0.22 : 0.22) * geo.intro.h;
+                x += (ix - x) * f;
+                y += (iy - y) * f;
+                size += (Math.min(geo.size * 1.3, span / n * 1.3) - size) * f;
+                size *= e <= 0 ? 0 : popIn(Math.min(1, e / 320));
+            }
+            var s = size * (1 + 2 * PAD) / geo.S;
+            g.el.style.transform = "translate3d(" + (x - geo.S / 2).toFixed(1) + "px," + (y - geo.S / 2).toFixed(1) + "px,0) scale(" + Math.max(0, s).toFixed(4) + ")";
+            g.el.style.zIndex = String(Math.round((Math.sin(a) + 1) * 50) + (g.sel ? 100 : 0));
+
+            var tg = pieceTargets(g, Math.max(0, g.pull.x));
+            g.pieces.forEach(function (p, i) {
+                if (reduce) { p.x.x = p.y.x = 0; return; }
+                spring(p.x, tg[i][0], dtn, 0.16, 0.74);
+                spring(p.y, tg[i][1], dtn, 0.16, 0.74);
+                if (Math.abs(p.x.v) + Math.abs(p.y.v) + Math.abs(p.x.x - tg[i][0]) + Math.abs(p.y.x - tg[i][1]) > 0.02) busy = true;
+            });
+            draw(g);
+            if (!reduce && (!started || Math.abs(g.ang.v) + Math.abs(g.sc.v) + Math.abs(g.pull.v) > 0.0004 ||
+                Math.abs(g.pull.x - goalPull) > 0.01 || Math.abs(g.ang.x - g.goal) > 0.001)) busy = true;
+        });
+
+        if (!reduce && busy) kick();
+    }
+
+    // ── Tour (wide screens): until someone picks an offer, each lights in turn once, then the first again ──
+    var tourTimer = 0, breathTimer = 0, touring = false, step = 0;
+    function stopTour() { touring = false; clearTimeout(tourTimer); clearTimeout(breathTimer); }
+    function nextTour() {
+        if (!touring) return;
+        if (!visible || document.hidden) { tourTimer = setTimeout(nextTour, 1000); return; }
+        step++;
+        setActive(step % DATA.offers.length, true);
+        if (step >= DATA.offers.length) { stopTour(); return; }
+        breathTimer = setTimeout(function () { if (touring) pulse(); }, 2700);
+        tourTimer = setTimeout(nextTour, 5200);
+    }
+
+    // ── Input ───────────────────────────────────────────────────
+    var fine = matchMedia("(hover: hover) and (pointer: fine)");
+    var intent = 0;
+    function pick(i) { stopTour(); if (i === active) pulse(); else setActive(i, true); }
+    buttons.forEach(function (b, i) {
+        // Hover lights an offer only once the pointer rests on it, so passing over the list on the
+        // way to a proof link never swaps the link out from under the cursor.
+        b.addEventListener("pointermove", function () {
+            if (!fine.matches || !geo || !geo.wide || i === active) return;
+            clearTimeout(intent);
+            intent = setTimeout(function () { stopTour(); setActive(i, true); }, 160);
+        });
+        b.addEventListener("pointerleave", function () { clearTimeout(intent); });
+        b.addEventListener("click", function () { clearTimeout(intent); pick(i); });
+        b.addEventListener("focus", function () { if (b.matches(":focus-visible")) { stopTour(); setActive(i, true); } });
+    });
+
+    G.forEach(function (g) {
+        g.el.addEventListener("pointerenter", function (e) {
+            if (e.pointerType !== "mouse") return;
+            g.hover = true;
+            kick();
+        });
+        g.el.addEventListener("pointerleave", function () { g.hover = false; kick(); });
+    });
+    hero.addEventListener("pointermove", function (e) {
+        pointer = { x: e.clientX, y: e.clientY };
+        if (G.some(function (g) { return g.hover; })) kick();
+    });
+
+    new IntersectionObserver(function (es) {
+        visible = es[0].isIntersecting;
+        if (visible) kick();
+    }).observe(hero);
+
+    var resizeT = 0;
+    window.addEventListener("resize", function () {
+        clearTimeout(resizeT);
+        resizeT = setTimeout(function () { measure(); kick(); }, 120);
+    });
+    reduceMQ.addEventListener("change", function () { location.reload(); });
+
+    function start() {
+        G.forEach(function (g, k) { g.ang.x = g.tAng = FRONT + TAU * k / G.length; });
+        measure();
+        // First offer lit from the first frame, so a proof is always showing.
+        setActive(0, false);
+        // Arrival order follows where each glyph lands, left to right, so none cross on the way out.
+        G.slice().sort(function (a, b) { return Math.cos(a.goal) - Math.cos(b.goal); }).forEach(function (g, k) { g.k = k; });
+        var t0 = performance.now();
+        G.forEach(function (g) { g.arrT = reduce ? 0 : t0 + 80 + g.k * 75; });
+        pulse(2100);
+        kick();
+        if (!reduce && geo.wide) { touring = true; tourTimer = setTimeout(nextTour, 5600); }
+    }
+
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
+})();
+
+</script>
+</body>
+</html>
