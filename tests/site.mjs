@@ -120,18 +120,27 @@ test('email sits in the header line and the footer', async ({ page }) => {
   if (r.avail !== 1 || r.footer !== 1 || r.all !== 2) throw new Error(`mailto links: ${r.avail} in p.avail, ${r.footer} in the footer, ${r.all} in all`);
 }, p => p === '/works.html');
 
-// Mateo: no tiny tracked uppercase labels on works.html (masthead, counts,
-// "CLIENT WORK"). Headings are sentence case at a real size.
-test('works.html has no small caps labels or item counts', async ({ page }) => {
-  const bad = await page.evaluate(() => [...document.querySelectorAll('main *')]
-    .filter(e => e.offsetParent !== null && [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()))
+// Mateo: no tiny tracked uppercase labels anywhere in the portfolio
+// (masthead, counts, "CLIENT WORK", part labels, spec terms, pager labels).
+// Headings are sentence case at a real size. index.html is out of scope.
+test('no small caps labels or item counts', async ({ page }) => {
+  const bad = await page.evaluate(() => [...document.querySelectorAll('body *')]
+    .filter(e => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden' && [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()))
     .filter(e => { const cs = getComputedStyle(e); return cs.textTransform === 'uppercase' || (parseFloat(cs.fontSize) < 13 && parseFloat(cs.letterSpacing) > 0.5); })
     .map(e => e.textContent.trim().slice(0, 30)));
   if (bad.length) throw new Error(`${bad.length} caps labels: ${bad.slice(0, 4).join(' | ')}`);
-  if (await page.locator('main .count, main .mast, main .cols').count()) throw new Error('a count, masthead or column header is still rendered');
+  if (await page.locator('.count, .label, main .mast, main .cols').count()) throw new Error('a count, caps label, masthead or column header is still rendered');
   const small = await page.$$eval('main h2', hs => hs.filter(h => parseFloat(getComputedStyle(h).fontSize) < 21).map(h => h.textContent.trim()));
   if (small.length) throw new Error(`h2 under 21px: ${small.join(', ')}`);
-}, p => p === '/works.html');
+}, PORTFOLIO);
+
+// The back link, spec terms and pager direction read as text: body size or
+// small-body, not a label.
+test('back link, spec terms and pager direction are readable text', async ({ page }) => {
+  const sizes = await page.$$eval('nav.mast a, .spec dl, .pn-dir, .item-meta', es => es.map(e => [e.className || e.tagName, parseFloat(getComputedStyle(e).fontSize)]));
+  const small = sizes.filter(([, px]) => px < 15);
+  if (small.length) throw new Error(`under 15px: ${small.map(([c, px]) => `${c} ${px}px`).join(', ')}`);
+}, p => p.startsWith('/work/'));
 
 test('side lines are not questions', async ({ page }) => {
   const lines = await page.$$eval('[aria-labelledby="g-side"] .row .line', ls => ls.map(l => l.textContent.trim()));

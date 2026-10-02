@@ -102,19 +102,6 @@ a:hover {
     outline-offset: 2px;
 }
 
-.label,
-.mast,
-.spec dt,
-.pn .label,
-.item-meta {
-    font-size: 12px;
-    line-height: 16px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--mute);
-}
-
 .grid,
 .case-head,
 .figures,
@@ -130,23 +117,18 @@ a:hover {
 }
 
 .mast {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
     margin: 0;
-    padding: 24px 0;
+    padding: 24px 0 0;
 }
 
 .mast a {
     text-decoration: none;
 }
 
-.mast .home {
-    color: var(--ink);
-}
-
-.mast .meta {
-    white-space: nowrap;
+.mast a:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 2px;
 }
 
 h1 {
@@ -501,12 +483,12 @@ h1 {
     grid-template-columns: auto 1fr;
     gap: 4px 16px;
     margin: 0;
-    font-size: 13px;
-    line-height: 20px;
+    font-size: 15px;
+    line-height: 24px;
 }
 
 .spec dt {
-    line-height: 20px;
+    color: var(--mute);
 }
 
 .spec dd {
@@ -545,10 +527,16 @@ h1 {
     border-top: 2px solid var(--rule);
 }
 
-.figures > .label,
-.part > .label {
+.figures > h2,
+.part > h2 {
     grid-column: 1 / -1;
     margin: 0 0 16px;
+    font-size: 21px;
+    line-height: 32px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-wrap: balance;
 }
 
 .figures .metrics-grid,
@@ -560,6 +548,10 @@ h1 {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px var(--gap);
+}
+
+.metric:only-child {
+    grid-column: 1 / -1;
 }
 
 .metric-value {
@@ -585,9 +577,10 @@ h1 {
 
 .metric-label {
     display: block;
-    max-width: 18ch;
-    font-size: 13px;
-    line-height: 18px;
+    max-width: 28ch;
+    margin-top: 4px;
+    font-size: 15px;
+    line-height: 24px;
     color: var(--mute);
 }
 
@@ -621,7 +614,7 @@ h1 {
 .part:not(.items) .body h3 {
     margin: 40px 0 12px;
     font-size: 21px;
-    line-height: 28px;
+    line-height: 32px;
     letter-spacing: -0.01em;
     color: var(--ink);
     text-wrap: balance;
@@ -667,8 +660,8 @@ h1 {
     }
 
     .part > .body figure.wide figcaption {
-        margin-left: calc(3 * (var(--col) + var(--gap)));
-        max-width: calc(7 * var(--col) + 6 * var(--gap));
+        margin-left: calc(25% + var(--gap) / 4);
+        max-width: calc((7 * 100% - 5 * var(--gap)) / 12);
     }
 }
 
@@ -801,11 +794,8 @@ h1 {
 }
 
 .toy-note {
-    font-size: 12px;
-    line-height: 16px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 13px;
+    line-height: 20px;
     color: var(--mute);
 }
 
@@ -915,7 +905,8 @@ h1 {
 }
 
 .item-meta {
-    margin: 0 0 12px;
+    margin: 0 0 8px;
+    color: var(--mute);
 }
 
 .item-meta time {
@@ -968,8 +959,8 @@ h1 {
         grid-column: 4 / -1;
     }
 
-    .figures > .label,
-    .part > .label {
+    .figures > h2,
+    .part > h2 {
         grid-column: 1 / span 3;
         margin: 0;
     }
@@ -1025,6 +1016,10 @@ h1 {
     flex-direction: column;
     gap: 4px;
     text-decoration: none;
+}
+
+.pn-dir {
+    color: var(--mute);
 }
 
 .pn-line {

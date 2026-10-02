@@ -427,7 +427,7 @@ parse_markdown() {
 }
 
 # Page mode helper: wrap everything since $part_start in a part. The h2
-# hangs as its label; content before the first h2 gets an unlabeled part.
+# hangs in the margin as its heading; content before the first h2 gets an unlabeled part.
 # A part left empty (say, a "Results" that only held METRICS) is dropped.
 # Uses render_markdown_content's locals through bash's dynamic scope.
 flush_part() {
@@ -435,7 +435,7 @@ flush_part() {
     content=${content:0:$part_start}
     [ -n "$body" ] || return 0
     if [ -n "$part_label" ]; then
-        content+="<section class=\"part\"><h2 class=\"label\">$part_label</h2><div class=\"body\">$body</div></section>"
+        content+="<section class=\"part\"><h2>$part_label</h2><div class=\"body\">$body</div></section>"
     else
         content+="<section class=\"part part-lead\"><div class=\"body\">$body</div></section>"
     fi
@@ -1259,7 +1259,7 @@ render_items() {
     done < <(sort_folders "$dir"/*/)
     [ ${#items[@]} -gt 0 ] || return 0
 
-    printf '<section class="part items"><h2 class="label">%s</h2><div class="body">\n' "$heading"
+    printf '<section class="part items"><h2>%s</h2><div class="body">\n' "$heading"
     for item in "${items[@]}"; do
         slug=$(basename "$item")
         image_file=$(find_item_image "$item")
@@ -1358,36 +1358,33 @@ render_prev_next() {
     if [ "$idx" -gt 0 ]; then
         other=${pager_folders[$((idx - 1))]}
         load_fm "$other"
-        printf '  <a rel="prev" href="../%s/"><span class="label">&larr; Newer, %s</span> <span class="pn-name">%s</span> <span class="pn-line">%s</span></a>\n' \
+        printf '  <a rel="prev" href="../%s/"><span class="pn-dir">&larr; Newer, %s</span> <span class="pn-name">%s</span> <span class="pn-line">%s</span></a>\n' \
             "$(basename "$other")" "${fm_date%%-*}" "$(html_escape "$fm_label")" "$(html_escape "$fm_summary")"
     else
-        printf '  <a class="pn-all" href="../../works.html#%s"><span class="label">Start of the list</span> <span class="pn-name">&larr; All work</span></a>\n' "$slug"
+        printf '  <a class="pn-all" href="../../works.html#%s"><span class="pn-dir">Start of the list</span> <span class="pn-name">&larr; All work</span></a>\n' "$slug"
     fi
     if [ "$idx" -lt $((count - 1)) ]; then
         other=${pager_folders[$((idx + 1))]}
         load_fm "$other"
-        printf '  <a rel="next" href="../%s/"><span class="label">Older, %s &rarr;</span> <span class="pn-name">%s</span> <span class="pn-line">%s</span></a>\n' \
+        printf '  <a rel="next" href="../%s/"><span class="pn-dir">Older, %s &rarr;</span> <span class="pn-name">%s</span> <span class="pn-line">%s</span></a>\n' \
             "$(basename "$other")" "${fm_date%%-*}" "$(html_escape "$fm_label")" "$(html_escape "$fm_summary")"
     else
-        printf '  <a class="pn-all pn-end" href="../../works.html#%s"><span class="label">End of the list</span> <span class="pn-name">&larr; All work</span></a>\n' "$slug"
+        printf '  <a class="pn-all pn-end" href="../../works.html#%s"><span class="pn-dir">End of the list</span> <span class="pn-name">&larr; All work</span></a>\n' "$slug"
     fi
     echo "</nav>"
 }
 
 # One standalone page per section or side project, at work/<slug>/index.html.
 # `idx` is its place in pager_folders; -1 for the profile, which gets no
-# position or pager. `kind` is "case" or "side" (see render_case_head).
+# pager. `kind` is "case" or "side" (see render_case_head).
 write_case_page() {
     local folder=$1
     local idx=$2
     local items_heading=$3
     local kind=${4:-case}
     local slug content_file="$folder/_.md"
-    local position="" body figures items="" cta
+    local body figures items="" cta
     slug=$(basename "$folder")
-    if [ "$idx" -ge 0 ]; then
-        position=" <span class=\"count\">$(printf '%02d / %02d' $((idx + 1)) ${#pager_folders[@]})</span>"
-    fi
     body=$(render_markdown_content "$content_file" page)
     figures=$(render_markdown_content "$content_file" metrics)
     cta=$(case_cta "$content_file")
@@ -1406,13 +1403,13 @@ write_case_page() {
     cat <<EOF
 <body>
 <a class="skip" href="#main-content">Skip to content</a>
-<nav class="mast"><a class="back" href="../../works.html#$slug">&larr; All work</a>$position</nav>
+<nav class="mast"><a class="back" href="../../works.html#$slug">&larr; All work</a></nav>
 <main id="main-content">
 EOF
     [ "$fm_kind" = profile ] && fm_summary=""
     render_case_head "$folder" "$kind"
     if [ -n "$figures" ]; then
-        printf '<section class="figures"><h2 class="label">Impact</h2>%s</section>\n' "$figures"
+        printf '<section class="figures"><h2>Impact</h2>%s</section>\n' "$figures"
     fi
     rebase_paths "$body"
     echo

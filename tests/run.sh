@@ -222,12 +222,14 @@ fi
 P=work/04-noorder/index.html
 sentinel_in $P "metric value escaped"      '<span class="metric-value">&lt;5 min</span>'
 sentinel_in $P "figures band"              '<section class="figures"'
-absent_in   $P "empty Results part skipped" '<h2 class="label">Results</h2>'
+absent_in   $P "empty Results part skipped" '<h2>Results</h2>'
 sentinel_in $P "content src rebased"       'src="../../contents/04-noorder/figure.png"'
 sentinel_in $P "CTA line becomes the closing row" "<p class=\"case-cta\">Need fixtures? <a href=\"https://www.linkedin.com/in/test\" aria-label=\"Let's talk on LinkedIn\">Let's talk</a>.</p>"
 absent_in   $P "CTA line not left in the body"   '<p>Need fixtures?'
-absent_in   $P "Results holding only a CTA skipped" '<h2 class="label">Results</h2>'
-sentinel_in work/01-tags/index.html "h2 hangs as a part label" '<section class="part"><h2 class="label">Overview</h2><div class="body">'
+absent_in   $P "Results holding only a CTA skipped" '<h2>Results</h2>'
+sentinel_in work/01-tags/index.html "h2 hangs as a part heading" '<section class="part"><h2>Overview</h2><div class="body">'
+absent_in   work/01-tags/index.html "no caps label class on case pages" 'class="label"'
+sentinel_in work/01-tags/index.html "back link is plain"  '<nav class="mast"><a class="back" href="../../works.html#01-tags">&larr; All work</a></nav>'
 
 # Case header: a spec column (glyph + dl) beside the h1 and the dek.
 P=work/01-tags/index.html
@@ -299,7 +301,7 @@ sentinel_in $P "side Link row says where" '<dt>Link</dt><dd><a href="https://exa
 sentinel_in $P "side Code row from repo:" '<dt>Code</dt><dd><a href="https://github.com/test/a">github.com/test/a</a></dd>'
 absent_in   $P "side page has no Client row" '<dt>Client</dt>'
 sentinel_in $P "side back link to its row"   'href="../../works.html#proj-a"'
-sentinel_in $P "side position among side projects" '<span class="count">01 / 03</span>'
+absent_in   $P "no position count on side pages" 'class="count"'
 sentinel_in $P "first side page leads back"  '<a class="pn-all" href="../../works.html#proj-a">'
 sentinel_in $P "side rel=next"               'rel="next" href="../proj-b/"'
 sentinel_in work/proj-b/index.html "side rel=prev" 'rel="prev" href="../proj-a/"'
