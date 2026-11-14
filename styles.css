@@ -1731,11 +1731,6 @@ html {
     --mute: var(--soft);
 }
 
-.part .body p,
-.part .body li {
-    text-wrap: pretty;
-}
-
 .dek,
 .item-line,
 .item-meta,
