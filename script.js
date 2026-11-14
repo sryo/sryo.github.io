@@ -1,19 +1,60 @@
-// Optional enhancement: one accent colour per visit, picked from the
-// connector palette the ring used. Kept for the session so the ledger and
-// its case pages match; without JS the stylesheet's accent applies.
-(function () {
-    var LINE_COLORS = [
-        "#FF2D55", "#00C7BE", "#FFCC00",
-        "#007AFF", "#FF9500", "#AF52DE", "#34C759"
-    ];
-    var color = null;
-    try { color = sessionStorage.getItem("accent"); } catch (e) {}
-    if (LINE_COLORS.indexOf(color) < 0) {
-        color = LINE_COLORS[Math.floor(Math.random() * LINE_COLORS.length)];
-        try { sessionStorage.setItem("accent", color); } catch (e) {}
+// Scripts run: styles.css can lay out what they will drive (the front
+// page's offers) before first paint, so nothing jumps when they start.
+// If front.js never wires the offers up (blocked, failed), the page drops
+// back to the no-JS state once loaded: every offer open with its links.
+document.documentElement.classList.add("js");
+window.addEventListener("load", function () {
+    var offers = document.querySelector(".offers");
+    if (offers && !offers.classList.contains("live")) document.documentElement.classList.remove("js");
+});
+
+// Also sentence: each glyph's box fits its ink across and is --gs tall.
+// Ink is scaled to one area (its bounding box's geometric mean), capped at
+// the box height, so flat glyphs (HometownLocal, VENG) weigh about the
+// same as square ones; no glyph runs wider than 1.25 boxes. Without JS
+// each glyph keeps its square 100 box.
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".also .ag svg").forEach(function (svg) {
+        var b = svg.getBBox();
+        if (!b.width || !b.height) return;
+        var side = Math.max(b.height, Math.sqrt(b.width * b.height), b.width / 1.25);
+        svg.setAttribute("viewBox", [b.x, b.y + b.height / 2 - side / 2, b.width, side]
+            .map(function (n) { return n.toFixed(2); }).join(" "));
+        svg.parentNode.style.setProperty("--w", (b.width / side).toFixed(3));
+    });
+});
+
+// Link hover: a hovered link goes to weight 900 (styles.css). Each plain
+// text link gets --swell, the letter-spacing at which its heavy form is as
+// wide as its resting one, so hovering never moves the text beside it.
+// Measured on the link's text (a Range), so padding and the external
+// arrow don't count; links that wrap onto two lines keep the CSS default.
+function fitSwell() {
+    var links = document.querySelectorAll("a:not(.row):not(.embed-facade)");
+    for (var i = 0; i < links.length; i++) {
+        var a = links[i];
+        if (a.closest(".also, .pn") || a.children.length) continue;
+        var n = a.textContent.length;
+        if (!n) continue;
+        var r = document.createRange();
+        r.selectNodeContents(a);
+        if (r.getClientRects().length !== 1) continue;
+        var cs = getComputedStyle(a), size = parseFloat(cs.fontSize);
+        var ls = cs.letterSpacing === "normal" ? 0 : parseFloat(cs.letterSpacing);
+        var rest = r.getBoundingClientRect().width;
+        var keep = a.style.cssText;
+        a.style.transition = "none";
+        a.style.fontWeight = "900";
+        var heavy = r.getBoundingClientRect().width;
+        a.style.cssText = keep;
+        if (!rest || !heavy || !size) continue;
+        a.style.setProperty("--swell", ((ls + (rest - heavy) / n) / size).toFixed(4) + "em");
     }
-    document.documentElement.style.setProperty("--accent", color);
-})();
+}
+document.addEventListener("DOMContentLoaded", function () {
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSwell);
+    else fitSwell();
+});
 
 // Optional enhancement: a Figma facade loads its prototype in place on
 // click. Without JS the link simply opens Figma.

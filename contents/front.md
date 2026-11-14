@@ -2,38 +2,34 @@
 kind: front
 ---
 
-# Mateo Yadarola, product designer and design lead. 20+ years in banking, credit, audit and news, more than a decade of it leading.
+# Mateo Yadarola, product designer.
 
-For Banco de Córdoba, Continental Finance, Valora Partners, EY and La Voz del Interior, among others. Based in Córdoba, Argentina. Lately I ship my own products by directing coding agents.
+Based in Córdoba, Argentina. Lately I ship my own products by directing coding agents.
 
-> If the agents do the building, someone designs the trust.
+> Give me a hard problem and a team, or just the problem.
 
 *Independent since January 2026. Looking for a remote product design role, UTC-3, ET hours.*
 
 ## What I can do
 
-### AI that a person checks before it counts
-I design the review step between what a model reads and what gets saved. At Valora, analysts stopped retyping filings: the model reads each figure, an analyst confirms or overrides it before it commits.
-PROOF: valora, fin
+### Design AI people can trust
+Models can be wrong. I design how people control them: when to check, when to override, when to let it run.
+PROOF: valora, fin, avis
 
-### Banking for people new to banking
-Apps for first-time, low-literacy and poor-credit customers: few steps, clear words, errors that never blame the user. When Banco de Córdoba's branches closed in 2020, the remote onboarding I owned as Product Owner opened about 380,000 accounts.
-PROOF: bancor, continental
+### Make complicated things simple
+Complicated products hide the one step people came for. I find it and make it obvious.
+PROOF: omsnic, veng, continental
 
-### Dense tools for people who use them all day
-Consoles and data tools for support agents, analysts and auditors. At Continental the agents asked for denser screens and less scrolling, so we rebuilt for it.
-PROOF: continental, ey-helix, valora
+### Lead the product and the team
+Someone has to own the outcome and say no to most of the backlog. I can lead the designers or take that seat.
+PROOF: bancor, ey-helix, lavoz
 
-### Systems other people build from
-Design systems and written guidelines for teams that ship in parallel. Peperina, Banco de Córdoba's first design system, kept 15 developers across vendors consistent. EY's audit analytics tools adopted my visualization guidelines.
-PROOF: bancor, ey-helix, valora
-
-### Idea to working product, with coding agents
-Design through front-end, with coding agents writing the code. Trueframe, Avis and Fin are working software with public code.
-PROOF: trueframe, avis, fin
+### Idea to working software, fast
+Knowing what to deliver first is most of the job. The rest is iterating with real use.
+PROOF: trueframe, posta, chanchan
 
 ## How I work
 
-I'm a designer. Usually that means asking uncomfortable questions until something gets simpler. I interview the people who use the thing: support agents at Continental, auditors at EY, and with a research team of five, 18 Bancón users at Banco de Córdoba.
+I'm a designer. Usually that means asking uncomfortable questions until something gets simpler.
 
-CTA: Putting AI into a financial product people must trust? [Let's talk](https://www.linkedin.com/in/myadarola/).
+CTA: Hiring a product designer? [Let's talk](mailto:mateo@yadarola.com.ar).

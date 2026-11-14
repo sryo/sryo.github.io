@@ -157,7 +157,7 @@ esac
 
 echo "Sentinel checks..."
 # works.html is the ledger: no ring, no dialogs, no connectors.
-sentinel_in works.html "SVG glyph inlined as base64" 'data:image/svg+xml;base64,'
+sentinel_in work/02-gallery/index.html "SVG glyph inlined as base64" 'data:image/svg+xml;base64,'
 absent_in   works.html "no checkbox buttons"         'type="checkbox"'
 absent_in   works.html "no ring"                     'class="clock"'
 absent_in   works.html "no connector svg"            'lineContainer'
@@ -236,7 +236,8 @@ P=work/01-tags/index.html
 sentinel_in $P "spec column holds the glyph" '<aside class="spec"><span class="glyph" '
 # _.parts.svg rides on the spec glyph only, base64, for the parity pull.
 sentinel_in $P "spec glyph carries its parts" ' data-parts="PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMCAxMCI+PGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjUiLz48L3N2Zz4K"><img'
-absent_in works.html "ledger glyphs carry no parts" 'data-parts='
+# On works.html only the front page's glyph sources carry parts, not the rows.
+if grep -qE '<span class="glyph[^>]*data-parts=' "$ACTUAL"; then fail "ledger glyphs carry parts"; else pass "ledger glyphs carry no parts"; fi
 absent_in work/proj-a/index.html "no parts without a sidecar" 'data-parts='
 sentinel_in $P "summary is the dek"          '<p class="dek">Tags &amp; &lt;escapes&gt; in one line</p>'
 sentinel_in $P "spec lists the client"       '<dt>Client</dt><dd>Tags &amp; &lt;Co&gt;</dd>'
@@ -247,7 +248,7 @@ sentinel_in $P "lead link hoisted into spec" '<dt>Link</dt><dd><a href="https://
 absent_in   $P "hoisted link not in body"    '<p><a href="https://example.com/project">'
 
 # glyph: colour keeps an original colour glyph, marked so dark mode skips the invert.
-sentinel_in works.html "colour glyph marked" '<span class="glyph colour" style="view-transition-name: g-proj-c"><img'
+sentinel_in work/proj-c/index.html "colour glyph marked" '<span class="glyph colour" style="view-transition-name: g-proj-c"><img'
 
 # No glyph: a typographic initial of the label takes its place.
 sentinel_in works.html "row initial for a missing glyph" '<span class="name">Third</span>'
@@ -255,21 +256,21 @@ sentinel_in works.html "initial in the glyph cell"      '<span class="glyph init
 sentinel_in work/03-metrics/index.html "spec initial"   '<aside class="spec"><span class="glyph initial" style="view-transition-name: g-03-metrics" aria-hidden="true">T</span>'
 
 # View transition: the row's glyph and the case page's glyph share a name.
-sentinel_in works.html              "row glyph named for the transition"  '<span class="glyph" style="view-transition-name: g-01-tags">'
+sentinel_in works.html              "Also glyph named for the transition" '<svg viewBox="0 0 10 10" style="view-transition-name: g-01-tags">'
 sentinel_in work/01-tags/index.html "spec glyph shares the name"          '<aside class="spec"><span class="glyph" style="view-transition-name: g-01-tags"'
-sentinel_in works.html              "side rows name their glyph too"      '<span class="glyph" style="view-transition-name: g-proj-a">'
+absent_in   works.html              "no side rows on works.html"          'view-transition-name: g-proj-a">'
 sentinel_in work/proj-a/index.html  "side spec glyph shares the name"     '<aside class="spec"><span class="glyph" style="view-transition-name: g-proj-a">'
 
 # kind: profile: no client row, an About page, the ledger header, and
 # its items as the side-project group.
 P=work/02-gallery/index.html
 absent_in   works.html "profile has no client row"     'class="row" href="work/02-gallery/"'
-absent_in   works.html "front.md replaces the profile lead" '<h1 class="lead">I make fixtures.'
+absent_in   works.html "front.md replaces the profile lead" 'I make fixtures. Usually that means breaking things on purpose.</h1>'
 absent_in   works.html "front.md replaces the profile availability" "Ten years in. Open to what's next."
 sentinel_in works.html "ledger header: About link"     'href="work/02-gallery/"'
 sentinel_in works.html "masthead LinkedIn"             'href="https://linkedin.com/in/test"'
 sentinel_in works.html "masthead GitHub"               'href="https://github.com/test"'
-sentinel_in works.html "closing footer"                '<footer class="contact">'
+sentinel_in works.html "closing footer"                '<footer class="sig" aria-labelledby="sig-ask">'
 absent_in   works.html "no email without one on file"  'mailto:'
 # No tiny caps labels on works.html: no masthead, counts or column header.
 absent_in   works.html "no masthead"                   '<p class="mast">'
@@ -277,11 +278,9 @@ absent_in   works.html "no item counts"                'class="count"'
 absent_in   works.html "no column header row"          '<div class="cols"'
 absent_in   works.html "no caps label class"           'class="label"'
 sentinel_in works.html "client group"                  '<h2 id="g-client">Client work</h2>'
-sentinel_in works.html "side group head states its span" '<h2 id="g-side">Side projects, 2024&ndash;2025</h2></div>'
-sentinel_in works.html "side row opens its page"       'class="row" href="work/proj-a/"'
-sentinel_in works.html "linkless side row opens its page" 'class="row" href="work/proj-b/"'
+absent_in   works.html "no side-project group"       'id="g-side"'
+absent_in   works.html "no side row on works.html"   'class="row" href="work/proj-a/"'
 absent_in   works.html "side row no longer leaves the site" 'class="row" href="https://example.com/a"'
-sentinel_in works.html "side row medium from its tags"  '<span class="role">Web</span>'
 sentinel_in $P "About item names link to its page"     '<h3><a href="../proj-a/">Project A</a></h3>'
 sentinel_in $P "About item keeps its one line"         '<p class="item-line">Project A in one line</p>'
 absent_in   $P "About item bodies stay on their pages" 'class="embed-facade"'
@@ -300,13 +299,13 @@ sentinel_in $P "side Scope row"           '<dt>Scope</dt><dd>JavaScript, Browser
 sentinel_in $P "side Link row says where" '<dt>Link</dt><dd><a href="https://example.com/a">example.com/a</a></dd>'
 sentinel_in $P "side Code row from repo:" '<dt>Code</dt><dd><a href="https://github.com/test/a">github.com/test/a</a></dd>'
 absent_in   $P "side page has no Client row" '<dt>Client</dt>'
-sentinel_in $P "side back link to its row"   'href="../../works.html#proj-a"'
+sentinel_in $P "side back link to its About entry" '<a class="back" href="../02-gallery/#proj-a">&larr; Side projects</a>'
 absent_in   $P "no position count on side pages" 'class="count"'
-sentinel_in $P "first side page leads back"  '<a class="pn-all" href="../../works.html#proj-a">'
+sentinel_in $P "first side page leads back"  '<a class="pn-all" href="../02-gallery/#proj-a">'
 sentinel_in $P "side rel=next"               'rel="next" href="../proj-b/"'
 sentinel_in work/proj-b/index.html "side rel=prev" 'rel="prev" href="../proj-a/"'
 sentinel_in work/proj-b/index.html "side rel=next to the last" 'rel="next" href="../proj-c/"'
-sentinel_in work/proj-c/index.html "last side page leads back" '<a class="pn-all pn-end" href="../../works.html#proj-c">'
+sentinel_in work/proj-c/index.html "last side page leads back" '<a class="pn-all pn-end" href="../02-gallery/#proj-c">'
 absent_in   work/proj-c/index.html "side pager stays in side projects" 'href="../01-tags/"'
 absent_in   work/05-twin-b/index.html "client pager stays in client work" 'href="../proj-a/"'
 
@@ -319,10 +318,10 @@ absent_in   work/proj-c/index.html "commented-out link is not the page link" 'ex
 # Screens: a lone image line is a captioned figure with its size, its
 # path resolved from the item's folder; inline images stay inline.
 sentinel_in $P "screen figure, caption from the title" '<figure class="screen"><img src="../../contents/02-gallery/items/proj-a/screen-1.png" alt="A grey test card &amp; &lt;b&gt;" loading="lazy" width="120" height="60"><figcaption>The main view, &quot;quoted&quot;</figcaption></figure>'
-sentinel_in $P "portrait screen marked, caption from the alt" '<figure class="screen portrait"><img src="../../contents/02-gallery/items/proj-a/screen-2.png" alt="A tall grey test card" loading="lazy" width="40" height="80"><figcaption>A tall grey test card</figcaption></figure>'
+sentinel_in $P "portrait screen marked, no caption without a title" '<figure class="screen portrait"><img src="../../contents/02-gallery/items/proj-a/screen-2.png" alt="A tall grey test card" loading="lazy" width="40" height="80"></figure>'
 sentinel_in $P "JPEG size read"           'shot.jpg" alt="A small dark photo" loading="lazy" width="30" height="20"><figcaption>A JPEG</figcaption>'
 sentinel_in $P "inline image stays inline" 'inline <img src="https://example.com/img.png" alt="alt text" loading="lazy" />'
-sentinel_in work/04-noorder/index.html "contents/ path kept as is" '<figure class="screen"><img src="../../contents/04-noorder/figure.png" alt="A relative image" loading="lazy"><figcaption>A relative image</figcaption></figure>'
+sentinel_in work/04-noorder/index.html "contents/ path kept as is" '<figure class="screen"><img src="../../contents/04-noorder/figure.png" alt="A relative image" loading="lazy"></figure>'
 warned "missing screen flagged" 'warn: contents/04-noorder/_.md: contents/04-noorder/figure.png not found'
 sentinel_in work/proj-b/index.html "two portrait screens in a row pair up" '<div class="screen-pair"><figure class="screen portrait"><img src="../../contents/02-gallery/items/proj-a/screen-2.png" alt="Tall card one"'
 sentinel_in work/01-tags/index.html "client case screen under its decision" '<h3>A decision with a screen</h3><figure class="screen"><img src="../../contents/02-gallery/items/proj-a/screen-1.png" alt="A grey test card" loading="lazy" width="120" height="60"><figcaption>The decision, on screen</figcaption></figure>'
@@ -354,14 +353,7 @@ build_warns "missing toy flagged" "warn: $T/_.md: toy nope not found" \
 build_warns "toy without a diagram flagged" "warn: $T/_.md: toy demo is not right after a diagram" \
     "sed -i.bak 's/^DIAGRAM: .*//' $T/_.md"
 
-# Side rows (and About sections): proj-a (2025-08-01) before proj-b (2024-05-01).
-pos_a=$(grep -n '<li id="proj-a"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)
-pos_b=$(grep -n '<li id="proj-b"' "$ACTUAL" | head -n 1 | cut -d: -f1 || true)
-if [ -n "$pos_a" ] && [ -n "$pos_b" ] && [ "$pos_a" -lt "$pos_b" ]; then
-    pass "side rows sorted date desc (A before B)"
-else
-    fail "side row sort: A=$pos_a B=$pos_b"
-fi
+# About sections: proj-a (2025-08-01) before proj-b (2024-05-01).
 GALLERY="$FIXTURE_DIR/work/02-gallery/index.html"
 pos_a=$(grep -n 'id="proj-a"' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
 pos_b=$(grep -n 'id="proj-b"' "$GALLERY" | head -n 1 | cut -d: -f1 || true)
@@ -372,29 +364,39 @@ else
 fi
 
 # Ledger order: featured cases by their featured: number (04-noorder is
-# older than 03-metrics but comes first), then the Also index and the side
-# projects, each date descending, slug breaking ties.
+# older than 03-metrics but comes first). The Also sentence has no rows,
+# and side projects are not listed here.
 rows=$(grep -o 'class="row" href="work/[^"]*/"' "$ACTUAL" | sed -e 's|.*href="work/||' -e 's|/"$||' | tr '\n' ' ' || true)
-want="04-noorder 03-metrics 01-tags 05-twin-a 05-twin-b proj-a proj-b proj-c "
+want="04-noorder 03-metrics "
 if [ "$rows" = "$want" ]; then
-    pass "featured by number, then index and side rows by date desc, then slug"
+    pass "featured by number, and no side rows"
 else
     fail "row order: got '$rows', want '$want'"
 fi
 
-echo "Featured and index..."
+echo "Featured and Also..."
 sentinel_in works.html "featured list"                '<ol class="ledger featured">'
 sentinel_in works.html "featured group keeps its heading" '<div class="group-head"><h2 id="g-client">Client work</h2></div>'
-sentinel_in works.html "featured row: glyph, name, summary, then role and year" '<li id="04-noorder"><a class="row" href="work/04-noorder/"><span class="glyph initial" style="view-transition-name: g-04-noorder" aria-hidden="true">F</span><span class="name">Fourth</span><span class="line">No order field; dated last of the four.</span><span class="meta"><span class="role">Maker</span> &middot; <time datetime="2022-11-01">2022</time></span></a></li>'
-sentinel_in works.html "index heading"                '<section class="group also" aria-labelledby="g-also">'
-sentinel_in works.html "index heading is plain"       '<div class="group-head"><h2 id="g-also">Also</h2></div>'
-sentinel_in works.html "index list"                   '<ol class="ledger index">'
-sentinel_in works.html "index row: year, glyph, name, role" '<li id="05-twin-a"><a class="row" href="work/05-twin-a/"><time class="yr" datetime="2021-05-01">2021</time><span class="glyph initial" style="view-transition-name: g-05-twin-a" aria-hidden="true">T</span><span class="name">Twin A</span><span class="role">Maker</span></a></li>'
-sentinel_in works.html "index repeats hide the year"  '<li id="05-twin-b" class="repeat">'
-if grep -E '<li id="(01-tags|05-twin-a|05-twin-b)"' "$ACTUAL" | grep -qF '<span class="line">'; then
-    fail "index rows carry a summary line"
+sentinel_in works.html "featured row: glyph, name, summary, no role or year" '<li id="04-noorder"><a class="row" href="work/04-noorder/"><span class="glyph initial" style="view-transition-name: g-04-noorder" aria-hidden="true">F</span><span class="name">Fourth</span><span class="line">No order field; dated last of the four.</span></a></li>'
+sentinel_in works.html "Also section"                 '<section class="group also" aria-labelledby="g-also">'
+sentinel_in works.html "Also heading is plain"        '<div class="group-head"><h2 id="g-also">Also</h2></div>'
+absent_in   works.html "no Also index list"           '<ol class="ledger index">'
+# One sentence, newest first: glyph inline (black fills as currentColor),
+# name, role inside the link, year; commas, "and" before the last, a stop.
+sentinel_in works.html "Also item: glyph, name, role, year, comma" '<span class="it" id="01-tags"><a href="work/01-tags/"><span class="ag" aria-hidden="true"><svg viewBox="0 0 10 10" style="view-transition-name: g-01-tags"><circle cx="5" cy="5" r="5" fill="currentColor"/></svg></span><span class="nm" data-t="Tags &amp; &lt;Co&gt;">Tags &amp; &lt;Co&gt;<span class="rl"> Designer &amp; writer</span></span> <time class="yr" datetime="2024-03-01">2024</time></a>,</span>'
+sentinel_in works.html "Also initial for a missing glyph" '<span class="ag initial" aria-hidden="true" style="view-transition-name: g-05-twin-a">T</span>'
+sentinel_in works.html "no comma before the and"      '<time class="yr" datetime="2021-05-01">2021</time></a></span> <span class="it" id="05-twin-b"><span class="and">and</span>&nbsp;<a href="work/05-twin-b/">'
+sentinel_in works.html "Also ends with a full stop"   '<time class="yr" datetime="2021-05-01">2021</time></a>.</span></p>'
+also_order=$(awk '/g-also/,/<\/section>/' "$ACTUAL" | grep -o '<span class="it" id="[^"]*"' | sed -e 's|.*id="||' -e 's|"$||' | tr '\n' ' ')
+if [ "$also_order" = "01-tags 05-twin-a 05-twin-b " ]; then
+    pass "Also runs newest first, slug breaking ties"
 else
-    pass "index rows carry no summary line"
+    fail "Also order: got '$also_order'"
+fi
+if awk '/g-also/,/<\/section>/' "$ACTUAL" | grep -qE 'class="(line|glyph)|data-parts='; then
+    fail "Also carries a summary line, a ledger glyph or glyph parts"
+else
+    pass "Also carries no summary line and no glyph parts"
 fi
 if grep -F '<ol class="ledger featured">' "$ACTUAL" >/dev/null && \
     awk '/<ol class="ledger featured">/,/<\/ol>/' "$ACTUAL" | grep -qE 'id="(01-tags|05-twin-a|05-twin-b)"'; then
@@ -423,26 +425,48 @@ build_shows "no featured: one dated client ledger, no index" \
 build_warns "featured: that isn't a number flagged" "warn: 03-metrics featured: must be a positive number (top)" \
     'sed -i.bak "s/^featured: 2/featured: top/" contents/03-metrics/_.md'
 
-# contents/front.md: the opening (headline, scope, thesis, availability),
-# "What I can do" offers that each link to the cases proving them, a How I
-# work line and the contact closer. Without it, the profile heads the page.
+# contents/front.md: the opening (headline and site links, the thesis set
+# as a poster), "What I can do" offers that each link to the cases proving
+# them, then below the cases How I work (the scope and availability facts,
+# then its line) and the contact closer. Without it, the profile heads the page.
 echo "Front page..."
-sentinel_in works.html "front: headline is the h1, the name links home" '<h1 class="lead"><a class="home" href="./">Test Author</a>, fixture designer &amp; lead. Ten years, most of them leading.</h1>'
-sentinel_in works.html "front: scope line, escaped"    '<p class="scope">Fixtures, builds &amp; &lt;tests&gt; for anyone. Lately I break things on purpose.</p>'
-sentinel_in works.html "front: thesis line"            '<p class="thesis">If the fixtures do the building, someone designs the test.</p>'
-sentinel_in works.html "front: availability and links" "<p class=\"avail\">Open to what's next. UTC-3. <a href=\"work/02-gallery/\">About &rarr;</a> &middot; "
-sentinel_in works.html "front: offers group"           '<section class="group offers" aria-labelledby="g-offers">'
-sentinel_in works.html "front: offers heading, no count" '<div class="group-head"><h2 id="g-offers">What I can do</h2></div>'
-sentinel_in works.html "front: offer kicker, line, proof" '<li class="offer"><h3 class="kicker">Numbers people trust</h3><p class="offer-line">I make the numbers come first &amp; the story second.</p><p class="proof">See <a href="work/03-metrics/">Third</a> and <a href="work/proj-a/">Project A</a></p></li>'
+sentinel_in works.html "front: headline is the h1, the name links home" '<h1 class="name"><a class="home" href="./">Test Author</a>, fixture designer &amp; lead. Ten years, most of them leading.</h1>'
+sentinel_in works.html "front: site links beside the name" '<nav class="site" aria-label="Site"><a href="#g-client">Cases</a> <a href="work/02-gallery/">About</a> <a href="https://linkedin.com/in/test">LinkedIn</a></nav>'
+build_shows "front: the email joins the site links, short on a phone" \
+    'awk "{ print } /^kind: profile/ { print \"email: test@example.test\" }" contents/02-gallery/_.md > x && mv x contents/02-gallery/_.md' \
+    'grep -qF "<a href=\"https://linkedin.com/in/test\">LinkedIn</a> <a href=\"mailto:test@example.test\"><span class=\"long\">test@example.test</span><span class=\"short\">Email</span></a></nav>" works.html'
+sentinel_in works.html "front: thesis split at its comma, last word kept with the one before" '<p class="thesis"><span class="l">If the fixtures do the building,</span> <span class="l">someone designs the&nbsp;test.</span></p>'
+sentinel_in works.html "front: offers section, one row per offer" '<section class="offers" aria-labelledby="g-offers" style="--n: 2">'
+sentinel_in works.html "front: offers heading for screen readers" '<h2 id="g-offers" class="sr">What I can do</h2>'
+sentinel_in works.html "front: first offer open, kicker, line, proof" '<li class="offer on" data-proof="03-metrics proj-a"><h3 class="kicker" id="k-1"><span class="t">Numbers people trust</span></h3><div class="detail" id="d-1"><div class="in"><div class="room"></div><p class="offer-line">I make the numbers come first &amp; the story second.</p><p class="proof">See <a href="work/03-metrics/">Third</a> and <a href="work/proj-a/">Project A</a></p></div></div></li>'
+sentinel_in works.html "front: later offers closed" '<li class="offer" data-proof="01-tags"><h3 class="kicker" id="k-2">'
 sentinel_in works.html "front: offer copy escaped"     'Every tag &amp; &lt;bracket&gt; comes out escaped.'
 sentinel_in works.html "front: proof label is the case label" '<a href="work/01-tags/">Tags &amp; &lt;Co&gt;</a>'
-sentinel_in works.html "front: How I work"             '<section class="group how" aria-labelledby="g-how"><div class="group-head"><h2 id="g-how">How I work</h2></div><p>I make fixtures. Usually that means breaking things on purpose.</p></section>'
-sentinel_in works.html "front: contact closer"         "<footer class=\"contact\"><h2 class=\"ask\">Testing a fixture people must trust? <a href=\"https://linkedin.com/in/test\" aria-label=\"Let's talk on LinkedIn\">Let's talk</a>.</h2>"
+sentinel_in works.html "front: stage for the proof glyphs" '<div class="stage" aria-hidden="true"></div>'
+sentinel_in works.html "front: proof glyph parts from _.parts.svg" "<i data-slug=\"01-tags\" data-label=\"Tags &amp; &lt;Co&gt;\" data-glyph=\"$(base64 < "$FIXTURE_DIR/contents/01-tags/_.svg" | tr -d '\n')\" data-parts=\"$(base64 < "$FIXTURE_DIR/contents/01-tags/_.parts.svg" | tr -d '\n')\"></i>"
+sentinel_in works.html "front: a glyph without parts is one piece" "<i data-slug=\"proj-a\" data-label=\"Project A\" data-glyph=\"$(base64 < "$FIXTURE_DIR/contents/02-gallery/items/proj-a/_.svg" | tr -d '\n')\"></i>"
+absent_in   works.html "front: a proof without a glyph has no source" 'data-slug="03-metrics"'
+sentinel_in works.html "front: front.js linked, deferred" '<script src="front.js" defer></script>'
+absent_in   work/01-tags/index.html "front.js stays off case pages" 'front.js'
+absent_in   works.html "front: the old scope and availability lines are gone" '<p class="scope">'
+absent_in   works.html "front: the old offers group is gone" 'class="group offers"'
+sentinel_in works.html "front: How I work, its paragraph as the heading, the scope under it" "<section class=\"group how\" aria-labelledby=\"g-how\"><h2 class=\"how-line\" id=\"g-how\">I make fixtures. Usually that means breaking things on purpose.</h2><div class=\"how-cols\"><p class=\"facts\">Fixtures, builds &amp; &lt;tests&gt; for anyone. Lately I break things on purpose.</p></div></section>"
+sentinel_in works.html "front: signature ask from the CTA line" "<h2 class=\"sig-ask\" id=\"sig-ask\"><span class=\"sig-l\">Testing a fixture people must trust? <a href=\"https://linkedin.com/in/test\" aria-label=\"Let's talk on LinkedIn\">Let's talk</a>.</span></h2>"
+sentinel_in works.html "front: signature links and availability" "<p class=\"sig-more\"><a href=\"https://linkedin.com/in/test\">LinkedIn</a> <a href=\"https://github.com/test\">GitHub</a></p>
+<p class=\"sig-avail\">Open to what's next. UTC-3.</p>"
+sentinel_in works.html "front: signature glyphs are decorative, inline in currentColor" '<li><span class="sig-g" data-name="Project A"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="currentColor"/></svg></span></li>'
+absent_in   works.html "front: signature glyphs don't link" 'class="sig-g" href='
+sentinel_in works.html "front: foot.js linked, deferred" '<script src="foot.js" defer></script>'
+absent_in   work/01-tags/index.html "foot.js stays off case pages" 'foot.js'
+absent_in   works.html "front: no inline footer script" '<script type="application/json"'
+build_shows "front: the email heads the signature's links" \
+    'awk "{ print } /^kind: profile/ { print \"email: test@example.test\" }" contents/02-gallery/_.md > x && mv x contents/02-gallery/_.md' \
+    'grep -qF "<a class=\"sig-mail\" href=\"mailto:test@example.test\">test@<wbr>example.test</a>" works.html'
 absent_in   works.html "front: comments never render"  'Front page copy for works.html'
-if awk '/g-offers/{o=NR} /g-client/{c=NR} END{exit !(o && c && o < c)}' "$ACTUAL"; then
-    pass "front: offers sit above the featured cases"
+if awk '/g-offers/{o=NR} /g-client/{c=NR} /g-how/{h=NR} END{exit !(o && c && h && o < c && c < h)}' "$ACTUAL"; then
+    pass "front: offers above the featured cases, How I work below them"
 else
-    fail "front: offers do not sit above the featured cases"
+    fail "front: offers, cases and How I work out of order"
 fi
 build_must_fail "front: proof naming no case fails" "Unknown case in" \
     'sed -i.bak "s/^PROOF: 01-tags/PROOF: nope/" contents/front.md'
@@ -450,7 +474,7 @@ build_must_fail "front: offer without proof fails" "needs a PROOF" \
     'sed -i.bak "/^PROOF: 01-tags/d" contents/front.md'
 build_shows "front: without front.md the profile heads the page" \
     'rm contents/front.md' \
-    'grep -qF "<h1 class=\"lead\">I make fixtures. Usually that means breaking things on purpose.</h1>" works.html && grep -qF "Ten years in. Open to" works.html && ! grep -qF "g-offers" works.html'
+    'grep -qF "<h1 class=\"lead\">I make fixtures. Usually that means breaking things on purpose.</h1>" works.html && grep -qF "Ten years in. Open to" works.html && ! grep -qF "g-offers" works.html && ! grep -qF "front.js" works.html && ! grep -qF "foot.js" works.html && grep -qF "<footer class=\"contact\">" works.html'
 
 echo "Case fields..."
 build_must_fail "case without role: fails" "Missing role" \
@@ -461,8 +485,8 @@ build_must_fail "case without summary: fails" "Missing summary" \
     'grep -v "^summary:" contents/01-tags/_.md > x && mv x contents/01-tags/_.md'
 SUMMARY='Tags &amp; &lt;escapes&gt; in one line'
 sentinel_in works.html "summary is the featured line" '<span class="line">Numbers first, then the story.</span>'
-sentinel_in works.html "label is the ledger name, escaped" '<span class="name">Tags &amp; &lt;Co&gt;</span>'
-sentinel_in works.html "role is the last column"      '<span class="role">Designer &amp; writer</span>'
+sentinel_in works.html "label is the Also name, escaped" '<span class="nm" data-t="Tags &amp; &lt;Co&gt;">Tags &amp; &lt;Co&gt;<span class="rl">'
+sentinel_in works.html "role rides in the Also link"  '<span class="rl"> Designer &amp; writer</span>'
 sentinel_in work/01-tags/index.html "summary is the meta description" "<meta name=\"description\" content=\"$SUMMARY\">"
 sentinel_in work/01-tags/index.html "summary is og:description"       "<meta property=\"og:description\" content=\"$SUMMARY\">"
 

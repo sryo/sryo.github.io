@@ -92,10 +92,10 @@ test('case h1 is display size at desktop', async ({ page, vp }) => {
   if (px < 36) throw new Error(`h1 is ${px}px`);
 }, p => p.startsWith('/work/'));
 
-test('accent is one of LINE_COLORS', async ({ page }) => {
-  const LINE_COLORS = ['#FF2D55', '#00C7BE', '#FFCC00', '#007AFF', '#FF9500', '#AF52DE', '#34C759'];
-  const accent = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
-  if (!LINE_COLORS.includes(accent.toUpperCase())) throw new Error(`--accent is ${accent}`);
+test('accent is ink: no colour for now', async ({ page }) => {
+  const r = await page.evaluate(() => { const cs = getComputedStyle(document.documentElement);
+    return { accent: cs.getPropertyValue('--accent').trim(), ink: cs.getPropertyValue('--ink').trim(), inline: document.documentElement.style.getPropertyValue('--accent') }; });
+  if (r.accent !== r.ink || r.inline) throw new Error(`--accent is ${r.accent} (inline "${r.inline}"), ink is ${r.ink}`);
 }, PORTFOLIO);
 
 test('pages opt in to cross-document view transitions', async ({ page }) => {
@@ -113,11 +113,12 @@ test('ledger rows do not overlap', async ({ page }) => {
   }
 }, p => p === '/works.html');
 
-test('email sits in the header line and the footer', async ({ page }) => {
+test('email sits in the header links and the footer', async ({ page }) => {
   const r = await page.evaluate(() => ({ all: document.querySelectorAll('a[href="mailto:mateo@yadarola.com.ar"]').length,
-    avail: document.querySelectorAll('p.avail a[href="mailto:mateo@yadarola.com.ar"]').length,
-    footer: document.querySelectorAll('footer.contact a[href="mailto:mateo@yadarola.com.ar"]').length }));
-  if (r.avail !== 1 || r.footer !== 1 || r.all !== 2) throw new Error(`mailto links: ${r.avail} in p.avail, ${r.footer} in the footer, ${r.all} in all`);
+    head: document.querySelectorAll('.front .intro nav.site a[href="mailto:mateo@yadarola.com.ar"]').length,
+    footer: document.querySelectorAll('footer.sig a[href="mailto:mateo@yadarola.com.ar"]').length,
+    mail: document.querySelectorAll('footer.sig .sig-mail[href="mailto:mateo@yadarola.com.ar"]').length }));
+  if (r.head !== 1 || r.mail !== 1 || r.footer !== 2 || r.all !== 3) throw new Error(`mailto links: ${r.head} in the header, ${r.footer} in the footer (${r.mail} the address), ${r.all} in all`);
 }, p => p === '/works.html');
 
 // Mateo: no tiny tracked uppercase labels anywhere in the portfolio
@@ -242,7 +243,7 @@ test('glyph parts XOR back into the glyph', async ({ page, vp }) => {
 
 test('client roles fit on one line at 1440', async ({ page, vp }) => {
   if (vp !== 'desktop') return;
-  const tall = await page.$$eval('[aria-labelledby="g-client"] .row .meta, [aria-labelledby="g-also"] .row .role', rs => rs
+  const tall = await page.$$eval('[aria-labelledby="g-client"] .row .meta', rs => rs
     .filter(r => r.getBoundingClientRect().height > parseFloat(getComputedStyle(r).lineHeight) + 1)
     .map(r => r.textContent));
   if (tall.length) throw new Error(`${tall.length} roles wrap: ${tall[0]}`);
@@ -292,7 +293,7 @@ test('Tab then Enter on a row opens its case page', async ({ page }) => {
 
 // The pager keeps date order (newest first), whatever the front page features.
 test('rel=next walks every client case once', async ({ page, base }) => {
-  const rows = await page.$$eval('[aria-labelledby="g-client"] a.row, [aria-labelledby="g-also"] a.row', as => as.map(a => a.href));
+  const rows = await page.$$eval('[aria-labelledby="g-client"] a.row, [aria-labelledby="g-also"] .it > a', as => as.map(a => a.href));
   const seen = [];
   let url = `${base}/work/${Object.keys(CV)[0]}/`;
   while (url) {
@@ -311,7 +312,7 @@ const CASE = p => p.startsWith('/work/') && !p.endsWith('/about/') && !SIDE(p);
 const MONTHS = /\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/;
 
 // Client cases: newest
-// first, each with its CV year and role, a My role section and one or two
+// first, each with its CV year and role, a My role section and at most two
 // diagrams. A slug leaves CV_PENDING when its CV update lands; that is the
 // case's red → green step. The test fails if a pending case already passes.
 const CV = {
@@ -350,7 +351,7 @@ async function myRoleProblems(page) {
   return labels.includes('My role') ? [] : ['no My role section'];
 }
 
-// SPEC-projects.md §4, as it applies to client cases: one or two diagrams
+// SPEC-projects.md §4, as it applies to client cases: at most two diagrams
 // (under a decision, not "How it works"), each on the glyph grammar, circle
 // labels inside when they fit (≤ 5 characters) else centred below or above,
 // node labels in sentence case unless they are code names, and a caption
@@ -381,7 +382,7 @@ async function clientDiagramProblems(page, vp) {
     return { svg: svg ? svg.outerHTML.replace(/ role="img"/, '') : '', cap: cap?.textContent.trim() || '', lines, labels };
   }));
   const bad = [];
-  if (figs.length < 1 || figs.length > 2) bad.push(`${figs.length} diagrams, want 1 or 2`);
+  if (figs.length > 2) bad.push(`${figs.length} diagrams, want at most 2`);
   for (const f of figs) {
     if (!f.svg) { bad.push('diagram without an svg'); continue; }
     if (!f.cap) bad.push('diagram without a caption');
@@ -403,7 +404,7 @@ test('every client case has a My role section', async ({ page }) => {
   if (bad.length) throw new Error(bad.join('; '));
 }, CV_DONE);
 
-test('every client case has one or two diagrams, on spec', async ({ page, vp }) => {
+test('client case diagrams: at most two, on spec', async ({ page, vp }) => {
   const bad = await clientDiagramProblems(page, vp);
   if (bad.length) throw new Error(bad.join('; '));
 }, CV_DONE);
@@ -416,92 +417,163 @@ test('CV_PENDING holds only cases still to update', async ({ page, path, vp }) =
 }, p => CASE(p) && CV_PENDING.includes(slugOf(p)));
 
 // Featured: a few strong cases, by strength (Mateo's call), not by year.
-const FEATURED = ['valora', 'bancor', 'continental', 'lavoz'];
+const FEATURED = ['bancor', 'lavoz', 'lede', 'ey-helix'];
 
-test('featured client cases: Valora, Bancor, Continental, La Voz', async ({ page }) => {
+test('featured client cases: Bancor, La Voz, Lede, EY Helix', async ({ page }) => {
   const rows = await page.$$eval('[aria-labelledby="g-client"] ol.featured > li > a.row', as => as.map(a => a.getAttribute('href')));
   const want = FEATURED.map(s => `work/${s}/`);
   if (rows.join() !== want.join()) throw new Error(`featured [${rows.join(', ')}], want [${want.join(', ')}]`);
   const r = await page.$$eval('[aria-labelledby="g-client"] a.row', as => as.map(a => ({
     line: a.querySelector('.line')?.textContent.trim(), meta: a.querySelector('.meta')?.textContent.trim() })));
-  const bad = r.filter(x => !x.line || !/\d{4}/.test(x.meta || ''));
-  if (bad.length) throw new Error(`${bad.length} featured rows without a summary line or a year`);
+  const bad = r.filter(x => !x.line || x.meta);
+  if (bad.length) throw new Error(`${bad.length} featured rows without a summary line, or with a role and year`);
 }, p => p === '/works.html');
 
-test('Also lists every other client case, newest first, with working links', async ({ page, base, vp }) => {
-  const rows = await page.$$eval('[aria-labelledby="g-also"] a.row', as => as.map(a => ({
-    href: a.getAttribute('href'), name: a.querySelector('.name')?.textContent.trim(),
-    year: a.querySelector('time')?.getAttribute('datetime'), line: !!a.querySelector('.line') })));
-  const want = Object.keys(CV).filter(s => !FEATURED.includes(s)).map(s => `work/${s}/`);
-  const got = rows.map(r => r.href);
-  if (got.join() !== want.join()) throw new Error(`Also [${got.join(', ')}], want [${want.join(', ')}]`);
-  const heading = await page.$eval('#g-also', h => h.textContent.trim());
-  if (heading !== 'Also') throw new Error(`index heading reads "${heading}"`);
-  if (rows.some(r => r.line)) throw new Error('an index row carries a summary line');
-  if (rows.some(r => !r.name || !r.year)) throw new Error('an index row lacks a name or year');
-  if (vp !== 'desktop') return;
-  for (const r of rows) {
-    const res = await page.request.get(`${base}/${r.href}`);
-    if (res.status() !== 200) throw new Error(`${r.href} answered ${res.status()}`);
-    if (!(await res.text()).includes('<h1>')) throw new Error(`${r.href} has no h1`);
-  }
-}, p => p === '/works.html');
+// Also: the other client cases as one sentence, newest first, each name a
+// link to its case with its glyph before it and its year after.
+const ALSO = Object.keys(CV).filter(s => !FEATURED.includes(s));
 
-test('featured rows outweigh index rows', async ({ page }) => {
-  const m = await page.evaluate(() => {
-    const f = document.querySelector('ol.featured a.row'), i = document.querySelector('ol.index a.row');
-    const px = (r, sel) => parseFloat(getComputedStyle(r.querySelector(sel)).fontSize);
-    return { fg: f.querySelector('.glyph').getBoundingClientRect().width, ig: i.querySelector('.glyph').getBoundingClientRect().width,
-      fn: px(f, '.name'), iname: px(i, '.name'), fh: f.getBoundingClientRect().height, ih: i.getBoundingClientRect().height };
+test('Also is one sentence of every other client case, newest first, with working links', async ({ page, base, vp }) => {
+  const r = await page.evaluate(() => {
+    const p = document.querySelector('[aria-labelledby="g-also"] p.run');
+    return { heading: document.querySelector('#g-also')?.textContent.trim(), sentences: document.querySelectorAll('[aria-labelledby="g-also"] p').length,
+      text: p && [...p.childNodes].map(n => n.nodeType === 3 ? n.textContent : n.cloneNode(true)).map(n => {
+        if (typeof n === 'string') return n; n.querySelectorAll('.rl').forEach(e => e.remove()); return n.textContent; }).join('').replace(/\u00a0/g, ' '),
+      items: [...document.querySelectorAll('[aria-labelledby="g-also"] .it > a')].map(a => ({
+        href: a.getAttribute('href'), name: a.querySelector('.nm')?.firstChild.textContent.trim(),
+        year: a.querySelector('time.yr')?.textContent, glyphFirst: a.firstElementChild?.matches('.ag') && !!a.firstElementChild.querySelector('svg'),
+        role: a.querySelector('.rl')?.textContent.trim() })) };
   });
-  if (!(m.fg > m.ig)) throw new Error(`featured glyph ${m.fg}px, index ${m.ig}px`);
-  if (!(m.fn > m.iname)) throw new Error(`featured name ${m.fn}px, index ${m.iname}px`);
-  if (!(m.fh > m.ih * 1.5)) throw new Error(`featured row ${m.fh}px tall, index ${m.ih}px`);
-}, p => p === '/works.html');
-
-test('at 390 featured and index rows fit the screen', async ({ page, vp }) => {
-  if (vp !== 'mobile') return;
-  await page.setViewportSize({ width: 390, height: 844 });
-  const r = await page.evaluate(() => ({
-    over: document.documentElement.scrollWidth - innerWidth,
-    out: [...document.querySelectorAll('ol.featured a.row *, ol.index a.row *')]
-      .filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.left < -0.5 || b.right > innerWidth + 0.5); })
-      .map(e => e.className || e.tagName) }));
-  await page.setViewportSize({ width: 375, height: 812 });
-  if (r.over > 0) throw new Error(`page overflows by ${r.over}px`);
-  if (r.out.length) throw new Error(`${r.out.length} row parts leave the screen: ${r.out[0]}`);
-}, p => p === '/works.html');
-
-test('featured and index rows show a focus ring', async ({ page }) => {
-  for (const sel of ['ol.featured a.row', 'ol.index a.row']) {
-    await page.focus(sel);
-    const style = await page.$eval(sel, a => getComputedStyle(a).outlineStyle);
-    if (style === 'none') throw new Error(`${sel} has no focus outline`);
+  if (r.heading !== 'Also') throw new Error(`heading reads "${r.heading}"`);
+  if (r.sentences !== 1) throw new Error(`${r.sentences} paragraphs, want one sentence`);
+  const got = r.items.map(i => i.href), want = ALSO.map(s => `work/${s}/`);
+  if (got.join() !== want.join()) throw new Error(`Also [${got.join(', ')}], want [${want.join(', ')}]`);
+  const bad = r.items.filter(i => !i.name || !/^\d{4}$/.test(i.year || '') || !i.glyphFirst);
+  if (bad.length) throw new Error(`${bad.length} items lack a glyph before the name, or a year: ${bad[0].href}`);
+  const sentence = r.items.map((i, k) => (k === r.items.length - 1 ? 'and ' : '') + `${i.name} ${i.year}`).join(', ').replace(/, and /, ' and ') + '.';
+  if (r.text.replace(/\s+/g, ' ').trim() !== sentence) throw new Error(`reads "${r.text.trim()}", want "${sentence}"`);
+  if (vp !== 'desktop') return;
+  for (const i of r.items) {
+    const res = await page.request.get(`${base}/${i.href}`);
+    if (res.status() !== 200) throw new Error(`${i.href} answered ${res.status()}`);
+    if (!(await res.text()).includes('<h1>')) throw new Error(`${i.href} has no h1`);
   }
+}, p => p === '/works.html');
+
+test('Also roles are in each link, from the case frontmatter', async ({ page }) => {
+  const r = await page.$$eval('[aria-labelledby="g-also"] .it > a', as => as.map(a => ({ href: a.getAttribute('href'), role: a.querySelector('.rl')?.textContent.trim(), name: a.textContent })));
+  const bad = [];
+  for (const i of r) {
+    const md = readFileSync(resolve(ROOT, 'contents', i.href.split('/')[1], '_.md'), 'utf8');
+    const want = md.match(/^role:\s*"?(.*?)"?\s*$/m)?.[1];
+    if (!want || i.role !== want) bad.push(`${i.href} role "${i.role}", want "${want}"`);
+    else if (!i.name.includes(want)) bad.push(`${i.href}: role not in the link's accessible text`);
+  }
+  if (bad.length) throw new Error(bad.join('; '));
+}, p => p === '/works.html');
+
+test('hovering or focusing an Also name changes no glyph geometry', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const geo = () => page.$$eval('[aria-labelledby="g-also"] .ag', gs => gs.map(g => {
+    const b = g.getBoundingClientRect(), svg = g.querySelector('svg'), kids = svg ? [...svg.querySelectorAll('*')] : [];
+    return [b.left, b.top, b.width, b.height, svg?.getAttribute('viewBox'), getComputedStyle(g).transform, kids.length,
+      kids.map(k => getComputedStyle(k).transform + getComputedStyle(k).display + (k.getAttribute('d') || '')).join('|')].join(',');
+  }));
+  const before = await geo();
+  const n = await page.locator('[aria-labelledby="g-also"] .it > a').count();
+  for (let i = 0; i < n; i++) {
+    const a = page.locator('[aria-labelledby="g-also"] .it > a').nth(i);
+    await a.scrollIntoViewIfNeeded();
+    const scrolled = await geo();
+    await a.locator('.nm').hover();
+    await page.waitForTimeout(450);
+    const r = await a.evaluate(a => ({ deco: getComputedStyle(a.querySelector('.nm')).textDecorationColor, role: a.querySelector('.rl').getBoundingClientRect().width,
+      parts: a.querySelectorAll('.parts, [data-parts]').length }));
+    if ((await geo()).join() !== scrolled.join()) throw new Error(`hovering item ${i + 1} moved or broke a glyph`);
+    if (r.parts) throw new Error(`item ${i + 1} carries glyph parts`);
+    if (r.role > 1) throw new Error(`item ${i + 1}: role shown on hover (${r.role}px wide)`);
+    if (/rgba\(0, 0, 0, 0\)|transparent/.test(r.deco)) throw new Error(`item ${i + 1}: no underline on hover`);
+    await page.mouse.move(0, 0);
+    await a.focus();
+    await page.waitForTimeout(300);
+    if ((await geo()).join() !== scrolled.join()) throw new Error(`focusing item ${i + 1} moved or broke a glyph`);
+    await a.blur();
+  }
+  if (!before.length) throw new Error('no Also glyphs');
+}, p => p === '/works.html');
+
+test('featured rows outweigh the Also sentence', async ({ page }) => {
+  const m = await page.evaluate(() => {
+    const f = document.querySelector('ol.featured a.row'), i = document.querySelector('[aria-labelledby="g-also"] .it > a');
+    return { fg: f.querySelector('.glyph').getBoundingClientRect().height, ig: i.querySelector('.ag').getBoundingClientRect().height,
+      fn: parseFloat(getComputedStyle(f.querySelector('.name')).fontSize), iname: parseFloat(getComputedStyle(i.querySelector('.nm')).fontSize) };
+  });
+  if (!(m.fg > m.ig)) throw new Error(`featured glyph ${m.fg}px, Also ${m.ig}px`);
+  if (!(m.fn > m.iname)) throw new Error(`featured name ${m.fn}px, Also ${m.iname}px`);
+}, p => p === '/works.html');
+
+// 360 to 430: nothing leaves the screen, no line starts with a comma (each
+// item keeps its comma), and the last line never holds the last item alone.
+test('on phones the Also sentence fits and never orphans its last item', async ({ page, vp }) => {
+  if (vp !== 'mobile') return;
+  for (const width of [360, 375, 390, 414, 430]) {
+    await page.setViewportSize({ width, height: 844 });
+    const r = await page.evaluate(() => {
+      const its = [...document.querySelectorAll('[aria-labelledby="g-also"] .it')];
+      const tops = its.map(it => Math.round(it.getBoundingClientRect().top));
+      return { over: document.documentElement.scrollWidth - innerWidth,
+        out: [...document.querySelectorAll('ol.featured a.row *, [aria-labelledby="g-also"] .it *')]
+          .filter(e => { const b = e.getBoundingClientRect(); return b.width > 1 && (b.left < -0.5 || b.right > innerWidth + 0.5); }).map(e => e.className || e.tagName),
+        split: its.filter(it => new Set([...it.getClientRects()].map(r => Math.round(r.bottom))).size > 1).length,
+        lonely: tops.length > 1 && tops[tops.length - 1] !== tops[tops.length - 2] };
+    });
+    if (r.over > 0) throw new Error(`${width}: page overflows by ${r.over}px`);
+    if (r.out.length) throw new Error(`${width}: ${r.out.length} parts leave the screen: ${r.out[0]}`);
+    if (r.split) throw new Error(`${width}: an Also item breaks across lines`);
+    if (r.lonely) throw new Error(`${width}: the last Also item sits alone on its line`);
+  }
+  await page.setViewportSize({ width: 375, height: 812 });
+}, p => p === '/works.html');
+
+test('featured rows show a focus ring, Also links an ink rule', async ({ page }) => {
+  await page.focus('ol.featured a.row');
+  if (await page.$eval('ol.featured a.row', a => getComputedStyle(a).outlineStyle) === 'none') throw new Error('featured rows have no focus outline');
+  const a = page.locator('[aria-labelledby="g-also"] .it > a').first();
+  await a.focus();
+  const r = await a.evaluate(a => {
+    const g = a.querySelector('.ag'), rule = getComputedStyle(g, '::after'), gb = g.getBoundingClientRect();
+    const ink = g.querySelector('svg').getBBox(), ctm = g.querySelector('svg').getScreenCTM();
+    return { vis: rule.visibility, h: parseFloat(rule.height), ink: getComputedStyle(a.querySelector('.nm')).textDecorationColor, ruleTop: gb.bottom + parseFloat(rule.top) - gb.height,
+      inkBottom: (ink.y + ink.height) * ctm.d + ctm.f };
+  });
+  if (r.vis !== 'visible' || r.h < 2) throw new Error('focused Also link shows no rule under its glyph');
+  if (r.ruleTop < r.inkBottom) throw new Error(`focus rule at ${r.ruleTop}px crosses the glyph ink (to ${r.inkBottom}px)`);
 }, p => p === '/works.html');
 
 // ── Front page: what I offer, the cases as proof ─────────────
 // The copy lives in contents/front.md; build.sh renders it above the cases.
-const SCOPE_H1 = /^Mateo Yadarola, product designer and design lead\b/;
-const THESIS = 'If the agents do the building, someone designs the trust.';
-const CLOSER = 'Putting AI into a financial product people must trust?';
+const SCOPE_H1 = /^Mateo Yadarola, product designer\.$/;
+const THESIS = 'Give me a hard problem and a team, or just the problem.';
+const CLOSER = "Hiring a product designer? Let's talk.";
 
-test('front: scope h1, then the thesis, then availability', async ({ page }) => {
+test('front: name h1 beside the site links, then the thesis as the poster', async ({ page }) => {
   const r = await page.evaluate(() => ({
-    h1: document.querySelector('.intro h1.lead')?.textContent.trim(),
-    home: document.querySelector('.intro h1.lead a.home')?.getAttribute('href'),
-    thesis: document.querySelector('.intro .thesis')?.textContent.trim(),
-    avail: document.querySelector('.intro .avail')?.textContent.trim(),
-    order: [...document.querySelectorAll('.intro > *')].map(e => e.className) }));
+    h1: document.querySelector('.front .intro h1.name')?.textContent.trim(),
+    home: document.querySelector('.front .intro h1.name a.home')?.getAttribute('href'),
+    nav: [...document.querySelectorAll('.front .intro nav.site a')].map(a => a.getAttribute('href')),
+    thesis: document.querySelector('.front .thesis')?.textContent.replace(/\u00a0/g, ' ').trim(),
+    thesisPx: parseFloat(getComputedStyle(document.querySelector('.front .thesis')).fontSize),
+    biggest: Math.max(...[...document.querySelectorAll('main *')].filter(e => e.closest('.thesis') === null && e.getClientRects().length).map(e => parseFloat(getComputedStyle(e).fontSize))),
+    order: [...document.querySelectorAll('.front > *')].map(e => e.classList[0]) }));
   if (!SCOPE_H1.test(r.h1 || '')) throw new Error(`h1 reads "${r.h1}"`);
   if (r.home !== './') throw new Error('the name in the h1 does not link home');
+  if (r.nav.join() !== '#g-client,work/about/,https://www.linkedin.com/in/myadarola/,mailto:mateo@yadarola.com.ar') throw new Error(`site links: ${r.nav.join(', ')}`);
   if (r.thesis !== THESIS) throw new Error(`thesis reads "${r.thesis}"`);
-  if (!/remote/i.test(r.avail || '')) throw new Error(`availability reads "${r.avail}"`);
-  const i = c => r.order.findIndex(x => x.split(' ').includes(c));
-  if (!(i('lead') < i('thesis') && i('thesis') < i('avail'))) throw new Error(`intro order: ${r.order.join(', ')}`);
+  if (!(r.thesisPx > r.biggest)) throw new Error(`thesis ${r.thesisPx}px is not the biggest type (${r.biggest}px)`);
+  if (r.order.join() !== 'intro,thesis,offers') throw new Error(`front order: ${r.order.join(', ')}`);
 }, p => p === '/works.html');
 
-test('front: 4 to 5 offers, each a bold kicker, a line and proof links to existing cases', async ({ page, base, vp }) => {
+test('front: 4 to 6 offers, each a bold kicker, a line and proof links to existing cases', async ({ page, base, vp }) => {
   const offers = await page.$$eval('[aria-labelledby="g-offers"] li.offer', ls => ls.map(l => ({
     kicker: l.querySelector('.kicker')?.textContent.trim(),
     caps: getComputedStyle(l.querySelector('.kicker')).textTransform,
@@ -509,7 +581,7 @@ test('front: 4 to 5 offers, each a bold kicker, a line and proof links to existi
     weight: Number(getComputedStyle(l.querySelector('.kicker')).fontWeight),
     line: l.querySelector('.offer-line')?.textContent.trim(),
     links: [...l.querySelectorAll('.proof a')].map(a => a.getAttribute('href')) })));
-  if (offers.length < 4 || offers.length > 5) throw new Error(`${offers.length} offers`);
+  if (offers.length < 4 || offers.length > 6) throw new Error(`${offers.length} offers`);
   for (const o of offers) {
     if (!o.kicker || o.caps === 'uppercase' || o.size < 16 || o.weight < 600) throw new Error(`kicker "${o.kicker}" is not a bold sentence-case lead-in (${o.caps}, ${o.size}px, ${o.weight})`);
     if (!o.line) throw new Error(`"${o.kicker}" has no line`);
@@ -532,17 +604,21 @@ test('front: offers sit between the opening and the featured cases', async ({ pa
   if (!ok) throw new Error('offers are not between the intro and the client cases');
 }, p => p === '/works.html');
 
-test('front: How I work keeps the uncomfortable-questions line; contact closes on the Valora ask', async ({ page }) => {
+test('front: How I work leads with the uncomfortable-questions line; the signature closes on the hiring ask', async ({ page }) => {
   const r = await page.evaluate(() => ({
-    how: document.querySelector('[aria-labelledby="g-how"] p')?.textContent.trim(),
-    ask: document.querySelector('footer.contact .ask')?.textContent.trim() }));
-  if (!r.how?.startsWith("I'm a designer. Usually that means asking uncomfortable questions until something gets simpler.")) throw new Error(`How I work reads "${r.how}"`);
-  if (!r.ask?.startsWith(CLOSER)) throw new Error(`contact ask reads "${r.ask}"`);
+    how: document.querySelector('[aria-labelledby="g-how"] h2.how-line')?.textContent.trim(),
+    cols: [...document.querySelectorAll('[aria-labelledby="g-how"] .how-cols p')].map(p => p.textContent.trim()),
+    ask: document.querySelector('footer.sig .sig-ask')?.textContent.replace(/\u00a0/g, ' ').trim(),
+    avail: document.querySelector('footer.sig .sig-avail')?.textContent.trim() }));
+  if (r.how !== "I'm a designer. Usually that means asking uncomfortable questions until something gets simpler.") throw new Error(`How I work reads "${r.how}"`);
+  if (r.cols.length !== 1 || !/^Based in Córdoba/.test(r.cols[0]) || /Banco de Córdoba|Continental|Valora|EY|La Voz/.test(r.cols.join(' '))) throw new Error(`How I work columns read ${JSON.stringify(r.cols)}`);
+  if (r.ask !== CLOSER) throw new Error(`signature ask reads "${r.ask}"`);
+  if (!/remote/i.test(r.avail || '')) throw new Error(`signature availability reads "${r.avail}"`);
 }, p => p === '/works.html');
 
 test('front: no unconfirmed claims, no em dashes', async ({ page }) => {
-  const t = await page.evaluate(() => [...document.querySelectorAll('.intro, [aria-labelledby="g-offers"], [aria-labelledby="g-how"], footer.contact')].map(e => e.textContent).join(' '));
-  const m = t.match(/nine tools|70,000|\b112\b|selfie|research on unbanked|\u2014/i);
+  const t = await page.evaluate(() => [...document.querySelectorAll('.intro, [aria-labelledby="g-offers"], [aria-labelledby="g-how"], footer.sig')].map(e => e.textContent).join(' '));
+  const m = t.match(/nine tools|70,000|\b112\b|selfie|research on unbanked|design lead|\u2014/i);
   if (m) throw new Error(`front copy carries "${m[0]}"`);
 }, p => p === '/works.html');
 
@@ -551,7 +627,7 @@ test('at 390 the opening and offers fit the screen', async ({ page, vp }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const r = await page.evaluate(() => ({
     over: document.documentElement.scrollWidth - innerWidth,
-    out: [...document.querySelectorAll('.intro *, [aria-labelledby="g-offers"] *, [aria-labelledby="g-how"] *, footer.contact *')]
+    out: [...document.querySelectorAll('.intro *, [aria-labelledby="g-offers"] *, [aria-labelledby="g-how"] *, footer.sig .sig-poster *')]
       .filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.left < -0.5 || b.right > innerWidth + 0.5); })
       .map(e => e.className || e.tagName) }));
   await page.setViewportSize({ width: 375, height: 812 });
@@ -563,6 +639,498 @@ test('offer proof links show a focus ring', async ({ page }) => {
   await page.focus('[aria-labelledby="g-offers"] .proof a');
   const style = await page.$eval('[aria-labelledby="g-offers"] .proof a', a => getComputedStyle(a).outlineStyle);
   if (style === 'none') throw new Error('proof link has no focus outline');
+}, p => p === '/works.html');
+
+// ── Front page motion (front.js) ──────────────────────────────
+// A fresh page per check, so emulation and the rAF probe start clean.
+async function frontPage(page, opts = {}) {
+  const ctx = await page.context().browser().newContext({ viewport: opts.viewport || { width: 1440, height: 900 },
+    reducedMotion: opts.reduce ? 'reduce' : 'no-preference', javaScriptEnabled: opts.js !== false });
+  const p = await ctx.newPage();
+  // Every requestAnimationFrame call, by time: the probe for a sleeping loop.
+  await p.addInitScript(() => {
+    window.__frames = [];
+    const raf = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = cb => { window.__frames.push(performance.now()); return raf(cb); };
+  });
+  await p.goto(page.url().replace(/#.*$/, ''), { waitUntil: 'load' });
+  if (opts.js !== false) {
+    await p.evaluate(() => document.fonts.ready);
+    // front.js starts once Inter is in; wide, it hangs the sentences (.hung).
+    await p.waitForFunction(() => document.querySelector('.offers.live') && (innerWidth < 900 || document.querySelector('.offers.hung')));
+  }
+  return { p, close: () => ctx.close() };
+}
+
+async function frontFrames(p, ms) {
+  return p.evaluate(ms => new Promise(r => { const t0 = performance.now(), n0 = window.__frames.length;
+    setTimeout(() => r(window.__frames.slice(n0).map(t => t - t0)), ms); }), ms);
+}
+
+test('front: switching offers shows that offer and its working proof links', async ({ page, base, vp }) => {
+  if (vp !== 'desktop') return;
+  const { p, close } = await frontPage(page);
+  try {
+    await p.keyboard.press('Shift');
+    const n = await p.locator('.offers .offer').count();
+    for (let i = 0; i < n; i++) {
+      await p.locator('.offers .offer .kicker button').nth(i).click();
+      await p.waitForTimeout(900);
+      const r = await p.evaluate(i => {
+        const o = document.querySelectorAll('.offers .offer')[i];
+        const vis = e => { const cs = getComputedStyle(e), b = e.getBoundingClientRect(); return cs.visibility === 'visible' && +cs.opacity > 0.9 && b.width > 0; };
+        return { open: o.classList.contains('on'), expanded: o.querySelector('button').getAttribute('aria-current'),
+          others: [...document.querySelectorAll('.offers .offer.on')].length,
+          line: vis(o.querySelector('.offer-line')), links: [...o.querySelectorAll('.proof a')].filter(vis).map(a => a.getAttribute('href')),
+          want: o.dataset.proof.split(' ').map(s => `work/${s}/`),
+          glyphs: [...document.querySelectorAll('.stage .gl:not(.off)')].map(g => g.getAttribute('href')) };
+      }, i);
+      if (!r.open || r.expanded !== 'true' || r.others !== 1) throw new Error(`offer ${i + 1} did not open alone (aria-current ${r.expanded})`);
+      if (!r.line || r.links.join() !== r.want.join()) throw new Error(`offer ${i + 1} shows links [${r.links.join(', ')}], want [${r.want.join(', ')}]`);
+      if (r.glyphs.join() !== r.want.join()) throw new Error(`offer ${i + 1} shows glyphs [${r.glyphs.join(', ')}], want [${r.want.join(', ')}]`);
+      for (const h of r.links) {
+        const res = await p.request.get(`${base}/${h}`);
+        if (res.status() !== 200) throw new Error(`${h} answered ${res.status()}`);
+      }
+    }
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('front: the frame loop sleeps when nothing moves', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const { p, close } = await frontPage(page);
+  try {
+    await p.keyboard.press('Shift'); // ends the unattended tour
+    await p.waitForTimeout(2500);    // the load assembly is done
+    const f = await frontFrames(p, 9000);
+    const gaps = f.map((t, i) => (i ? t - f[i - 1] : t)).concat(9000 - (f[f.length - 1] || 0));
+    if (f.length > 0.6 * 9 * 60) throw new Error(`${f.length} frames in 9s: the loop never sleeps`);
+    if (Math.max(...gaps) < 2500) throw new Error(`longest frame-free stretch is ${Math.round(Math.max(...gaps))}ms`);
+    await p.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await p.waitForTimeout(3200); // the signature's glyphs arrive, then its loop sleeps too
+    const off = await frontFrames(p, 7000);
+    if (off.length > 2) throw new Error(`${off.length} frames in 7s with the offers out of view`);
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+// Every drawn frame for ms: per glyph, each part's rendered offset in screen
+// px (0 while the whole glyph stands in). requestAnimationFrame is wrapped
+// so a sample is read right after front.js has set that frame's
+// transforms; a loop of its own samples the frames where front.js sleeps,
+// so every step has its true frame time.
+async function partFrames(p, ms, act) {
+  await p.evaluate(() => {
+    window.__parts = [];
+    const re = /translate\(([-\d.]+)px, ?([-\d.]+)px\)/, sc = /scale\(([-\d.]+)\)/;
+    const read = ts => {
+      if (!window.__parts) return;
+      const f = { ts, gl: [...document.querySelectorAll('.stage .gl')].map(g => {
+        const kids = [...g.children], whole = kids.pop(), z = +(sc.exec(g.style.transform) || [0, 1])[1];
+        const split = whole.style.display === 'none';
+        return { h: g.getAttribute('href'), off: g.classList.contains('off'), n: kids.length, split,
+          xy: kids.map(s => { const m = split && re.exec(s.style.transform); return m ? [m[1] * z, m[2] * z] : [0, 0]; }) };
+      }) };
+      const log = window.__parts;
+      if (log.length && log[log.length - 1].ts === ts) log[log.length - 1] = f; else log.push(f);
+    };
+    window.__rafPlain = window.__rafPlain || window.requestAnimationFrame;
+    const raf = window.__rafPlain;
+    window.requestAnimationFrame = cb => raf(ts => { cb(ts); read(ts); });
+    const beat = ts => { if (!window.__parts) return; read(ts); raf(beat); };
+    raf(beat);
+  });
+  if (act) await act();
+  await p.waitForTimeout(ms);
+  return p.evaluate(() => { const f = window.__parts; window.__parts = null; window.requestAnimationFrame = window.__rafPlain; return f; });
+}
+
+// Per-frame speed of a glyph's fastest part, in px per 60 fps frame.
+function speeds(frames, href) {
+  const out = [];
+  let prev = null;
+  for (const f of frames) {
+    const g = f.gl.find(x => x.h === href);
+    if (!g || g.off) { prev = null; continue; }
+    if (prev) out.push(Math.max(...g.xy.map((q, i) => Math.hypot(q[0] - prev.xy[i][0], q[1] - prev.xy[i][1]))) / Math.max(1, (f.ts - prev.ts) / 16.667));
+    prev = { xy: g.xy, ts: f.ts };
+  }
+  return out;
+}
+
+test('front: on a switch every glyph moves in parts, starting and stopping without a jolt', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const { p, close } = await frontPage(page);
+  try {
+    await p.keyboard.press('Shift');
+    await p.waitForTimeout(2200);
+    const offers = await p.$$eval('.offers .offer', os => os.map(o => o.dataset.proof.split(' ').map(s => `work/${s}/`)));
+    const frames = await partFrames(p, 1600, () => p.locator('.offers .offer .kicker button').nth(1).click());
+    for (const href of [...offers[0], ...offers[1]]) {
+      const g = frames.at(-1).gl.find(x => x.h === href);
+      if (g.n < 2) throw new Error(`${href} has ${g.n} part`);
+      const v = speeds(frames, href), moving = v.map((s, i) => s > 0.05 ? i : -1).filter(i => i >= 0);
+      if (!moving.length) throw new Error(`${href} never moved in parts`);
+      const peak = Math.max(...v), first = v[moving[0]], last = v[moving.at(-1)];
+      // From rest and back to rest: the first and last steps are small next
+      // to the peak (or under 1.5px, for a late frame under load), and once
+      // under way no frame leaps past the one before (a snap).
+      if (first > 0.6 * peak && first > 1.5) throw new Error(`${href} sets off at ${first.toFixed(1)}px/frame (peak ${peak.toFixed(1)})`);
+      if (last > 0.35 * peak && last > 1.5) throw new Error(`${href} stops from ${last.toFixed(1)}px/frame (peak ${peak.toFixed(1)})`);
+      for (let i = 1; i < v.length; i++) {
+        if (v[i - 1] > 1 && v[i] > 2 * v[i - 1] + 1) throw new Error(`${href} jumps ${v[i].toFixed(1)}px after ${v[i - 1].toFixed(1)}px at frame ${i}`);
+      }
+    }
+    // Arrived: every open glyph rests as its whole (a breath may come first).
+    await p.waitForFunction(want => want.every(h => { const g = document.querySelector(`.stage .gl[href="${h}"]`);
+      return !g.classList.contains('off') && g.lastElementChild.style.display !== 'none'; }), offers[1], { timeout: 4000 })
+      .catch(() => { throw new Error('the new cluster never came to rest as whole glyphs'); });
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('front: every glyph in the open cluster answers the pointer and breathes', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const { p, close } = await frontPage(page);
+  try {
+    await p.keyboard.press('Shift');
+    await p.locator('.offers .offer .kicker button').nth(1).click();
+    await p.waitForTimeout(1500);
+    const boxes = await p.$$eval('.stage .gl:not(.off)', gs => gs.map(g => { const r = g.getBoundingClientRect(); return { h: g.getAttribute('href'), x: r.x + r.width / 2, y: r.y + r.height / 2 }; }));
+    if (boxes.length < 3) throw new Error(`${boxes.length} glyphs open`);
+    for (const b of boxes) {
+      await p.mouse.move(b.x + 4, b.y + 4, { steps: 4 });
+      await p.waitForTimeout(600);
+      const split = await p.$eval(`.stage .gl[href="${b.h}"]`, g => g.lastElementChild.style.display === 'none');
+      if (!split) throw new Error(`${b.h} ignores the pointer over it`);
+    }
+    await p.mouse.move(4, 890, { steps: 3 });
+    await p.waitForTimeout(1500);
+    const frames = await partFrames(p, 7000);
+    const still = boxes.filter(b => !frames.some(f => f.gl.find(g => g.h === b.h).split));
+    if (still.length) throw new Error(`no breath in 7s from ${still.map(b => b.h).join(', ')}`);
+    // Each breath ends with the whole glyphs back (the window may close mid-breath).
+    await p.waitForFunction(() => [...document.querySelectorAll('.stage .gl:not(.off)')].every(g => g.lastElementChild.style.display !== 'none'), null, { timeout: 4000 })
+      .catch(() => { throw new Error('a glyph rests in parts after its breath'); });
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('front: reduced motion shows the still cluster and draws no frames', async ({ page, vp }) => {
+  const viewport = vp === 'desktop' ? { width: 1440, height: 900 } : { width: 390, height: 844 };
+  const { p, close } = await frontPage(page, { reduce: true, viewport });
+  try {
+    await p.waitForTimeout(300);
+    const f = await frontFrames(p, 1500);
+    const r = await p.evaluate(() => {
+      const first = document.querySelector('.offers .offer');
+      return { want: first.dataset.proof.split(' ').length,
+        shown: [...document.querySelectorAll('.gl:not(.off)')].map(g => ({ href: g.getAttribute('href'),
+          whole: getComputedStyle(g.lastElementChild).display !== 'none',
+          parts: [...g.children].slice(0, -1).filter(s => getComputedStyle(s).display !== 'none').length,
+          t: g.style.transform })) };
+    });
+    if (f.length) throw new Error(`${f.length} frames drawn under reduced motion`);
+    if (r.shown.length !== r.want) throw new Error(`${r.shown.length} glyphs shown, want ${r.want}`);
+    const torn = r.shown.find(g => !g.whole || g.parts);
+    if (torn) throw new Error(`${torn.href} rests in parts`);
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('front: at rest the thesis reads clean, the cluster hangs right under it', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1920, height: 1080 }, { width: 1024, height: 768 }]) {
+    const { p, close } = await frontPage(page, { reduce: true, viewport });
+    try {
+      const r = await p.evaluate(() => {
+        const th = document.querySelector('.front .thesis'), cs = getComputedStyle(th);
+        const bottom = th.getBoundingClientRect().bottom - parseFloat(cs.paddingBottom);
+        const gl = [...document.querySelectorAll('.stage .gl:not(.off)')].map(g => g.getBoundingClientRect());
+        return { bottom, em: parseFloat(cs.fontSize), top: Math.min(...gl.map(b => b.top)), over: th.scrollWidth - th.clientWidth };
+      });
+      if (r.over > 1) throw new Error(`at ${viewport.width} the thesis runs ${r.over}px past its column`);
+      if (r.top < r.bottom + 0.05 * r.em) throw new Error(`at ${viewport.width} the cluster (top ${Math.round(r.top)}) sits on the thesis (bottom ${Math.round(r.bottom)})`);
+      if (r.top > r.bottom + 0.6 * r.em) throw new Error(`at ${viewport.width} the cluster (top ${Math.round(r.top)}) has lost the thesis (bottom ${Math.round(r.bottom)})`);
+    } finally { await close(); }
+  }
+}, p => p === '/works.html');
+
+test('front: on a laptop screen the open offer shows a case link above the fold', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  for (const viewport of [{ width: 1280, height: 720 }, { width: 1366, height: 768 }, { width: 1440, height: 780 }, { width: 1440, height: 900 }, { width: 1920, height: 1080 }]) {
+    const { p, close } = await frontPage(page, { reduce: true, viewport });
+    try {
+      const r = await p.evaluate(() => ({ link: document.querySelector('.offers .offer.on .proof a').getBoundingClientRect().bottom,
+        lead: Math.max(...[...document.querySelectorAll('.stage .gl:not(.off)')].map(g => g.getBoundingClientRect().width)) }));
+      if (r.link > viewport.height) throw new Error(`at ${viewport.width}x${viewport.height} the first case link ends at ${Math.round(r.link)}px`);
+      if (r.lead < 159) throw new Error(`at ${viewport.width}x${viewport.height} the lead glyph is ${Math.round(r.lead)}px`);
+    } finally { await close(); }
+  }
+}, p => p === '/works.html');
+
+test('front: on a phone the first offer is open with its case link on the first screen', async ({ page, vp }) => {
+  if (vp !== 'mobile') return;
+  const { p, close } = await frontPage(page, { viewport: { width: 390, height: 844 } });
+  try {
+    await p.waitForTimeout(1600);
+    const r = await p.evaluate(() => {
+      const o = document.querySelector('.offers .offer');
+      const a = o.querySelector('.proof a').getBoundingClientRect();
+      return { on: o.classList.contains('on'), linkBottom: a.bottom, h: innerHeight,
+        over: document.documentElement.scrollWidth - innerWidth,
+        room: [...o.querySelectorAll('.room .gl:not(.off)')].length, want: o.dataset.proof.split(' ').length,
+        email: getComputedStyle(document.querySelector('.site .short')).display !== 'none' && getComputedStyle(document.querySelector('.site .long')).display === 'none' };
+    });
+    if (!r.on) throw new Error('the first offer is closed');
+    if (r.linkBottom > r.h) throw new Error(`the first case link ends at ${Math.round(r.linkBottom)}px, below the ${r.h}px screen`);
+    if (r.room !== r.want) throw new Error(`${r.room} glyphs in the open offer, want ${r.want}`);
+    if (r.over > 0) throw new Error(`page overflows by ${r.over}px`);
+    if (!r.email) throw new Error('the header shows the full email address on a phone');
+    // A tap closes it, like any disclosure; another opens it again.
+    await p.locator('.offers .offer .kicker button').first().click();
+    if (await p.locator('.offers .offer.on').count()) throw new Error('a tap on the open offer did not close it');
+    const exp = await p.locator('.offers .offer .kicker button').first().getAttribute('aria-expanded');
+    if (exp !== 'false') throw new Error(`closed disclosure says aria-expanded="${exp}"`);
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('front: without JS every offer reads open with its proof links', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const { p, close } = await frontPage(page, { js: false });
+  try {
+    const r = await p.evaluate(() => [...document.querySelectorAll('.offers .offer')].map(o => ({
+      line: o.querySelector('.offer-line').getBoundingClientRect().height > 0 && getComputedStyle(o.querySelector('.detail')).visibility === 'visible',
+      links: o.querySelectorAll('.proof a').length, button: !!o.querySelector('button') })));
+    if (r.length < 4) throw new Error(`${r.length} offers`);
+    if (r.some(o => !o.line || !o.links)) throw new Error('an offer hides its line or links without JS');
+    if (r.some(o => o.button)) throw new Error('kickers render as buttons without JS');
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('front: if front.js never runs, every offer reads open once the page loads', async ({ page, vp }) => {
+  const viewport = vp === 'desktop' ? { width: 1440, height: 900 } : { width: 390, height: 844 };
+  const ctx = await page.context().browser().newContext({ viewport });
+  const p = await ctx.newPage();
+  try {
+    await p.route(/\/front\.js$/, r => r.abort());
+    await p.goto(page.url(), { waitUntil: 'load' });
+    await p.waitForTimeout(300);
+    const r = await p.evaluate(() => ({ js: document.documentElement.classList.contains('js'),
+      shown: [...document.querySelectorAll('.offers .proof a')].filter(a => { const cs = getComputedStyle(a.closest('.detail')); return cs.visibility === 'visible' && +cs.opacity > 0.9 && a.getBoundingClientRect().height > 0; }).length,
+      all: document.querySelectorAll('.offers .proof a').length }));
+    if (r.js || r.shown !== r.all) throw new Error(`${r.shown} of ${r.all} proof links reachable without front.js`);
+  } finally { await ctx.close(); }
+}, p => p === '/works.html');
+
+test('front: heading from a title to its proof link opens nothing on the way', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1920, height: 1080 }]) {
+    for (const steps of [18, 36]) {
+      const { p, close } = await frontPage(page, { viewport });
+      try {
+        await p.waitForTimeout(1200);
+        const t = await p.locator('.offers .offer').first().locator('.kicker .t').boundingBox();
+        const a = await p.locator('.offers .offer').first().locator('.proof a').first().boundingBox();
+        await p.mouse.move(t.x + 40, t.y + t.height / 2);
+        await p.waitForTimeout(200);
+        await p.mouse.move(a.x + a.width / 2, a.y + a.height / 2, { steps });
+        await p.waitForTimeout(400);
+        const r = await p.evaluate(([x, y]) => ({ open: [...document.querySelectorAll('.offers .offer')].findIndex(o => o.classList.contains('on')),
+          under: document.elementFromPoint(x, y)?.closest('a')?.getAttribute('href') }), [a.x + a.width / 2, a.y + a.height / 2]);
+        if (r.open !== 0 || r.under !== 'work/valora/') throw new Error(`at ${viewport.width}, ${steps} steps: offer ${r.open + 1} open, ${r.under} under the pointer`);
+      } finally { await close(); }
+    }
+  }
+}, p => p === '/works.html');
+
+test('front: Tab and Shift+Tab reach every proof link in order', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const { p, close } = await frontPage(page);
+  try {
+    await p.waitForTimeout(800);
+    await p.locator('.offers .offer .kicker button').first().focus();
+    const want = await p.$$eval('.offers .offer', os => os.flatMap(o => [o.querySelector('button').textContent.trim(), ...[...o.querySelectorAll('.proof a')].map(a => a.getAttribute('href'))]));
+    const seen = [];
+    const where = () => p.evaluate(() => { const e = document.activeElement; return e.tagName === 'BUTTON' ? e.textContent.trim() : e.getAttribute('href'); });
+    seen.push(await where());
+    for (let i = 1; i < want.length; i++) { await p.keyboard.press('Tab'); seen.push(await where()); }
+    if (seen.join('|') !== want.join('|')) throw new Error(`Tab order: ${seen.join(', ')}`);
+    const back = [];
+    for (let i = 1; i < want.length; i++) { await p.keyboard.press('Shift+Tab'); back.push(await where()); }
+    if (back.join('|') !== want.slice(0, -1).reverse().join('|')) throw new Error(`Shift+Tab order: ${back.join(', ')}`);
+    await p.waitForTimeout(700);
+    const shown = await p.evaluate(() => { const o = document.activeElement.closest('.offer'); return o.classList.contains('on') && +getComputedStyle(o.querySelector('.detail')).opacity > 0.9; });
+    if (!shown) throw new Error('the focused offer is not the open one');
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('front: the unattended tour never moves a focused reader', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const { p, close } = await frontPage(page);
+  try {
+    await p.locator('.offers .offer').first().locator('.proof a').first().evaluate(a => a.focus());
+    await p.waitForTimeout(8500);
+    const r = await p.evaluate(() => ({ open: [...document.querySelectorAll('.offers .offer')].findIndex(o => o.classList.contains('on')),
+      focus: document.activeElement.getAttribute('href') }));
+    if (r.open !== 0 || r.focus !== 'work/valora/') throw new Error(`offer ${r.open + 1} open, focus on ${r.focus}`);
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('front: every visible word is 15px or larger, none in caps', async ({ page }) => {
+  const bad = await page.evaluate(() => [...document.querySelectorAll('.front *, [aria-labelledby="g-how"] *, footer.sig *')]
+    .filter(e => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden' && !e.closest('.sr') && [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()))
+    .filter(e => { const cs = getComputedStyle(e); return parseFloat(cs.fontSize) < 15 || cs.textTransform === 'uppercase'; })
+    .map(e => `${e.textContent.trim().slice(0, 24)} (${getComputedStyle(e).fontSize})`));
+  if (bad.length) throw new Error(`${bad.length} small or caps labels: ${bad.slice(0, 3).join(' | ')}`);
+}, p => p === '/works.html');
+
+test('front: closed offers read as text, not disabled', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const r = await page.evaluate(() => {
+    const lum = c => { const [r, g, b] = c.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+    const b = document.querySelector('.offers .offer:not(.on) .kicker button');
+    const fg = lum(getComputedStyle(b).color), bg = lum(getComputedStyle(document.body).backgroundColor);
+    return { ratio: (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05), weight: +getComputedStyle(b).fontWeight };
+  });
+  if (r.ratio < 4.5) throw new Error(`closed offers contrast ${r.ratio.toFixed(2)}:1`);
+  if (r.weight < 600) throw new Error(`closed offers set at ${r.weight}`);
+}, p => p === '/works.html');
+
+// ── Signature footer (foot.js) ────────────────────────────────
+// A fresh page scrolled to the end, the frame settled.
+async function sigPage(page, opts = {}) {
+  const { p, close } = await frontPage(page, opts);
+  if (opts.js !== false) {
+    await p.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await p.waitForTimeout(opts.reduce ? 400 : 3200);
+  }
+  return { p, close };
+}
+
+// Opaque glyph pixels (each canvas mapped through its link's transform) inside the poster's text boxes.
+const sigOverlap = p => p.evaluate(() => {
+  const fr = document.querySelector('.sig-ring').getBoundingClientRect(), rects = [];
+  for (const el of document.querySelectorAll('.sig-ask, .sig-mail, .sig-more, .sig-avail')) {
+    const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), r = document.createRange();
+    let n; while ((n = w.nextNode())) { if (!n.nodeValue.trim()) continue; r.selectNodeContents(n); rects.push(...r.getClientRects()); }
+  }
+  const hits = [], hidden = [];
+  for (const a of document.querySelectorAll('.sig-g')) {
+    const cv = a.querySelector('canvas'), M = new DOMMatrix(getComputedStyle(a).transform);
+    if (!cv || !cv.width || Math.hypot(M.a, M.b) < 0.5) { hidden.push(a.dataset.name); continue; }
+    const box = parseFloat(a.style.width), n = cv.width;
+    const T = new DOMMatrix().translate(fr.left + box / 2, fr.top + box / 2).multiply(M).translate(-box / 2, -box / 2);
+    const px = cv.getContext('2d').getImageData(0, 0, n, n).data;
+    let k = 0;
+    for (let y = 0; y < n; y += 2) for (let x = 0; x < n; x += 2) {
+      if (px[(y * n + x) * 4 + 3] < 128) continue;
+      const q = T.transformPoint(new DOMPoint(-0.3 * box + (x + 0.5) / n * 1.6 * box, -0.3 * box + (y + 0.5) / n * 1.6 * box));
+      if (rects.some(r => q.x > r.left && q.x < r.right && q.y > r.top && q.y < r.bottom)) k++;
+    }
+    if (k) hits.push(`${a.dataset.name} (${k} px)`);
+  }
+  return { hits, hidden };
+});
+
+test('signature: the hiring ask, the underlined address, LinkedIn and GitHub', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const { p, close } = await sigPage(page);
+  try {
+    const r = await p.evaluate(() => {
+      const f = document.querySelector('footer.sig'), accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      const probe = document.createElement('i'); probe.style.color = accent; f.append(probe);
+      const ac = getComputedStyle(probe).color; probe.remove();
+      return { ask: f.querySelector('.sig-ask').textContent.replace(/ /g, ' ').trim(),
+        talk: f.querySelector('.sig-ask a')?.getAttribute('href'),
+        mail: f.querySelector('.sig-mail')?.getAttribute('href'), mailText: f.querySelector('.sig-mail')?.textContent,
+        more: [...f.querySelectorAll('.sig-more a')].map(a => a.getAttribute('href')),
+        accented: [...f.querySelectorAll('.sig-poster *')].filter(e => getComputedStyle(e).textDecorationLine.includes('underline') && getComputedStyle(e).textDecorationColor === ac).map(e => e.className || e.tagName),
+        skip: getComputedStyle(f.querySelector('.sig-mail')).textDecorationSkipInk };
+    });
+    if (r.ask !== CLOSER) throw new Error(`ask reads "${r.ask}"`);
+    if (r.talk !== 'mailto:mateo@yadarola.com.ar') throw new Error(`Let's talk opens ${r.talk}`);
+    if (r.mail !== 'mailto:mateo@yadarola.com.ar' || r.mailText !== 'mateo@yadarola.com.ar') throw new Error(`address link: ${r.mail} "${r.mailText}"`);
+    if (r.more.join() !== 'https://www.linkedin.com/in/myadarola/,https://github.com/sryo') throw new Error(`links: ${r.more.join(', ')}`);
+    if (!r.accented.includes('sig-mail')) throw new Error('the address is not underlined');
+    if (r.skip !== 'none') throw new Error('the address underline skips ink (leaves a dot under the @)');
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('signature: at rest every glyph is out and none touches the poster text', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1920, height: 1080 }, { width: 390, height: 844 }]) {
+    const { p, close } = await sigPage(page, { viewport });
+    try {
+      const r = await sigOverlap(p);
+      if (r.hidden.length) throw new Error(`at ${viewport.width}, ${r.hidden.length} glyphs never arrived: ${r.hidden.slice(0, 3).join(', ')}`);
+      if (r.hits.length) throw new Error(`at ${viewport.width}, glyphs rest on the text: ${r.hits.join(', ')}`);
+    } finally { await close(); }
+  }
+}, p => p === '/works.html');
+
+test('signature: the poster fits one screen at 1440x900', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const { p, close } = await sigPage(page);
+  try {
+    const r = await p.evaluate(() => { const b = document.querySelector('.sig-poster').getBoundingClientRect(); return { t: b.top, b: b.bottom }; });
+    if (r.t < 0 || r.b > 900) throw new Error(`poster spans ${Math.round(r.t)} to ${Math.round(r.b)}px`);
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('signature: the frame loop sleeps once the glyphs settle', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const { p, close } = await sigPage(page);
+  try {
+    const f = await frontFrames(p, 3000);
+    if (f.length > 4) throw new Error(`${f.length} frames in 3s at rest`);
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('signature: reduced motion shows the still frame and draws no frames', async ({ page, vp }) => {
+  const viewport = vp === 'desktop' ? { width: 1440, height: 900 } : { width: 390, height: 844 };
+  const { p, close } = await sigPage(page, { reduce: true, viewport });
+  try {
+    const f = await frontFrames(p, 1500);
+    const r = await sigOverlap(p);
+    if (f.length > 2) throw new Error(`${f.length} frames in 1.5s`);
+    if (r.hidden.length) throw new Error(`${r.hidden.length} glyphs not drawn: ${r.hidden.slice(0, 3).join(', ')}`);
+    if (r.hits.length) throw new Error(`glyphs rest on the text: ${r.hits.join(', ')}`);
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('signature: on a phone nothing scrolls sideways and side glyphs stay 60% on screen', async ({ page, vp }) => {
+  if (vp !== 'mobile') return;
+  const { p, close } = await sigPage(page, { viewport: { width: 390, height: 844 } });
+  try {
+    const r = await p.evaluate(() => ({ over: document.documentElement.scrollWidth - innerWidth,
+      cut: [...document.querySelectorAll('.sig-g canvas')].map(c => {
+        // The drawn ink's horizontal extent: opaque columns of the canvas, through the link's transform.
+        const a = c.parentNode, M = new DOMMatrix(getComputedStyle(a).transform), box = parseFloat(a.style.width), n = c.width;
+        const fr = document.querySelector('.sig-ring').getBoundingClientRect();
+        const T = new DOMMatrix().translate(fr.left + box / 2, fr.top + box / 2).multiply(M).translate(-box / 2, -box / 2);
+        const px = c.getContext('2d').getImageData(0, 0, n, n).data;
+        let l = Infinity, rr = -Infinity;
+        for (let y = 0; y < n; y += 3) for (let x = 0; x < n; x += 3) {
+          if (px[(y * n + x) * 4 + 3] < 128) continue;
+          const q = T.transformPoint(new DOMPoint(-0.3 * box + x / n * 1.6 * box, -0.3 * box + y / n * 1.6 * box));
+          l = Math.min(l, q.x); rr = Math.max(rr, q.x);
+        }
+        const on = Math.min(rr, innerWidth) - Math.max(l, 0);
+        return { name: a.dataset.name, share: on / (rr - l) };
+      }).filter(g => g.share < 0.55) }));
+    if (r.over > 0) throw new Error(`page overflows by ${r.over}px`);
+    if (r.cut.length) throw new Error(`glyphs mostly off screen: ${r.cut.map(g => `${g.name} ${Math.round(g.share * 100)}%`).join(', ')}`);
+  } finally { await close(); }
+}, p => p === '/works.html');
+
+test('signature: without JS the glyphs read as rows of links under the poster', async ({ page, vp }) => {
+  if (vp !== 'desktop') return;
+  const { p, close } = await sigPage(page, { js: false });
+  try {
+    const r = await p.evaluate(() => {
+      const poster = document.querySelector('.sig-poster').getBoundingClientRect();
+      const g = [...document.querySelectorAll('.sig-g')].map(a => a.getBoundingClientRect());
+      return { n: g.length, below: g.every(b => b.top >= poster.bottom && b.width >= 64) };
+    });
+    if (r.n < 8 || !r.below) throw new Error(`${r.n} glyphs, all under the poster: ${r.below}`);
+  } finally { await close(); }
 }, p => p === '/works.html');
 
 test('CV_PENDING names only known cases', async () => {
@@ -660,6 +1228,7 @@ test('Decisions are named in readable h3 heads', async ({ page }) => {
 }, CASE);
 
 const DECISIONS = {
+  lede: ['People, not requests', 'The sentence comes first', 'A texture as well as a color'],
   bancor: ['Logical accounts instead of paperwork', 'Listening first, before the redesign', 'Peperina: the design system'],
   veng: ['Familiar e-commerce patterns for unfamiliar SAR imagery'],
   hometown: ['The platform stays in the loop'],
@@ -858,19 +1427,19 @@ test('side pages carry no CTA row', async ({ page }) => {
   if (n) throw new Error(`${n} .case-cta on a side page`);
 }, SIDE);
 
-test('screens are framed, captioned figures', async ({ page }) => {
+test('screens are framed, captioned figures', async ({ page, path }) => {
   const figs = await page.$$eval('main figure.screen', fs => fs.map(f => {
     const i = f.querySelector('img'), cs = i && getComputedStyle(i);
     return { alt: i?.getAttribute('alt')?.trim(), w: i?.getAttribute('width'), h: i?.getAttribute('height'),
       cap: f.querySelector('figcaption')?.textContent.trim(), border: cs && parseFloat(cs.borderTopWidth),
       portrait: f.classList.contains('portrait'), shown: i?.getBoundingClientRect().width, natural: i?.naturalWidth };
   }));
-  if (figs.length > 3) throw new Error(`${figs.length} screens, max 3`);
+  const max = CLIENT_SCREENS.includes(slugOf(path)) ? 5 : 3;
+  if (figs.length > max) throw new Error(`${figs.length} screens, max ${max}`);
   for (const f of figs) {
     if (!f.alt) throw new Error('screen without alt');
-    if (!f.cap) throw new Error(`"${f.alt}" has no caption`);
     if (!f.w || !f.h) throw new Error(`"${f.alt}" has no width/height`);
-    if (f.border !== 1) throw new Error(`"${f.alt}" frame is ${f.border}px, want a 1px hairline`);
+    if (f.border) throw new Error(`"${f.alt}" has a ${f.border}px outline, want none`);
     if (f.portrait && f.shown > 320.5) throw new Error(`portrait "${f.alt}" shown ${f.shown}px wide, max 320`);
     if (!f.natural) throw new Error(`"${f.alt}" did not load`);
   }
@@ -1005,7 +1574,7 @@ test('wide screens break out of the column and zoom on click', async ({ page, vp
   if (await page.$('.zoom')) throw new Error('zoom still open after Escape');
 }, p => p === '/work/continental/');
 
-const CLIENT_SCREENS = ['bancor', 'continental', 'ey-helix', 'hometown', 'omsnic', 'topicflower', 'valora'];
+const CLIENT_SCREENS = ['bancor', 'continental', 'ey-helix', 'hometown', 'infoxel', 'lavoz', 'lede', 'omsnic', 'topicflower', 'valora', 'veng'];
 test('client case screens sit under the decision they show', async ({ page, path }) => {
   const figs = await page.$$eval('main figure.screen', fs => fs.map(f => {
     const part = f.closest('section.part');
@@ -1020,7 +1589,7 @@ test('client case screens sit under the decision they show', async ({ page, path
     return;
   }
   const bad = [];
-  if (figs.length < 2 || figs.length > 3) bad.push(`${figs.length} screens, want 2 to 3`);
+  if (figs.length < 2 || figs.length > 5) bad.push(`${figs.length} screens, want 2 to 5`);
   for (const f of figs) {
     if (f.h2 !== 'Decisions' || !f.h3) bad.push(`"${f.alt}" is not under a decision (h2 ${f.h2}, h3 ${f.h3})`);
     if (f.alt.length > 125) bad.push(`alt is ${f.alt.length} characters, max 125: ${f.alt}`);
@@ -1028,8 +1597,8 @@ test('client case screens sit under the decision they show', async ({ page, path
     if (/\u2014/.test(f.cap + f.alt)) bad.push(`em dash in: ${f.cap}`);
     if (/\.$/.test(f.cap)) bad.push(`caption ends with a period: ${f.cap}`);
   }
-  const notes = figs.filter(f => /blurred/i.test(f.cap)).length;
-  if (notes > 1) bad.push(`${notes} captions mention blurring, max 1`);
+  const notes = figs.filter(f => /blurred|for the portfolio/i.test(f.cap)).length;
+  if (notes) bad.push(`${notes} captions say the screen was blurred or arranged: say neither`);
   if (bad.length) throw new Error(bad.join('; '));
 }, CASE);
 
@@ -1077,7 +1646,7 @@ test('diagram styles: ink, Inter, 1.5px hairlines, knockout, no page overflow', 
 // project has a UI; a diagram is optional and, when present, captioned.
 // SCREENS_PENDING holds projects with a UI whose real screens aren't
 // captured yet; a slug leaves it when its screens land (red → green).
-const SCREENS_PENDING = ['airnod', 'figma-plugins', 'fin'];
+const SCREENS_PENDING = ['airnod', 'figma-cdp', 'figma-plugins', 'subi'];
 test('side project shows its screens', async ({ page, path }) => {
   const slug = slugOf(path);
   const r = await page.evaluate(() => ({
@@ -1098,132 +1667,6 @@ test('SCREENS_PENDING names only real side projects', async ({ vp }) => {
   const unknown = SCREENS_PENDING.filter(s => !SIDE_SLUGS.includes(s));
   if (unknown.length) throw new Error(`unknown slugs: ${unknown.join(', ')}`);
 }, p => p === '/works.html');
-
-// ── Toys ───────────────────────
-// A TOY: line mounts toys/<name>.js inside its diagram figure. The SVG
-// stays in the figure (hidden from sight, kept for screen readers) and is
-// what no-JS and reduced-motion visitors see. A toy is captioned an
-// illustration and rests on its end state.
-async function toyState(page, name) {
-  return page.$eval(`figure.diagram[data-toy="${name}"]`, f => {
-    const svg = f.querySelector(':scope > svg'), toy = f.querySelector('.toy');
-    const box = e => e ? e.getBoundingClientRect() : null;
-    return { svg: !!svg, svgShown: (box(svg)?.width || 0) > 100, toy: !!toy, toyShown: (box(toy)?.width || 0) > 100,
-      note: toy?.querySelector('.toy-note')?.textContent.trim(), cap: f.querySelector('figcaption')?.textContent.trim(),
-      state: toy?.dataset.state, shown: Number(toy?.dataset.rows || 0),
-      buttons: [...(toy?.querySelectorAll('button') || [])].map(b => ({ text: b.innerText.trim(), pressed: b.getAttribute('aria-pressed'), h: box(b).height })) };
-  });
-}
-
-async function reducedMotionProblems(page, name) {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.reload();
-  try {
-    const r = await toyState(page, name);
-    const bad = [];
-    if (r.toy) bad.push('toy mounted under reduced motion');
-    if (!r.svgShown) bad.push('diagram hidden under reduced motion');
-    return bad;
-  } finally {
-    // Reload restores the scroll position: leave the page at the top.
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.reload();
-  }
-}
-
-test('Airy / Dense toy flips between the first design and the dense one', async ({ page, vp }) => {
-  const settle = () => page.waitForTimeout(1400);
-  await page.locator('figure.diagram[data-toy="airy-dense"]').scrollIntoViewIfNeeded();
-  let r = await toyState(page, 'airy-dense');
-  if (!r.toy || !r.toyShown) throw new Error('toy not mounted');
-  if (!r.svg || r.svgShown) throw new Error('diagram SVG missing or still shown beside the toy');
-  if (r.note !== 'Illustration') throw new Error(`toy note reads "${r.note}"`);
-  if (r.state !== 'dense') throw new Error(`toy rests on "${r.state}", want dense`);
-  const want = vp === 'mobile' ? ['Before', 'After'] : ['First design', 'After agent research'];
-  if (r.buttons.map(b => b.text).join('|') !== want.join('|')) throw new Error(`buttons read [${r.buttons.map(b => b.text).join(', ')}]`);
-  if (r.buttons.map(b => b.pressed).join() !== 'false,true') throw new Error('After is not the pressed button');
-  if (vp === 'mobile' && r.buttons.some(b => b.h < 44)) throw new Error('switch buttons under 44px on a phone');
-  const dense = r.shown;
-  await page.locator('figure.diagram[data-toy="airy-dense"] .toy button').first().click();
-  await settle();
-  r = await toyState(page, 'airy-dense');
-  if (r.state !== 'airy' || r.buttons.map(b => b.pressed).join() !== 'true,false') throw new Error('first click did not switch to the first design');
-  if (!(r.shown < dense)) throw new Error(`first design shows ${r.shown} rows, dense shows ${dense}`);
-  await page.locator('figure.diagram[data-toy="airy-dense"] .toy button').last().click();
-  await settle();
-  r = await toyState(page, 'airy-dense');
-  if (r.state !== 'dense' || r.shown !== dense) throw new Error(`back on dense shows ${r.shown} rows, want ${dense}`);
-  const accent = await page.evaluate(() => {
-    const d = document.createElement('i'); d.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent');
-    document.body.append(d); const c = getComputedStyle(d).color; d.remove();
-    const thumb = document.querySelector('figure.diagram[data-toy="airy-dense"] .toy [data-live]');
-    return { accent: c, thumb: thumb && getComputedStyle(thumb).fill };
-  });
-  if (accent.thumb !== accent.accent) throw new Error(`scroll thumb is ${accent.thumb}, accent is ${accent.accent}`);
-}, p => p === '/work/continental/');
-
-test('Airy / Dense falls back to the diagram under reduced motion', async ({ page, vp }) => {
-  if (vp !== 'desktop') return;
-  const bad = await reducedMotionProblems(page, 'airy-dense');
-  if (bad.length) throw new Error(bad.join('; '));
-}, p => p === '/work/continental/');
-
-// The approval gate, played: the AI's suggestions land in four generic
-// fields, and Commit stays shut until each is confirmed or overridden.
-async function gateState(page) {
-  return page.$eval('figure.diagram[data-toy="review-gate"]', f => {
-    const toy = f.querySelector('.toy');
-    const commit = toy?.querySelector('.tr-commit');
-    return { toy: !!toy, svgShown: (f.querySelector(':scope > svg')?.getBoundingClientRect().width || 0) > 100,
-      note: toy?.querySelector('.toy-note')?.textContent.trim(), state: toy?.dataset.state,
-      names: [...(toy?.querySelectorAll('.tr-name') || [])].map(n => n.textContent.trim()),
-      fields: [...(toy?.querySelectorAll('.tr-field') || [])].map(l => l.dataset.state),
-      words: [...(toy?.querySelectorAll('.tr-state') || [])].map(w => w.textContent.trim()),
-      count: toy?.querySelector('.tr-count')?.textContent.trim(),
-      disabled: commit?.getAttribute('aria-disabled'), committed: Number(toy?.dataset.committed || 0),
-      small: [...(toy?.querySelectorAll('button') || [])].filter(b => b.getBoundingClientRect().height < 44).length };
-  });
-}
-
-test('Valora toy: nothing commits until every figure is reviewed', async ({ page, vp }) => {
-  const fig = page.locator('figure.diagram[data-toy="review-gate"]');
-  await fig.scrollIntoViewIfNeeded();
-  await page.waitForFunction(() => document.querySelector('figure.diagram[data-toy="review-gate"] .toy')?.dataset.state === 'review', null, { timeout: 6000 })
-    .catch(() => {});
-  let r = await gateState(page);
-  if (!r.toy) throw new Error('toy not mounted');
-  if (r.svgShown) throw new Error('diagram SVG still shown beside the toy');
-  if (r.note !== 'Illustration') throw new Error(`toy note reads "${r.note}"`);
-  if (r.names.join() !== 'Figure 1,Figure 2,Figure 3,Figure 4') throw new Error(`field names [${r.names.join(', ')}]`);
-  if (r.state !== 'review' || r.fields.some(s => s !== 'suggested')) throw new Error(`after the scan: ${r.state}, fields [${r.fields.join(', ')}]`);
-  if (r.disabled !== 'true' || r.count !== '0 of 4 reviewed') throw new Error(`commit disabled=${r.disabled}, count "${r.count}"`);
-  if (vp === 'mobile' && r.small) throw new Error(`${r.small} buttons under 44px on a phone`);
-  const field = n => fig.locator('.tr-field').nth(n);
-  await field(0).getByRole('button', { name: /^Confirm/ }).click();
-  // aria-disabled keeps Commit focusable; Playwright won't press it unforced.
-  await fig.locator('.tr-commit').click({ force: true });
-  r = await gateState(page);
-  if (r.committed || r.state !== 'review') throw new Error('committed with figures unreviewed');
-  if (r.fields[0] !== 'confirmed' || r.words[0] !== 'Confirmed' || r.count !== '1 of 4 reviewed') throw new Error(`after confirm: ${r.fields[0]}, "${r.words[0]}", "${r.count}"`);
-  await field(1).getByRole('button', { name: /^Override/ }).click();
-  await page.waitForTimeout(1200);
-  await field(2).getByRole('button', { name: /^Confirm/ }).click();
-  await field(3).getByRole('button', { name: /^Confirm/ }).click();
-  r = await gateState(page);
-  if (r.fields[1] !== 'overridden' || r.words[1] !== 'Overridden') throw new Error(`after override: ${r.fields[1]}, "${r.words[1]}"`);
-  if (r.disabled !== 'false' || r.count !== '4 of 4 reviewed') throw new Error(`all reviewed, commit disabled=${r.disabled}, count "${r.count}"`);
-  await fig.locator('.tr-commit').click();
-  await page.waitForTimeout(1200);
-  r = await gateState(page);
-  if (r.state !== 'committed' || r.committed !== 4) throw new Error(`after commit: ${r.state}, ${r.committed} committed`);
-}, p => p === '/work/valora/');
-
-test('Valora toy falls back to the diagram under reduced motion', async ({ page, vp }) => {
-  if (vp !== 'desktop') return;
-  const bad = await reducedMotionProblems(page, 'review-gate');
-  if (bad.length) throw new Error(bad.join('; '));
-}, p => p === '/work/valora/');
 
 // ── Motion (motion.js) ─────────────────────────────────────
 // Parity pull: near the pointer, the spec glyph's shapes drift apart on a
@@ -1340,67 +1783,6 @@ test('hovering ledger rows draws no rope', async ({ page, vp }) => {
   await rows.nth(3).hover(); await page.waitForTimeout(450);
   if (await page.$('svg.tether')) throw new Error('a tether rope is drawn');
 }, p => p === '/works.html');
-
-// Flow pulse: when a diagram comes into view, one accent pulse leaves its
-// entry node(s), runs the lines, splits at forks and flashes each box it
-// reaches, then the diagram rests in black. Hovering or tapping a node
-// sends another. Drawn on a canvas over the SVG, which stays untouched.
-async function pulsePixels(page) {
-  return page.evaluate(() => {
-    const f = document.querySelector('main figure.diagram:not([data-toy])');
-    const c = f.querySelector('canvas.pulse');
-    const d = document.createElement('i'); d.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent');
-    document.body.append(d); const [r, g, b] = getComputedStyle(d).color.match(/\d+/g).map(Number); d.remove();
-    if (!c) return { canvas: false, svgs: f.querySelectorAll('svg').length };
-    const px = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
-    let any = 0, accent = 0;
-    for (let i = 0; i < px.length; i += 4) {
-      if (!px[i + 3]) continue;
-      any++;
-      if (px[i + 3] > 128 && Math.abs(px[i] - r) + Math.abs(px[i + 1] - g) + Math.abs(px[i + 2] - b) < 60) accent++;
-    }
-    const cb = c.getBoundingClientRect(), sb = f.querySelector('svg').getBoundingClientRect();
-    const over = Math.abs(cb.left - sb.left) < 1 && Math.abs(cb.top - sb.top) < 1 && Math.abs(cb.width - sb.width) < 1;
-    return { canvas: true, any, accent: over ? accent : 0, svgs: f.querySelectorAll('svg').length };
-  });
-}
-
-test('flow pulse runs a diagram once in view, and again from a hovered node', async ({ page, vp }) => {
-  if (vp !== 'desktop') return;
-  const fig = page.locator('main figure.diagram:not([data-toy])').first();
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await page.waitForTimeout(100);
-  await fig.evaluate(f => f.scrollIntoView({ block: 'center' }));
-  let best = 0;
-  for (let i = 0; i < 12 && best < 20; i++) { await page.waitForTimeout(100); best = Math.max(best, (await pulsePixels(page)).accent || 0); }
-  if (best < 20) throw new Error('no accent pulse after the diagram came into view');
-  await page.waitForTimeout(4500);
-  let r = await pulsePixels(page);
-  if (r.any) throw new Error(`${r.any} pixels left on the canvas at rest`);
-  if (r.svgs !== 1) throw new Error(`${r.svgs} svgs in the figure`);
-  const node = await fig.locator('svg rect, svg circle').first().boundingBox();
-  await page.mouse.move(node.x + node.width / 2, node.y + node.height / 2, { steps: 3 });
-  best = 0;
-  for (let i = 0; i < 8 && best < 20; i++) { await page.waitForTimeout(100); best = Math.max(best, (await pulsePixels(page)).accent || 0); }
-  await page.mouse.move(2, 2);
-  if (best < 20) throw new Error('hovering a node sent no pulse');
-}, p => p === '/work/continental/' || p === '/work/murmur/');
-
-test('flow pulse stays off under reduced motion', async ({ page, vp }) => {
-  if (vp !== 'desktop') return;
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.reload();
-  try {
-    await page.locator('main figure.diagram:not([data-toy])').first().scrollIntoViewIfNeeded();
-    await page.waitForTimeout(600);
-    const r = await pulsePixels(page);
-    if (r.canvas) throw new Error('pulse canvas under reduced motion');
-  } finally {
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.reload();
-  }
-}, p => p === '/work/murmur/');
 
 // ── Runner ────────────────────────────────────────────────────
 // Serve over HTTP like GitHub Pages; file:// blocks font loading.

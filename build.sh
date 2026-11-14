@@ -52,9 +52,11 @@
 #      *italic* availability line, then '## What I can do' with one '### '
 #      kicker per offer, its line, and 'PROOF: slug, slug' naming the cases
 #      or side projects that prove it (an unknown slug stops the build),
-#      '## How I work' with one paragraph, and a 'CTA:' line that heads the
-#      contact footer. Format in full above front_part. Without it, the
-#      profile's first paragraph is the h1.
+#      '## How I work' with one paragraph, and a 'CTA:' line: the ask of the
+#      signature footer. Format in full above front_part. Without it, the
+#      profile's first paragraph is the h1. With offers, works.html links
+#      'front.js' (deferred, when present), which animates the proof glyphs;
+#      with front.md and a profile, 'foot.js', which animates the signature.
 #    - To add a video or other embed, include a line starting with 'EMBED:' in your .md file.
 #    - A lone '![alt](screen.png "caption")' line is a captioned screen, and a
 #      'DIAGRAM: diagram.svg "caption"' line inlines a diagram; both resolve
@@ -67,12 +69,14 @@
 #    - To use the self-destruct option (if enabled in config), run: ./build.sh -d
 
 # 4. View your portfolio:
-#    - 'works.html' opens with front.md (headline, scope, thesis,
-#      availability, then What I can do), then the ledger: featured client
+#    - 'works.html' opens with front.md (headline and site links, the
+#      thesis, then What I can do), then the ledger: featured client
 #      cases in featured: order,
-#      every other client case in a compact "Also" index, then side projects.
-#      Index and side projects run newest first. With no case featured,
-#      client work is one dated ledger.
+#      every other client case as one "Also" sentence, then side projects.
+#      Also and side projects run newest first. With no case featured,
+#      client work is one dated ledger. How I work (its line as the heading,
+#      front.md's scope beside it) and the signature (the CTA ask, email,
+#      links, availability and every case glyph) close the page.
 #    - 'work/<slug>/index.html' is one page per case study (and the About page),
 #      with prev/next in ledger order. The build rewrites 'work/' every run.
 
@@ -316,9 +320,9 @@ image_size() {
 }
 
 # A lone "![alt](src "caption")" line: a screen, rendered as a figure with
-# its pixel size (so the page doesn't jump) and a caption (the title, else
-# the alt). A relative src resolves from the markdown file's folder. Warns
-# on an empty alt, a missing file, a file over 250KB and a fourth screen
+# its pixel size (so the page doesn't jump) and, when the line has a title,
+# a caption. A relative src resolves from the markdown file's folder. Warns
+# on an empty alt, a missing file, a file over 250KB and a screen past the cap
 #. Reads render_markdown_content's locals
 # (file, mode, screens: already counting this one), since it runs in $().
 render_screen() {
@@ -331,7 +335,10 @@ render_screen() {
     esac
     if $warn; then
         [ -n "$alt" ] || echo "warn: $file: image without alt ($src)" >&2
-        [ "$screens" = 4 ] && echo "warn: $file: more than 3 screens" >&2
+        # Side projects (contents/*/items/) take 3 screens, client cases 5.
+        local max=5
+        [[ "$file" == */items/* ]] && max=3
+        [ "$screens" = $((max + 1)) ] && echo "warn: $file: more than $max screens" >&2
         if [[ "$path" != *://* ]]; then
             if [ -f "$path" ]; then
                 bytes=$(wc -c < "$path")
@@ -346,9 +353,11 @@ render_screen() {
     # Before/after composites are exported at real size, wider than any
     # single screen: they break out of the text column (styles.css).
     [ -n "$w" ] && [ "$w" -gt 1600 ] && cls="screen wide"
-    printf '<figure class="%s"><img src="%s" alt="%s" loading="lazy"%s><figcaption>%s</figcaption></figure>' \
+    # A caption only when the line gives a title: a screen that explains
+    # itself goes without one.
+    printf '<figure class="%s"><img src="%s" alt="%s" loading="lazy"%s>%s</figure>' \
         "$cls" "$(html_escape "$src")" "$(html_escape "$alt")" "${w:+ width=\"$w\" height=\"$h\"}" \
-        "$(html_escape "${caption:-$alt}")"
+        "${caption:+<figcaption>$(html_escape "$caption")</figcaption>}"
 }
 
 # A "DIAGRAM: file.svg "caption"" line: the SVG inlined (so it inherits
@@ -868,6 +877,18 @@ sort_folders() {
     done | LC_ALL=C sort -t'|' -k1,1r -k2,2n -k3,3 | cut -d'|' -f4-
 }
 
+# Side projects: the ones given an order: come first, in that order; the
+# rest follow newest first, then by slug.
+sort_items() {
+    local folder
+    for folder in "$@"; do
+        folder=${folder%/}
+        [ -f "$folder/_.md" ] || continue
+        load_fm "$folder"
+        printf '%s|%s|%s|%s\n' "$fm_order" "$fm_date" "$(basename "$folder")" "$folder"
+    done | LC_ALL=C sort -t'|' -k1,1n -k2,2r -k3,3 | cut -d'|' -f4-
+}
+
 # The glyph cell: the folder's image, or, when it has none, the label's
 # first letter set in type so the column never has holes. An optional
 # view-transition name lets the glyph fly from its row to its case page.
@@ -929,14 +950,12 @@ derive_medium() {
 
 # One <li> in the ledger: Year · Glyph · Name · Line · Role (or Medium).
 # A year equal to the row above's gets class="repeat" (hidden by CSS).
-# A sixth argument "brief" leaves the line out (the Also index).
 render_ledger_row() {
     local folder=$1
     local href=$2
     local last=$3
     local prev_year=$4
     local vt=$5
-    local brief=${6:-}
     local slug image_file line year repeat=""
     slug=$(basename "$folder")
     image_file=$(find_item_image "$folder")
@@ -951,13 +970,13 @@ render_ledger_row() {
     printf '<time class="yr" datetime="%s">%s</time>' "$fm_date" "$year"
     render_glyph "$image_file" "$fm_label" "$vt"
     printf '<span class="name">%s</span>' "$(html_escape "$fm_label")"
-    [ "$brief" = brief ] || printf '<span class="line">%s</span>' "$(html_escape "$line")"
+    printf '<span class="line">%s</span>' "$(html_escape "$line")"
     printf '<span class="role">%s</span>' "$(html_escape "$last")"
     printf '</a></li>\n'
 }
 
-# One featured <li>: Glyph · Name · Line (the summary), then role and
-# year as small meta. No year column: featured rows run by strength.
+# One featured <li>: Glyph · Name · Line (the summary). No role, no year:
+# featured rows run by strength, and the case page holds the facts.
 render_featured_row() {
     local folder=$1 slug image_file
     slug=$(basename "$folder")
@@ -968,8 +987,6 @@ render_featured_row() {
     render_glyph "$image_file" "$fm_label" "g-$slug"
     printf '<span class="name">%s</span>' "$(html_escape "$fm_label")"
     printf '<span class="line">%s</span>' "$(html_escape "${fm_summary:-$(derive_line "$fm_title")}")"
-    printf '<span class="meta"><span class="role">%s</span> &middot; <time datetime="%s">%s</time></span>' \
-        "$(html_escape "$fm_role")" "$fm_date" "${fm_date%%-*}"
     printf '</a></li>\n'
 }
 
@@ -984,6 +1001,63 @@ render_featured() {
     done
     echo '</ol>'
     echo '</section>'
+}
+
+# The Also glyph, inline so it takes the text colour and script.js can
+# fit its box to the ink: the SVG's inner markup under its own viewBox,
+# black fills as currentColor (colour glyphs keep theirs). A raster glyph
+# stays an <img>; no image gets the label's initial.
+render_also_glyph() {
+    local image_file=$1 label=$2 vt=$3 svg vb inner
+    if [[ "$image_file" == *.svg ]] && [ -f "$image_file" ]; then
+        svg=$(tr -d '\n' < "$image_file")
+        vb=$(printf '%s' "${svg%%>*}" | grep -o 'viewBox="[^"]*"' || true)
+        inner=${svg#*<svg}
+        inner=${inner#*>}
+        inner=${inner%</svg>*}
+        inner=${inner// style=\"mix-blend-mode:multiply\"/}
+        [ "$fm_glyph" = colour ] || inner=$(printf '%s' "$inner" | sed -E 's/fill="(black|#000|#000000)"/fill="currentColor"/g')
+        printf '<span class="ag" aria-hidden="true"><svg %s style="view-transition-name: %s">%s</svg></span>' \
+            "${vb:-viewBox=\"0 0 100 100\"}" "$vt" "$inner"
+    elif [ -n "$image_file" ] && [ -f "$image_file" ]; then
+        printf '<span class="ag" aria-hidden="true" style="view-transition-name: %s">%s</span>' "$vt" "$(insert_image "$image_file" "" | tr -d '\n')"
+    else
+        printf '<span class="ag initial" aria-hidden="true" style="view-transition-name: %s">%s</span>' \
+            "$vt" "$(html_escape "$(printf '%s' "${label:0:1}" | tr '[:lower:]' '[:upper:]')")"
+    fi
+}
+
+# Also: the other client cases as one sentence, newest first. Each item is
+# glyph, name and year in one link to its case, with the role inside the
+# link for screen readers (never shown on screen).
+# Commas between items, "and" before the last, a full stop after it.
+render_also() {
+    local n=$# i=0 folder slug label year role tail
+    printf '<section class="group also" aria-labelledby="g-also">\n'
+    printf '<div class="group-head"><h2 id="g-also">Also</h2></div>\n'
+    printf '<p class="run">'
+    for folder in "$@"; do
+        i=$((i + 1))
+        slug=$(basename "$folder")
+        load_fm "$folder"
+        echo "  > Processing: $fm_label (also)" >&2
+        label=${fm_label:-$(derive_label "$fm_title")}
+        year=${fm_date%%-*}
+        tail=,
+        [ "$i" -eq $((n - 1)) ] && tail=""
+        [ "$i" -eq "$n" ] && tail=.
+        [ "$i" -gt 1 ] && printf ' '
+        printf '<span class="it" id="%s">' "$slug"
+        [ "$i" -eq "$n" ] && [ "$n" -gt 1 ] && printf '<span class="and">and</span>&nbsp;'
+        printf '<a href="work/%s/">' "$slug"
+        render_also_glyph "$(find_item_image "$folder")" "$label" "g-$slug"
+        printf '<span class="nm" data-t="%s">%s' "$(html_escape "$label")" "$(html_escape "$label")"
+        [ -n "$fm_role" ] && printf '<span class="rl"> %s</span>' "$(html_escape "$fm_role")"
+        printf '</span>'
+        [ -n "$year" ] && printf ' <time class="yr" datetime="%s">%s</time>' "$fm_date" "$year"
+        printf '</a>%s</span>' "$tail"
+    done
+    printf '</p>\n</section>\n'
 }
 
 # Oldest and newest year among the folders' dates, space-separated.
@@ -1002,17 +1076,14 @@ year_span() {
 }
 
 # One ledger group: a sentence-case heading, then rows. `key` is
-# "client", "also" or "side"; every row opens its page at work/<slug>/.
-# "also" is the compact index under the featured cases: no summary line.
+# "client" or "side"; every row opens its page at work/<slug>/.
 render_group() {
     local key=$1
     local heading=$2
     shift 2
     local folder href last prev_year="" year vt
 
-    local cls=group brief=""
-    [ "$key" = also ] && cls="group also" && brief=brief
-    printf '<section class="%s" aria-labelledby="g-%s">\n' "$cls" "$key"
+    printf '<section class="group" aria-labelledby="g-%s">\n' "$key"
     if [ "$key" = "side" ]; then
         # Side projects state their own span in the heading.
         local from to
@@ -1021,11 +1092,7 @@ render_group() {
         [ -n "$to" ] && [ "$to" != "$from" ] && heading+="&ndash;$to"
     fi
     printf '<div class="group-head"><h2 id="g-%s">%s</h2></div>\n' "$key" "$heading"
-    if [ "$key" = also ]; then
-        echo '<ol class="ledger index">'
-    else
-        echo '<ol class="ledger">'
-    fi
+    echo '<ol class="ledger">'
     for folder in "$@"; do
         load_fm "$folder"
         year=${fm_date%%-*}
@@ -1036,33 +1103,41 @@ render_group() {
         else
             last=$fm_role
         fi
-        render_ledger_row "$folder" "$href" "$last" "$prev_year" "$vt" "$brief"
+        render_ledger_row "$folder" "$href" "$last" "$prev_year" "$vt"
         prev_year=$year
     done
     echo '</ol>'
     echo '</section>'
 }
 
+# One link from the profile's "Find me elsewhere" list, by its text
+# (LinkedIn, GitHub). Prints the URL, or nothing.
+profile_link() {
+    local want=$1 text url
+    [ -n "$profile" ] || return 0
+    while IFS=$FS read -r text url; do
+        if [ "$text" = "$want" ]; then printf '%s' "$url"; return 0; fi
+    done < <(strip_frontmatter "$profile/_.md" | awk '
+        /^## / { on = ($0 == "## Find me elsewhere"); next }
+        on && /^- \[[^]]+\]\([^)]+\)/ {
+            t = $0; sub(/^- \[/, "", t); sub(/\].*$/, "", t)
+            u = $0; sub(/^[^(]*\(/, "", u); sub(/\).*$/, "", u)
+            printf "%s\037%s\n", t, u
+        }')
+    return 0
+}
+
 # Contact links from the profile: LinkedIn and GitHub from its "Find me
 # elsewhere" list, plus email: from its frontmatter when set. Prints one
 # line of links separated by " &middot; ", or nothing.
 contact_links() {
-    local text url out="" want
+    local url out="" want
     [ -n "$profile" ] || return 0
     for want in LinkedIn GitHub; do
-        while IFS=$FS read -r text url; do
-            if [ "$text" = "$want" ]; then
-                [ -n "$out" ] && out+=" &middot; "
-                out+="<a href=\"$(html_escape "$url")\">$want&nbsp;&#8599;</a>"
-                break
-            fi
-        done < <(strip_frontmatter "$profile/_.md" | awk '
-            /^## / { on = ($0 == "## Find me elsewhere"); next }
-            on && /^- \[[^]]+\]\([^)]+\)/ {
-                t = $0; sub(/^- \[/, "", t); sub(/\]\(.*$/, "", t)
-                u = $0; sub(/^[^(]*\(/, "", u); sub(/\).*$/, "", u)
-                printf "%s\037%s\n", t, u
-            }')
+        url=$(profile_link "$want")
+        [ -n "$url" ] || continue
+        [ -n "$out" ] && out+=" &middot; "
+        out+="<a href=\"$(html_escape "$url")\">$want</a>"
     done
     load_fm "$profile"
     if [ -n "$fm_email" ]; then
@@ -1081,22 +1156,14 @@ profile_lead() {
         { print; exit }'
 }
 
-# The ledger's header. With front.md: its headline as the h1, then the
-# scope, the thesis and the availability line. Without it: the profile's
-# first paragraph as the lead and its italic availability line. No
-# masthead: where the h1 names the author, the name links home. The
-# availability line ends on About and the contact links.
+# The ledger's header without front.md: the profile's first paragraph as
+# the lead and its italic availability line. No masthead: where the h1
+# names the author, the name links home. The availability line ends on
+# About and the contact links.
 render_intro() {
-    local lead="" avail="" scope="" thesis="" links name h1 link
-    if [ -f "$FRONT_FILE" ]; then
-        lead=$(front_part h1)
-        scope=$(front_part scope)
-        thesis=$(front_part thesis)
-        avail=$(front_part avail)
-    elif [ -n "$profile" ]; then
+    local lead="" avail="" links name h1 link
+    if [ -n "$profile" ]; then
         lead=$(profile_lead)
-    fi
-    if [ -z "$avail" ] && [ -n "$profile" ]; then
         avail=$(strip_frontmatter "$profile/_.md" | awk '/^\*[^*].*\*$/ { print substr($0, 2, length($0) - 2); exit }')
     fi
     [ -z "$lead" ] && lead=$AUTHOR
@@ -1109,8 +1176,6 @@ render_intro() {
 
     echo '<header class="intro">'
     printf '<h1 class="lead">%s</h1>\n' "$h1"
-    [ -n "$scope" ] && printf '<p class="scope">%s</p>\n' "$(html_escape "$scope")"
-    [ -n "$thesis" ] && printf '<p class="thesis">%s</p>\n' "$(html_escape "$thesis")"
     if [ -n "$profile" ]; then
         printf '<p class="avail">%s <a href="work/%s/">About &rarr;</a>%s</p>\n' \
             "$(html_escape "$avail")" "$(basename "$profile")" "${links:+ &middot; $links}"
@@ -1129,17 +1194,24 @@ render_contact_footer() {
 }
 
 # ── Front page (contents/front.md) ──────────────────────────
-# Optional. The page's opening and its offers, in the order they render:
-#   # Headline                      the h1
-#   first plain paragraph           the scope line under it
-#   > Thesis                        the thesis line
-#   *Availability*                  replaces the profile's italic line
+# Optional. The page's opening and its offers:
+#   # Headline                      the h1, beside the site links
+#   first plain paragraph           scope facts: open How I work
+#   > Thesis                        the poster under the h1; it breaks
+#                                   after its first comma, if any
+#   *Availability*                  follows the scope facts
 #   ## What I can do                one "### Kicker" per offer, its line
 #                                   below, then "PROOF: slug, slug": the
-#                                   cases (or side projects) that prove it
-#   ## How I work                   one paragraph, above the contact footer
-#   CTA: Ask? [Let's talk](url)     the contact footer's ask
-# Comments never render. Each PROOF slug must name a case or side project.
+#                                   cases (or side projects) that prove it.
+#                                   The first offer renders open; each
+#                                   proof's glyph (and _.parts.svg) rides
+#                                   along for front.js, which breaks the
+#                                   open offer's glyphs into their parts
+#   ## How I work                   one paragraph: it heads the section
+#   CTA: Ask? [Let's talk](url)     the signature footer's ask
+# Rendered: header, thesis and offers above the cases; How I work and the
+# signature footer below them. Comments never render. Each PROOF slug must
+# name a case or side project.
 FRONT_FILE="${CONTENT_DIR}front.md"
 
 # One part of front.md, by name: h1, scope, thesis, avail or how.
@@ -1204,46 +1276,163 @@ check_front() {
     done < <(front_offers)
 }
 
-# "What I can do": one row per offer, kicker in caps, its line, and the
-# cases that prove it, each by its label and linking to its page.
-render_offers() {
-    local kicker line proof slug folder links n i
-    local -a offers=()
+# The front page's opening, from front.md: the h1 beside the site links
+# (Cases, About, LinkedIn, email), the thesis as a poster in two lines,
+# then "What I can do". Each offer is a kicker, its line and the cases
+# that prove it; the first renders open. Without JS every offer reads
+# open (styles.css); front.js turns kickers into buttons and moves the
+# open offer's proof glyphs, built from the <template> sources: each
+# glyph and its _.parts.svg, base64, once per slug.
+render_front() {
+    local h1 name link nav url thesis kicker line proof slug folder links n i k image_file src
+    local -a offers=() srcs=()
+    local seen=" "
+
+    name=$(html_escape "$AUTHOR")
+    h1=$(html_escape "$(front_part h1)")
+    link="<a class=\"home\" href=\"./\">$name</a>"
+    h1=${h1/"$name"/$link}
+
+    nav="<a href=\"#g-client\">Cases</a>"
+    if [ -n "$profile" ]; then
+        nav+=" <a href=\"work/$(basename "$profile")/\">About</a>"
+        url=$(profile_link LinkedIn)
+        [ -n "$url" ] && nav+=" <a href=\"$(html_escape "$url")\">LinkedIn</a>"
+        load_fm "$profile"
+        # The full address on desktop, "Email" on a phone (styles.css).
+        [ -n "$fm_email" ] && nav+=" <a href=\"mailto:$(html_escape "$fm_email")\"><span class=\"long\">$(html_escape "$fm_email")</span><span class=\"short\">Email</span></a>"
+    fi
+
+    echo '<div class="front">'
+    echo '<header class="intro">'
+    printf '<h1 class="name">%s</h1>\n' "$h1"
+    printf '<nav class="site" aria-label="Site">%s</nav>\n' "$nav"
+    echo '</header>'
+
+    thesis=$(html_escape "$(front_part thesis)")
+    if [ -n "$thesis" ]; then
+        # The last word stays with the one before it.
+        [[ "$thesis" == *" "* ]] && thesis="${thesis% *}&nbsp;${thesis##* }"
+        if [[ "$thesis" == *", "* ]]; then
+            thesis="<span class=\"l\">${thesis%%, *},</span> <span class=\"l\">${thesis#*, }</span>"
+        else
+            thesis="<span class=\"l\">$thesis</span>"
+        fi
+        printf '<p class="thesis">%s</p>\n' "$thesis"
+    fi
+
     while IFS= read -r line; do
         offers+=("$line")
     done < <(front_offers)
     n=${#offers[@]}
-    [ "$n" -gt 0 ] || return 0
-    printf '<section class="group offers" aria-labelledby="g-offers">\n'
-    printf '<div class="group-head"><h2 id="g-offers">What I can do</h2></div>\n'
-    echo '<ol class="offers-list">'
-    for line in "${offers[@]}"; do
-        IFS=$FS read -r kicker line proof <<< "$line"
-        links=""
-        IFS=',' read -ra slugs <<< "$proof"
-        # "A", "A and B", "A, B and C".
-        for i in "${!slugs[@]}"; do
-            slug=${slugs[$i]//[[:space:]]/}
-            folder=$(proof_folder "$slug")
-            load_fm "$folder"
-            if [ "$i" -gt 0 ]; then
-                if [ "$i" -eq $((${#slugs[@]} - 1)) ]; then links+=" and "; else links+=", "; fi
-            fi
-            links+="<a href=\"work/$slug/\">$(html_escape "$fm_label")</a>"
+    if [ "$n" -gt 0 ]; then
+        printf '<section class="offers" aria-labelledby="g-offers" style="--n: %s">\n' "$n"
+        echo '<h2 id="g-offers" class="sr">What I can do</h2>'
+        echo '<ol class="offers-list">'
+        k=0
+        for line in "${offers[@]}"; do
+            k=$((k + 1))
+            IFS=$FS read -r kicker line proof <<< "$line"
+            links=""
+            IFS=',' read -ra slugs <<< "$proof"
+            # "A", "A and B", "A, B and C".
+            for i in "${!slugs[@]}"; do
+                slug=${slugs[$i]//[[:space:]]/}
+                slugs[$i]=$slug
+                folder=$(proof_folder "$slug")
+                load_fm "$folder"
+                if [ "$i" -gt 0 ]; then
+                    if [ "$i" -eq $((${#slugs[@]} - 1)) ]; then links+=" and "; else links+=", "; fi
+                fi
+                links+="<a href=\"work/$slug/\">$(html_escape "$fm_label")</a>"
+                case "$seen" in *" $slug "*) continue ;; esac
+                seen+="$slug "
+                image_file=$(find_item_image "$folder")
+                # front.js draws glyphs as white XOR shapes: black-only glyphs.
+                [[ "$image_file" == *.svg ]] && [ "$fm_glyph" != colour ] || continue
+                src="<i data-slug=\"$slug\" data-label=\"$(html_escape "$fm_label")\" data-glyph=\"$(base64 < "$image_file" | tr -d '\n')\""
+                [ -f "${image_file%.svg}.parts.svg" ] && src+=" data-parts=\"$(base64 < "${image_file%.svg}.parts.svg" | tr -d '\n')\""
+                srcs+=("$src></i>")
+            done
+            printf '<li class="offer%s" data-proof="%s"><h3 class="kicker" id="k-%s"><span class="t">%s</span></h3>' \
+                "$([ "$k" -eq 1 ] && printf ' on')" "${slugs[*]}" "$k" "$(html_escape "$kicker")"
+            printf '<div class="detail" id="d-%s"><div class="in"><div class="room"></div><p class="offer-line">%s</p><p class="proof">See %s</p></div></div></li>\n' \
+                "$k" "$(html_escape "$line")" "$links"
         done
-        printf '<li class="offer"><h3 class="kicker">%s</h3><p class="offer-line">%s</p><p class="proof">See %s</p></li>\n' \
-            "$(html_escape "$kicker")" "$(html_escape "$line")" "$links"
-    done
-    echo '</ol>'
-    echo '</section>'
+        echo '</ol>'
+        echo '<div class="stage" aria-hidden="true"></div>'
+        if [ ${#srcs[@]} -gt 0 ]; then
+            printf '<template class="glyph-src">'
+            printf '%s' "${srcs[@]}"
+            printf '</template>\n'
+        fi
+        echo '</section>'
+    fi
+    echo '</div>'
 }
 
-# "How I work": front.md's one paragraph under that heading.
+# "How I work", below the cases: its paragraph is the heading, front.md's
+# scope paragraph sits under it. The availability line goes to the signature.
 render_how() {
-    local how
+    local how line scope
     how=$(front_part how)
-    [ -n "$how" ] || return 0
-    printf '<section class="group how" aria-labelledby="g-how"><div class="group-head"><h2 id="g-how">How I work</h2></div><p>%s</p></section>\n' "$(html_escape "$how")"
+    scope=$(front_part scope)
+    [ -n "$how$scope" ] || return 0
+    line=$how
+    printf '<section class="group how" aria-labelledby="g-how">'
+    [ -n "$line" ] && printf '<h2 class="how-line" id="g-how">%s</h2>' "$(html_escape "$line")"
+    printf '<div class="how-cols">'
+    [ -n "$scope" ] && printf '<p class="facts">%s</p>' "$(html_escape "$scope")"
+    printf '</div></section>\n'
+}
+
+# The signature: the page's last poster. front.md's CTA: line as the ask,
+# the profile's email big under it, LinkedIn and GitHub, then front.md's
+# availability. Under it, one glyph link per ledger row (featured client
+# cases, then side projects): each _.svg inline in currentColor, its
+# _.parts.svg (base64) for foot.js, which lands the client glyphs on the
+# ask and frames the poster with the rest. Without JS the glyphs read as
+# rows of links under the poster. Colour glyphs stay out.
+render_signature() {
+    local ask url want email avail folder slug image_file svg parts more="" items=""
+    ask=$(case_cta "$FRONT_FILE" | sed -e 's/^<p class="case-cta">//' -e 's|</p>$||')
+    [ -n "$ask" ] || ask="Get in touch."
+    load_fm "$profile"
+    email=$fm_email
+    for want in LinkedIn GitHub; do
+        url=$(profile_link "$want")
+        [ -n "$url" ] && more+="${more:+ }<a href=\"$(html_escape "$url")\">$want</a>"
+    done
+    avail=$(front_part avail)
+    for folder in "$@"; do
+        load_fm "$folder"
+        image_file=$(find_item_image "$folder")
+        [[ "$image_file" == *.svg ]] && [ "$fm_glyph" != colour ] || continue
+        slug=$(basename "$folder")
+        svg=$(tr '\n' ' ' < "$image_file" | sed -E -e 's/[[:space:]]+/ /g' -e 's/fill="(black|#000|#000000)"/fill="currentColor"/g' -e 's/<svg /<svg aria-hidden="true" focusable="false" /' -e 's/[[:space:]]+$//')
+        parts=""
+        [ -f "${image_file%.svg}.parts.svg" ] && parts=" data-parts=\"$(base64 < "${image_file%.svg}.parts.svg" | tr -d '\n')\""
+        # Decorative: the ring is not a menu, so the glyphs don't link anywhere.
+        items+="<li><span class=\"sig-g$([[ " ${featured_folders[*]} " == *" $folder "* ]] && printf ' client')\" data-name=\"$(html_escape "$fm_label")\"$parts>$svg</span></li>"$'\n'
+    done
+    echo '<footer class="sig" aria-labelledby="sig-ask">'
+    echo '<div class="sig-stage">'
+    echo '<div class="sig-poster">'
+    printf '<h2 class="sig-ask" id="sig-ask"><span class="sig-l">%s</span></h2>\n' "$ask"
+    echo '<div class="sig-reach">'
+    # The address may break after the @ on a phone.
+    [ -n "$email" ] && printf '<a class="sig-mail" href="mailto:%s">%s</a>\n' "$(html_escape "$email")" "$(html_escape "$email" | sed 's/@/@<wbr>/')"
+    [ -n "$more" ] && printf '<p class="sig-more">%s</p>\n' "$more"
+    [ -n "$avail" ] && printf '<p class="sig-avail">%s</p>\n' "$(html_escape "$avail")"
+    echo '</div>'
+    echo '</div>'
+    if [ -n "$items" ]; then
+        echo '<div class="sig-ring" aria-hidden="true"><ol>'
+        printf '%s' "$items"
+        echo '</ol></div>'
+    fi
+    echo '</div>'
+    echo '</footer>'
 }
 
 # Items (side projects on the profile) as a compact, anchored list: glyph,
@@ -1256,7 +1445,7 @@ render_items() {
     local -a items=()
     while IFS= read -r item; do
         items+=("$item")
-    done < <(sort_folders "$dir"/*/)
+    done < <(sort_items "$dir"/*/)
     [ ${#items[@]} -gt 0 ] || return 0
 
     printf '<section class="part items"><h2>%s</h2><div class="body">\n' "$heading"
@@ -1275,8 +1464,7 @@ render_items() {
             question=$fm_title
         fi
         printf '<h3><a href="../%s/">%s</a></h3>\n' "$slug" "$(html_escape "$fm_label")"
-        printf '<p class="item-meta"><time datetime="%s">%s</time> %s</p>\n' \
-            "$fm_date" "${fm_date%%-*}" "$(html_escape "$question")"
+        [ -n "$question" ] && printf '<p class="item-meta">%s</p>\n' "$(html_escape "$question")"
         [ -n "$fm_summary" ] && printf '<p class="item-line">%s</p>\n' "$(html_escape "$fm_summary")"
         printf '</article>\n'
     done
@@ -1293,6 +1481,7 @@ page_head() {
     local root=$4
     local og_title=${5:-$1}
     local og_type=${6:-website}
+    local page_js=${7:-}
     local url="$SITE_URL/$path"
     local css
     css=$(cat "$CSS_FILE")
@@ -1341,7 +1530,27 @@ EOF
     if [ -f "$OUT_DIR/motion.js" ]; then
         echo "    <script src=\"${root}motion.js\" defer></script>"
     fi
+    # A page's own scripts (front.js and foot.js on the ledger),
+    # space-separated, deferred, each when present.
+    local js
+    for js in $page_js; do
+        if [ -f "$OUT_DIR/$js" ]; then echo "    <script src=\"${root}$js\" defer></script>"; fi
+    done
     echo "</head>"
+}
+
+# Where a page's "back" leads: a side project goes to its entry on the
+# About page (works.html no longer lists side projects), everything else
+# to its row on works.html. Reads back_kind, set by write_case_page.
+back_href() {
+    if [ "${back_kind:-case}" = side ] && [ -n "$profile" ]; then
+        printf '../%s/#%s' "$(basename "$profile")" "$1"
+    else
+        printf '../../works.html#%s' "$1"
+    fi
+}
+back_label() {
+    if [ "${back_kind:-case}" = side ] && [ -n "$profile" ]; then printf 'Side projects'; else printf 'All work'; fi
 }
 
 # Pager for case pages. Follows the page's group in ledger order (the
@@ -1351,25 +1560,27 @@ EOF
 render_prev_next() {
     local idx=$1
     local count=${#pager_folders[@]}
-    local slug other
+    local slug other dir
     slug=$(basename "${pager_folders[$idx]}")
 
     echo "<nav class=\"pn\" aria-label=\"More work\">"
     if [ "$idx" -gt 0 ]; then
         other=${pager_folders[$((idx - 1))]}
         load_fm "$other"
-        printf '  <a rel="prev" href="../%s/"><span class="pn-dir">&larr; Newer, %s</span> <span class="pn-name">%s</span> <span class="pn-line">%s</span></a>\n' \
-            "$(basename "$other")" "${fm_date%%-*}" "$(html_escape "$fm_label")" "$(html_escape "$fm_summary")"
+        if [ "${back_kind:-case}" = side ]; then dir="&larr; Previous"; else dir="&larr; Newer, ${fm_date%%-*}"; fi
+        printf '  <a rel="prev" href="../%s/"><span class="pn-dir">%s</span> <span class="pn-name">%s</span> <span class="pn-line">%s</span></a>\n' \
+            "$(basename "$other")" "$dir" "$(html_escape "$fm_label")" "$(html_escape "$fm_summary")"
     else
-        printf '  <a class="pn-all" href="../../works.html#%s"><span class="pn-dir">Start of the list</span> <span class="pn-name">&larr; All work</span></a>\n' "$slug"
+        printf '  <a class="pn-all" href="%s"><span class="pn-dir">Start of the list</span> <span class="pn-name">&larr; %s</span></a>\n' "$(back_href "$slug")" "$(back_label)"
     fi
     if [ "$idx" -lt $((count - 1)) ]; then
         other=${pager_folders[$((idx + 1))]}
         load_fm "$other"
-        printf '  <a rel="next" href="../%s/"><span class="pn-dir">Older, %s &rarr;</span> <span class="pn-name">%s</span> <span class="pn-line">%s</span></a>\n' \
-            "$(basename "$other")" "${fm_date%%-*}" "$(html_escape "$fm_label")" "$(html_escape "$fm_summary")"
+        if [ "${back_kind:-case}" = side ]; then dir="Next &rarr;"; else dir="Older, ${fm_date%%-*} &rarr;"; fi
+        printf '  <a rel="next" href="../%s/"><span class="pn-dir">%s</span> <span class="pn-name">%s</span> <span class="pn-line">%s</span></a>\n' \
+            "$(basename "$other")" "$dir" "$(html_escape "$fm_label")" "$(html_escape "$fm_summary")"
     else
-        printf '  <a class="pn-all pn-end" href="../../works.html#%s"><span class="pn-dir">End of the list</span> <span class="pn-name">&larr; All work</span></a>\n' "$slug"
+        printf '  <a class="pn-all pn-end" href="%s"><span class="pn-dir">End of the list</span> <span class="pn-name">&larr; %s</span></a>\n' "$(back_href "$slug")" "$(back_label)"
     fi
     echo "</nav>"
 }
@@ -1382,6 +1593,7 @@ write_case_page() {
     local idx=$2
     local items_heading=$3
     local kind=${4:-case}
+    back_kind=$kind
     local slug content_file="$folder/_.md"
     local body figures items="" cta
     slug=$(basename "$folder")
@@ -1403,7 +1615,7 @@ write_case_page() {
     cat <<EOF
 <body>
 <a class="skip" href="#main-content">Skip to content</a>
-<nav class="mast"><a class="back" href="../../works.html#$slug">&larr; All work</a></nav>
+<nav class="mast"><a class="back" href="$(back_href "$slug")">&larr; $(back_label)</a></nav>
 <main id="main-content">
 EOF
     [ "$fm_kind" = profile ] && fm_summary=""
@@ -1488,7 +1700,7 @@ done < <(sort_folders "${cases[@]}")
 if [ -n "$profile" ]; then
     while IFS= read -r folder; do
         side_folders+=("$folder")
-    done < <(sort_folders "$profile"/items/*/)
+    done < <(sort_items "$profile"/items/*/)
 fi
 
 # Featured cases (featured: N, smallest first, date order breaking ties)
@@ -1534,23 +1746,28 @@ echo "<!DOCTYPE html>"
 echo "<html lang=\"en\">"
 ledger_lead=$(front_part h1)
 [ -n "$ledger_lead" ] || ledger_lead=$(profile_lead)
-page_head "$TITLE" "${ledger_lead:-$TITLE - Portfolio}" "$(basename "$OUTPUT_FILE")" ""
+front_js=""
+[ -n "$(front_offers)" ] && front_js=front.js
+[ -f "$FRONT_FILE" ] && [ -n "$profile" ] && front_js+="${front_js:+ }foot.js"
+page_head "$TITLE" "${ledger_lead:-$TITLE - Portfolio}" "$(basename "$OUTPUT_FILE")" "" "" "" "$front_js"
 echo "<body>"
 echo '<a class="skip" href="#main-content">Skip to content</a>'
 echo "<main id=\"main-content\">"
-render_intro
-render_offers
+if [ -f "$FRONT_FILE" ]; then render_front; else render_intro; fi
 if [ ${#featured_folders[@]} -gt 0 ]; then
     render_featured "${featured_folders[@]}"
-    [ ${#index_folders[@]} -gt 0 ] && render_group also "Also" "${index_folders[@]}"
+    [ ${#index_folders[@]} -gt 0 ] && render_also "${index_folders[@]}"
 else
     render_group client "Client work" "${sorted_folders[@]}"
 fi
-if [ ${#side_folders[@]} -gt 0 ]; then
-    render_group side "Side projects" "${side_folders[@]}"
-fi
+# Side projects are not listed here: the About page holds them, and the
+# offers above link the ones that prove a point.
 render_how
-render_contact_footer
+if [ -f "$FRONT_FILE" ] && [ -n "$profile" ]; then
+    render_signature "${featured_folders[@]}" "${side_folders[@]}"
+else
+    render_contact_footer
+fi
 echo "</main>"
 cat <<EOF
 </body>
