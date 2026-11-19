@@ -6,24 +6,24 @@
     var src = sec && sec.querySelector("template.glyph-src");
     if (!sec) return;
 
-    var ARRIVE_MS = 640;      // a glyph's parts converge and grow in
-    var LEAVE_MS = 420;       // parts burst apart and shrink out
-    var ARRIVE_AFTER = 250;   // on a switch, arrivals start once the leavers are mostly clear
-    var STAGGER = 70;         // between the glyphs of one cluster
-    var SCATTER_IN = 34;      // arrival distance, in the glyph's 100-unit box
-    var SCATTER_OUT = 30;     // leaving distance, same units
-    var SNAP_PX = 0.25;       // offsets under this many screen px render as 0 (see render)
-    var SMALL = 24;           // parts narrower and shorter than this many units grow and shrink in place
-    var PULL = 30;            // max pointer drift, same units
-    var BREATH = 16;          // idle parity drift of each open glyph, same units
-    var BREATH_STAGGER = 140; // between the glyphs of one cluster
+    var ARRIVE_MS = 640;
+    var LEAVE_MS = 420;
+    var ARRIVE_AFTER = 250; // on a switch, arrivals start once the leavers are mostly clear
+    var STAGGER = 70;
+    var SCATTER_IN = 34;
+    var SCATTER_OUT = 30;
+    var SNAP_PX = 0.25;
+    var SMALL = 24;
+    var PULL = 30;
+    var BREATH = 16;
+    var BREATH_STAGGER = 140;
     var BREATH_OUT = 650, BREATH_HOLD = 700, BREATH_BACK = 650;
-    var BREATH_EVERY = 6400;  // one breath this often while the cluster is in view
-    var BREATH_FIRST = 2600;  // after the load assembly
-    var FIRST_TOUR_MS = 7000; // idle time before the offers start taking turns
+    var BREATH_EVERY = 6400;
+    var BREATH_FIRST = 2600;
+    var FIRST_TOUR_MS = 7000;
     var CYCLE_MS = 6000;
-    var DWELL_MS = 110;       // rest time on a title before it opens
-    var SEC = 0.58;           // secondary glyph size, as a share of the lead glyph
+    var DWELL_MS = 110;
+    var SEC = 0.58; // secondary glyph size, as a share of the lead glyph
     var SVGNS = "http://www.w3.org/2000/svg";
 
     var thesis = document.querySelector(".front .thesis");
@@ -33,20 +33,17 @@
     var wideMQ = matchMedia("(min-width: 900px)");
 
     function S(x) { return { x: x, v: 0 }; }
-    // Semi-implicit spring in 60 fps frame units.
     function spring(s, t, dtn, k, damp) {
         s.v += (t - s.x) * k * dtn;
         s.v *= Math.pow(damp, dtn);
         s.x += s.v * dtn;
     }
     function clamp01(u) { return u < 0 ? 0 : u > 1 ? 1 : u; }
-    // 0 to 1 with zero velocity at both ends; the speed peaks a third of the
-    // way in (derivative 12u(1-u)^2), so a part sets off briskly but never
-    // starts or stops with a jolt.
+    // Zero velocity at both ends and peak speed a third of the way in
+    // (derivative 12u(1-u)^2): a part sets off briskly but never jolts.
     function burst(u) { u = clamp01(u); var v = 1 - u; return 1 - v * v * v * (1 + 3 * u); }
     function smooth(u) { u = clamp01(u); return u * u * (3 - 2 * u); }
 
-    // ── Kickers become disclosure buttons ───────────────────────
     offers.forEach(function (o) {
         var h = o.querySelector(".kicker"), d = o.querySelector(".detail");
         var b = document.createElement("button");
@@ -62,7 +59,6 @@
         o.querySelector(".room").setAttribute("aria-hidden", "true");
     });
 
-    // ── Glyph sources (build.sh: the glyph and its _.parts.svg) ─
     function svgOf(b64) {
         var bin = atob(b64), bytes = new Uint8Array(bin.length);
         for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
@@ -84,7 +80,6 @@
             label: i.dataset.label,
             vb: whole.getAttribute("viewBox") || "0 0 100 100",
             whole: shapes(whole),
-            // Without a parts file the glyph is one piece: it still grows and leaves, whole.
             parts: parts && shapes(parts).length > 1 ? shapes(parts) : null
         };
     });
@@ -100,7 +95,6 @@
         return svg;
     }
 
-    // One glyph per (offer, proof): a link to its case, one <svg> per primitive plus the whole.
     var inst = [];
     offers.forEach(function (o, i) {
         var keys = (o.dataset.proof || "").split(" ").filter(function (k) { return SRC[k]; });
@@ -136,7 +130,6 @@
         });
     }
 
-    // Part centroids and spans in the 100-unit box: scatter, breath and pull push along them.
     function measureParts(g) {
         if (g.measured) return;
         var ok = true;
@@ -150,7 +143,7 @@
             p.bw = b.width;
             p.by = b.y;
             p.bh = b.height;
-            // The <svg> box is 100 CSS px, so viewBox units and px agree: each part shrinks about its own middle.
+            // The <svg> box is 100 CSS px, so viewBox units work as px here.
             p.svg.style.transformOrigin = p.cx + "px " + p.cy + "px";
             // Scatter outward from the glyph's middle, fanned so stacked parts separate.
             var a = Math.atan2(p.cy - 50, p.cx - 50) + ((k * 0.618) % 1 - 0.5) * 1.2 + k * 0.7;
@@ -158,7 +151,6 @@
             var m = Math.max(b.width, b.height) < SMALL ? 0 : 0.8 + ((k * 0.382) % 1) * 0.4;
             p.sx = Math.cos(a) * m;
             p.sy = Math.sin(a) * m;
-            // Breath: straight out from the middle; a centred part stays put.
             var rx = p.cx - 50, ry = p.cy - 50, rd = Math.hypot(rx, ry);
             p.rx = rd > 4 ? rx / rd : 0;
             p.ry = rd > 4 ? ry / rd : 0;
@@ -167,17 +159,13 @@
     }
 
     var active = -1;
-    var area = null;     // wide: where the cluster rests, in stage coordinates
-    var minLeft = 0;     // wide: pulled parts stop here, short of the titles
-    var pointer = null;  // wide: mouse position, in stage coordinates
-    var touched = false; // any user input ends the unattended tour for good
+    var area = null;
+    var minLeft = 0;
+    var pointer = null;
+    var touched = false;
     var visible = true;
     var ready = false;
 
-    // The thesis wraps balanced; its widest line fills the column in two
-    // lines (wide only). The break can move as the size changes, so fit,
-    // read the lines again, and repeat. Read on an untouched clone, so no
-    // transform or earlier fit can skew the reading.
     function linesOf(el) {
         var range = document.createRange(), rows = [];
         range.selectNodeContents(el);
@@ -191,6 +179,8 @@
         return rows;
     }
 
+    // A new size can move the line break, so fit, read the lines again and repeat.
+    // Reading an untouched clone keeps transforms and earlier fits out of it.
     function fitThesis() {
         if (!thesis) return;
         if (!wideMQ.matches) { thesis.style.fontSize = ""; return; }
@@ -211,17 +201,13 @@
         thesis.style.fontSize = size + "px";
     }
 
-    // Read once per layout change, never per frame: the wide layout doesn't reflow on hover.
-    // The cluster hangs from the thesis: its top sits just under the last line's
-    // descenders at every width, so the letters read clean at rest and the
-    // moving parts cross them.
+    // Read once per layout change, never per frame: wide layout doesn't reflow on hover.
     function measure() {
         if (!wideMQ.matches) { area = null; return; }
         var sr = stage.getBoundingClientRect();
         // The titles' height, not the stage's: a tall cluster may grow the
         // stage (its spare last row), which must not feed back into its size.
         var list = offers[offers.length - 1].querySelector(".kicker").getBoundingClientRect().bottom - sr.top;
-        // Each offer's cluster ends above its own sentence.
         var bottoms = offers.map(function (o) {
             return list - o.querySelector(".detail").getBoundingClientRect().height - 24;
         });
@@ -230,11 +216,9 @@
             var tr = thesis.getBoundingClientRect(), cs = getComputedStyle(thesis);
             top = tr.bottom - parseFloat(cs.paddingBottom) + 0.14 * parseFloat(cs.fontSize) - sr.top;
         }
-        // On short screens the cluster keeps a poster size (but leaves the
-        // first screen room for its case links) and the sentence moves below
-        // the titles' foot rather than the glyphs turning into icons.
-        // Each offer's floor also leaves its sentence and links on the first
-        // screen (from the page top), down to 160px.
+        // Short screens keep the glyphs at poster size rather than shrinking
+        // them to icons, but each offer's floor still leaves its sentence and
+        // case links on the first screen.
         var cap = Math.min(0.55 * sr.width, 280), pageTop = sr.top + scrollY + top;
         var rooms = offers.map(function (o) {
             return Math.max(160, innerHeight - pageTop - o.querySelector(".detail").getBoundingClientRect().height - 24 - 32);
@@ -243,7 +227,6 @@
         minLeft = -0.5 * parseFloat(getComputedStyle(sec).columnGap || 0);
     }
 
-    // Lead glyph at the left, secondaries to its right, bottoms on one line.
     // Two secondaries stack in one column, so they get smaller and the lead gets the room.
     // A lone secondary takes the width a short (height-bound) lead leaves, up to 0.8 of it.
     function cluster(n, a) {
@@ -271,17 +254,16 @@
             }
             g.t = cluster(g.n, a)[g.j];
         });
-        // Wide: each sentence hangs right under its own cluster, so a short
-        // cluster (a wide screen, where the column caps its width) leaves
-        // no gap between the glyphs and their words.
+        // Each sentence hangs right under its own cluster, so a short cluster
+        // leaves no gap between the glyphs and their words.
         offers.forEach(function (o, i) {
             var d = o.querySelector(".detail"), lead = null;
             inst.forEach(function (g) { if (g.offer === i && g.j === 0) lead = g; });
             d.style.marginTop = area && lead ? Math.max(0, lead.t.y + lead.t.s / 2 + 24) + "px" : "";
             if (area) area.floor[i] = lead ? lead.t.y + lead.t.s / 2 + 12 : Infinity;
         });
-        // Wide: the band the pointer is tracked in spans every glyph. A
-        // cluster held at its poster size reaches below area.bottoms.
+        // A cluster held at its poster size reaches below area.bottoms, so
+        // the pointer band is measured from the glyphs themselves.
         if (area) {
             area.rise = area.top; area.reach = Math.max.apply(null, area.bottoms);
             inst.forEach(function (g) {
@@ -292,7 +274,7 @@
         sec.classList.toggle("hung", !!area);
     }
 
-    // Life: 0 is scattered and gone, 1 is assembled. A switch tweens it by time.
+    // Life: 0 is scattered and gone, 1 is assembled.
     function lifeAt(g, now) {
         if (now <= g.t0) return g.from;
         var u = clamp01((now - g.t0) / g.dur);
@@ -313,9 +295,6 @@
         g.hSc = was.sc - is.sc;
     }
 
-    // Scatter distance (units) and part scale for the glyph's life. Arriving
-    // parts converge and grow; leaving parts burst apart at near full size,
-    // then shrink out. Both start and end at rest, off the burst curve.
     function scatterAt(g, now) {
         var life = lifeAt(g, now), off, sc;
         if (g.to === 1) {
@@ -358,9 +337,9 @@
         var shown = g.life > 0;
         if (shown !== g.shown) { g.shown = shown; g.el.classList.toggle("off", !shown); }
         if (!shown) return;
-        // Offsets under SNAP_PX on screen render as 0, so a part at rest is
-        // exactly home and the whole can stand in. The curves and springs
-        // arrive with zero speed, so the last step is under a pixel.
+        // Snapping tiny offsets to 0 puts a resting part exactly home, so the
+        // whole can stand in. Curves and springs arrive at zero speed, so the
+        // snap is always sub-pixel.
         var split = false, snap = SNAP_PX / Math.max(0.01, g.Z.x / 100);
         g.parts.forEach(function (p) {
             if (Math.hypot(p.ox, p.oy) < snap) { p.ox = 0; p.oy = 0; }
@@ -377,7 +356,7 @@
         });
     }
 
-    // Breath: out fast (so the parts clear the sliver band at once), hold, back.
+    // Out fast so the parts clear the sliver band at once, then hold and back.
     function breathAt(g, now) {
         if (g.br0 < 0) return 0;
         var t = now - g.br0;
@@ -471,8 +450,7 @@
         if (moving && visible && !document.hidden) raf = requestAnimationFrame(tick);
     }
 
-    // Every so often each open glyph drifts apart and back, one after
-    // another: XOR keeps happening, and between breaths no frame is drawn.
+    // Breaths run on a timer, so no frame is drawn between them.
     function breathe() {
         setTimeout(breathe, BREATH_EVERY);
         if (reduceMQ.matches || !visible || document.hidden || pointer) return;
@@ -490,16 +468,12 @@
         fitThesis();
         measure();
         targets();
-        // Glyphs spring to the new layout; a still page jumps there.
         if (reduceMQ.matches) snap();
         wake();
     }
 
     function userAct() { touched = true; }
 
-    // Hover opens an offer once the pointer rests on a title's words for a
-    // moment. Every move restarts the wait, and a pointer heading right (to
-    // the open sentence and its links) opens nothing on the way.
     var dwell = 0, lastX = null;
     function onPointer(e) {
         if (e.pointerType !== "mouse") return;
@@ -512,7 +486,8 @@
         var t = e.target.closest && e.target.closest(".kicker .t");
         var n = t ? offers.indexOf(t.closest(".offer")) : -1;
         clearTimeout(dwell);
-        // Heading right (toward the open sentence) waits longer before it opens anything.
+        // A pointer heading right is on its way to the open sentence's links,
+        // so it waits longer before opening anything.
         if (n >= 0 && n !== active) {
             dwell = setTimeout(function () { setActive(n); }, dx > 1 ? 2.2 * DWELL_MS : DWELL_MS);
         }
@@ -619,7 +594,6 @@
         measure();
         targets();
         snap();
-        // Then the open glyphs assemble from their scattered parts: the first thing that moves.
         if (!reduceMQ.matches) {
             var now = performance.now();
             inst.forEach(function (g) {

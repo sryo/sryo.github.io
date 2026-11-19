@@ -6,3 +6,6 @@ CLAUDE.md
 tests/shots/
 /work/
 tests/fixtures/work/
+node_modules/
+.wrangler/
+/design/

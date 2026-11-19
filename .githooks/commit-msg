@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -u
+
+root=$(git rev-parse --show-toplevel)
+msg=$(grep -v '^#' "$1")
+fail=0
+
+slugs=$(sed -n 's/^LOCKED *= *"\(.*\)"/\1/p' "$root/gate/wrangler.toml" | tr ',' '|')
+if [ -n "$slugs" ] && printf '%s' "$msg" | grep -q -i -E "(^|[^a-z])($slugs|la voz|helix)([^a-z]|$)"; then
+  printf 'commit-msg: client name in message\n' >&2
+  fail=1
+fi
+
+if printf '%s' "$msg" | grep -q -i -E 'co-authored-by|claude|anthropic'; then
+  printf 'commit-msg: attribution in message\n' >&2
+  fail=1
+fi
+
+terms="$root/.claude/private-terms"
+if [ -f "$terms" ] && printf '%s' "$msg" | grep -q -i -E -f <(grep -v '^\s*$' "$terms"); then
+  printf 'commit-msg: private term in message\n' >&2
+  fail=1
+fi
+
+exit $fail

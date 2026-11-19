@@ -1,0 +1,16 @@
+name = "case-gate"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+routes = [
+  { pattern = "yadarola.com.ar/work/*", zone_name = "yadarola.com.ar" },
+  { pattern = "yadarola.com.ar/contents/*", zone_name = "yadarola.com.ar" },
+  { pattern = "yadarola.com.ar/__gate", zone_name = "yadarola.com.ar" },
+  { pattern = "www.yadarola.com.ar/work/*", zone_name = "yadarola.com.ar" },
+  { pattern = "www.yadarola.com.ar/contents/*", zone_name = "yadarola.com.ar" },
+  { pattern = "www.yadarola.com.ar/__gate", zone_name = "yadarola.com.ar" },
+]
+
+[vars]
+LOCKED = "bancor,continental,ey-helix,hometown,infoxel,lavoz,lede,omsnic,topicflower,valora,veng"
+# PASSWORD and SECRET are secrets: wrangler secret put PASSWORD / SECRET

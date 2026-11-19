@@ -16,7 +16,6 @@ mkdirSync(SHOTS, { recursive: true });
 // works.html and work/ are build output (gitignored): build them fresh.
 execSync('bash build.sh', { cwd: ROOT, stdio: 'ignore' });
 
-// Use a local playwright if installed, else the global one.
 const req = createRequire(import.meta.url);
 let playwright;
 try { playwright = req('playwright'); }
@@ -29,13 +28,11 @@ const CASES = existsSync(WORK) ? readdirSync(WORK).filter(s => existsSync(resolv
 // ONLY=<substring> limits the run to matching pages, for quick iteration.
 const PAGES = ['/', '/works.html', ...CASES.map(s => `/work/${s}/`)].filter(p => !process.env.ONLY || p.includes(process.env.ONLY));
 const PORTFOLIO = p => p !== '/';
-// Side projects (contents/about/items/<slug>) get pages in the case shell.
 const SIDE_SLUGS = readdirSync(resolve(ROOT, 'contents/about/items')).filter(s => existsSync(resolve(ROOT, 'contents/about/items', s, '_.md'))).sort();
 const slugOf = p => p.split('/')[2];
 const SIDE = p => p.startsWith('/work/') && SIDE_SLUGS.includes(slugOf(p));
 
 const tests = [];
-// only(path) limits a test to the pages it applies to.
 const test = (name, fn, only = () => true) => tests.push({ name, fn, only });
 
 // ── Every page ────────────────────────────────────────────────
@@ -57,7 +54,7 @@ test('no horizontal scroll', async ({ page }) => {
 test('no phone number is published', async ({ page }) => {
   // Inlined data: URIs are left out: base64 can spell anything by chance.
   const html = (await page.evaluate(() => document.documentElement.outerHTML)).replace(/data:[^"')\s]+/g, '');
-  // Any Argentine number or tel: link, without spelling Mateo's digits here.
+  // Generic on purpose: the real number must never appear in this file.
   const m = html.match(/\+54|\b351[\s.-]?\d{3}[\s.-]?\d{4}\b|href="tel:/);
   if (m) throw new Error(`page carries "${m[0]}"`);
 });
@@ -121,9 +118,6 @@ test('email sits in the header links and the footer', async ({ page }) => {
   if (r.head !== 1 || r.mail !== 1 || r.footer !== 2 || r.all !== 3) throw new Error(`mailto links: ${r.head} in the header, ${r.footer} in the footer (${r.mail} the address), ${r.all} in all`);
 }, p => p === '/works.html');
 
-// Mateo: no tiny tracked uppercase labels anywhere in the portfolio
-// (masthead, counts, "CLIENT WORK", part labels, spec terms, pager labels).
-// Headings are sentence case at a real size. index.html is out of scope.
 test('no small caps labels or item counts', async ({ page }) => {
   const bad = await page.evaluate(() => [...document.querySelectorAll('body *')]
     .filter(e => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden' && [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()))
@@ -135,8 +129,6 @@ test('no small caps labels or item counts', async ({ page }) => {
   if (small.length) throw new Error(`h2 under 21px: ${small.join(', ')}`);
 }, PORTFOLIO);
 
-// The back link, spec terms and pager direction read as text: body size or
-// small-body, not a label.
 test('back link, spec terms and pager direction are readable text', async ({ page }) => {
   const sizes = await page.$$eval('nav.mast a, .spec dl, .pn-dir, .item-meta', es => es.map(e => [e.className || e.tagName, parseFloat(getComputedStyle(e).fontSize)]));
   const small = sizes.filter(([, px]) => px < 15);
@@ -170,8 +162,6 @@ test('glyphs are on-system: black fills, no text, style or animation', async ({ 
   if (bad.length) throw new Error(`${bad.length} off-system glyphs: ${bad.join(', ')}`);
 }, p => p === '/works.html');
 
-// Side-project glyphs follow the original grammar: a few
-// primitives XORed in one evenodd path; straight lines and circular arcs only.
 const SIDE_GLYPHS = ['chanchan', 'avis', 'figma-cdp', 'murmur', 'dirpad', 'trueframe', 'fin', 'subi',
   'posta', 'airnod', 'zentrate', 'figma-plugins'];
 test('side glyphs are basic shapes XORed in one path', async () => {
@@ -193,10 +183,6 @@ test('side glyphs are basic shapes XORed in one path', async () => {
   if (bad.length) throw new Error(`${bad.length} glyphs off-grammar: ${bad.join('; ')}`);
 }, p => p === '/works.html');
 
-// _.parts.svg: the glyph's source primitives, one element each. XORed on a
-// canvas at 200 px they must redraw _.svg: under 0.2% of pixels may differ
-// by more than half their alpha (antialiasing differs by less; a primitive
-// off by one unit, or a missing one, differs by more).
 const GLYPHS = [...readdirSync(resolve(ROOT, 'contents')).map(s => `contents/${s}`),
   ...SIDE_SLUGS.map(s => `contents/about/items/${s}`)].filter(d => existsSync(resolve(ROOT, d, '_.svg')));
 test('glyph parts XOR back into the glyph', async ({ page, vp }) => {
@@ -233,6 +219,8 @@ test('glyph parts XOR back into the glyph', async ({ page, vp }) => {
       kids.forEach(el => x.fill(new Path2D(toD(el))));
       const A = ref.getImageData(0, 0, S, S).data, B = x.getImageData(0, 0, S, S).data;
       let bad = 0;
+      // Antialiasing moves a pixel's alpha by less than half; a primitive off
+      // by one unit, or a missing one, moves it by more.
       for (let i = 3; i < A.length; i += 4) if (Math.abs(A[i] - B[i]) > 128) bad++;
       if (bad / (S * S) > 0.002) out.push(`${g.d}: ${(bad / (S * S) * 100).toFixed(2)}% differs`);
     }
@@ -311,10 +299,8 @@ test('rel=next walks every client case once', async ({ page, base }) => {
 const CASE = p => p.startsWith('/work/') && !p.endsWith('/about/') && !SIDE(p);
 const MONTHS = /\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/;
 
-// Client cases: newest
-// first, each with its CV year and role, a My role section and at most two
-// diagrams. A slug leaves CV_PENDING when its CV update lands; that is the
-// case's red → green step. The test fails if a pending case already passes.
+// Client cases, newest first, with the year and role each page must show.
+// A pending case must still fail its checks, so it can't linger.
 const CV = {
   valora: [2024, 'Lead UX/UI designer'],
   continental: [2022, 'Lead UX/UI designer'],
@@ -329,7 +315,6 @@ const CV = {
 };
 const CV_PENDING = [];
 const CV_DONE = p => CASE(p) && !CV_PENDING.includes(slugOf(p));
-// The pager's two ends: the newest and the oldest client case.
 const CLIENT_ROWS = Object.keys(CV);
 const CLIENT_ENDS = [CLIENT_ROWS[0], CLIENT_ROWS[CLIENT_ROWS.length - 1]].map(s => `/work/${s}/`);
 
@@ -351,11 +336,6 @@ async function myRoleProblems(page) {
   return labels.includes('My role') ? [] : ['no My role section'];
 }
 
-// SPEC-projects.md §4, as it applies to client cases: at most two diagrams
-// (under a decision, not "How it works"), each on the glyph grammar, circle
-// labels inside when they fit (≤ 5 characters) else centred below or above,
-// node labels in sentence case unless they are code names, and a caption
-// of one line (≤ 95 characters) at column width.
 async function clientDiagramProblems(page, vp) {
   const figs = await page.$$eval('main figure.diagram', fs => fs.map(f => {
     const svg = f.querySelector('svg'), cap = f.querySelector('figcaption');
@@ -416,7 +396,7 @@ test('CV_PENDING holds only cases still to update', async ({ page, path, vp }) =
   if (!bad.length) throw new Error(`${slug} is done: remove it from CV_PENDING`);
 }, p => CASE(p) && CV_PENDING.includes(slugOf(p)));
 
-// Featured: a few strong cases, by strength (Mateo's call), not by year.
+// Ordered by strength, not by year.
 const FEATURED = ['bancor', 'lavoz', 'lede', 'ey-helix'];
 
 test('featured client cases: Bancor, La Voz, Lede, EY Helix', async ({ page }) => {
@@ -429,8 +409,6 @@ test('featured client cases: Bancor, La Voz, Lede, EY Helix', async ({ page }) =
   if (bad.length) throw new Error(`${bad.length} featured rows without a summary line, or with a role and year`);
 }, p => p === '/works.html');
 
-// Also: the other client cases as one sentence, newest first, each name a
-// link to its case with its glyph before it and its year after.
 const ALSO = Object.keys(CV).filter(s => !FEATURED.includes(s));
 
 test('Also is one sentence of every other client case, newest first, with working links', async ({ page, base, vp }) => {
@@ -512,8 +490,6 @@ test('featured rows outweigh the Also sentence', async ({ page }) => {
   if (!(m.fn > m.iname)) throw new Error(`featured name ${m.fn}px, Also ${m.iname}px`);
 }, p => p === '/works.html');
 
-// 360 to 430: nothing leaves the screen, no line starts with a comma (each
-// item keeps its comma), and the last line never holds the last item alone.
 test('on phones the Also sentence fits and never orphans its last item', async ({ page, vp }) => {
   if (vp !== 'mobile') return;
   for (const width of [360, 375, 390, 414, 430]) {
@@ -550,8 +526,8 @@ test('featured rows show a focus ring, Also links an ink rule', async ({ page })
   if (r.ruleTop < r.inkBottom) throw new Error(`focus rule at ${r.ruleTop}px crosses the glyph ink (to ${r.inkBottom}px)`);
 }, p => p === '/works.html');
 
-// ── Front page: what I offer, the cases as proof ─────────────
-// The copy lives in contents/front.md; build.sh renders it above the cases.
+// ── Front page (works.html) ───────────────────────────────────
+// The copy lives in contents/front.md.
 const SCOPE_H1 = /^Mateo Yadarola, product designer\.$/;
 const THESIS = 'Give me a hard problem and a team, or just the problem.';
 const CLOSER = "Hiring a product designer? Let's talk.";
@@ -713,11 +689,9 @@ test('front: the frame loop sleeps when nothing moves', async ({ page, vp }) => 
   } finally { await close(); }
 }, p => p === '/works.html');
 
-// Every drawn frame for ms: per glyph, each part's rendered offset in screen
-// px (0 while the whole glyph stands in). requestAnimationFrame is wrapped
-// so a sample is read right after front.js has set that frame's
-// transforms; a loop of its own samples the frames where front.js sleeps,
-// so every step has its true frame time.
+// requestAnimationFrame is wrapped so each sample is read right after
+// front.js sets that frame's transforms. A loop of its own samples the
+// frames where front.js sleeps, so every step keeps its true frame time.
 async function partFrames(p, ms, act) {
   await p.evaluate(() => {
     window.__parts = [];
@@ -744,7 +718,6 @@ async function partFrames(p, ms, act) {
   return p.evaluate(() => { const f = window.__parts; window.__parts = null; window.requestAnimationFrame = window.__rafPlain; return f; });
 }
 
-// Per-frame speed of a glyph's fastest part, in px per 60 fps frame.
 function speeds(frames, href) {
   const out = [];
   let prev = null;
@@ -807,7 +780,7 @@ test('front: every glyph in the open cluster answers the pointer and breathes', 
     const frames = await partFrames(p, 7000);
     const still = boxes.filter(b => !frames.some(f => f.gl.find(g => g.h === b.h).split));
     if (still.length) throw new Error(`no breath in 7s from ${still.map(b => b.h).join(', ')}`);
-    // Each breath ends with the whole glyphs back (the window may close mid-breath).
+    // The 7s window may end mid-breath, so wait for the whole glyphs.
     await p.waitForFunction(() => [...document.querySelectorAll('.stage .gl:not(.off)')].every(g => g.lastElementChild.style.display !== 'none'), null, { timeout: 4000 })
       .catch(() => { throw new Error('a glyph rests in parts after its breath'); });
   } finally { await close(); }
@@ -883,7 +856,6 @@ test('front: on a phone the first offer is open with its case link on the first 
     if (r.room !== r.want) throw new Error(`${r.room} glyphs in the open offer, want ${r.want}`);
     if (r.over > 0) throw new Error(`page overflows by ${r.over}px`);
     if (!r.email) throw new Error('the header shows the full email address on a phone');
-    // A tap closes it, like any disclosure; another opens it again.
     await p.locator('.offers .offer .kicker button').first().click();
     if (await p.locator('.offers .offer.on').count()) throw new Error('a tap on the open offer did not close it');
     const exp = await p.locator('.offers .offer .kicker button').first().getAttribute('aria-expanded');
@@ -994,7 +966,6 @@ test('front: closed offers read as text, not disabled', async ({ page, vp }) => 
 }, p => p === '/works.html');
 
 // ── Signature footer (foot.js) ────────────────────────────────
-// A fresh page scrolled to the end, the frame settled.
 async function sigPage(page, opts = {}) {
   const { p, close } = await frontPage(page, opts);
   if (opts.js !== false) {
@@ -1004,7 +975,6 @@ async function sigPage(page, opts = {}) {
   return { p, close };
 }
 
-// Opaque glyph pixels (each canvas mapped through its link's transform) inside the poster's text boxes.
 const sigOverlap = p => p.evaluate(() => {
   const fr = document.querySelector('.sig-ring').getBoundingClientRect(), rects = [];
   for (const el of document.querySelectorAll('.sig-ask, .sig-mail, .sig-more, .sig-avail')) {
@@ -1101,7 +1071,6 @@ test('signature: on a phone nothing scrolls sideways and side glyphs stay 60% on
   try {
     const r = await p.evaluate(() => ({ over: document.documentElement.scrollWidth - innerWidth,
       cut: [...document.querySelectorAll('.sig-g canvas')].map(c => {
-        // The drawn ink's horizontal extent: opaque columns of the canvas, through the link's transform.
         const a = c.parentNode, M = new DOMMatrix(getComputedStyle(a).transform), box = parseFloat(a.style.width), n = c.width;
         const fr = document.querySelector('.sig-ring').getBoundingClientRect();
         const T = new DOMMatrix().translate(fr.left + box / 2, fr.top + box / 2).multiply(M).translate(-box / 2, -box / 2);
@@ -1334,7 +1303,6 @@ test('pager ends lead back to All work', async ({ page }) => {
   if (!r.all) throw new Error('no link to works.html in the pager');
 }, p => CLIENT_ENDS.includes(p));
 
-// Index rows carry no summary, so the target page's dek is the reference.
 test('pager links show the target case\'s summary', async ({ page, base }) => {
   const links = await page.$$eval('.pn a[rel]', as => as.map(a => ({ slug: a.getAttribute('href').split('/')[1], line: a.querySelector('.pn-line')?.textContent.trim() })));
   if (!links.length) throw new Error('no pager links');
@@ -1353,7 +1321,7 @@ test('static server answers 404 for a missing path', async ({ base, vp }) => {
   if (again.status !== 200) throw new Error(`server down after /nope: ${again.status}`);
 }, p => p === '/works.html');
 
-// ── Side-project pages ─────────────
+// ── Side-project pages ────────────────────────────────────────
 test('side pages use the case shell', async ({ page, path }) => {
   const r = await page.evaluate(() => ({
     glyph: !!document.querySelector('.case-head .spec .glyph'),
@@ -1387,7 +1355,6 @@ test('side rows open their own pages, and rel=next walks them all once', async (
   await page.goto(`${base}/works.html`);
 }, p => p === '/works.html');
 
-// The last part is one mode or none: Decisions or Process (round 7).
 const SIDE_ORDER = ['What it does', 'Screens', ['Decisions', 'Process']];
 test('side sections follow the project order', async ({ page }) => {
   const labels = await page.$$eval('main h2', hs => hs.map(h => h.textContent.trim()));
@@ -1403,7 +1370,6 @@ test('side sections follow the project order', async ({ page }) => {
   }
 }, SIDE);
 
-// Side pages show WHAT and WHY, never HOW: no architecture, no stack.
 test('side pages have no How it works or Details heading', async ({ page }) => {
   const how = await page.$$eval('main h2, main h3', hs => hs.map(h => h.textContent.trim()).filter(t => /^(How it works|Details)$/i.test(t)));
   if (how.length) throw new Error(`"${how[0]}" heading on a side page`);
@@ -1449,9 +1415,6 @@ test('screens are framed, captioned figures', async ({ page, path }) => {
   if (inverted) throw new Error(`${inverted} screens inverted in dark mode`);
 }, p => SIDE(p) || CASE(p));
 
-// Two portrait screens in a row (a .screen-pair, see build.sh) sit side
-// by side on desktop, each at most 320px, and stack on a phone. Checked on
-// every pair a page has, and on a probe pair dropped into Murmur's page.
 async function pairProblems(page, vp) {
   return page.$$eval('main .screen-pair', (ps, vp) => ps.flatMap(p => {
     const [a, b] = [...p.querySelectorAll('figure.screen.portrait')].map(f => f.querySelector('img').getBoundingClientRect());
@@ -1488,7 +1451,6 @@ test('portrait pair styles, on a probe pair', async ({ page, vp }) => {
   }
 }, p => p === '/work/murmur/');
 
-// Diagrams: the glyph grammar as boxes and lines.
 function diagramProblems(svg) {
   const bad = [];
   const root = svg.match(/<svg\b[^>]*>/)?.[0] || '';
@@ -1545,14 +1507,6 @@ test('diagram marker ids are unique on a page', async ({ page }) => {
   if (dup) throw new Error(`marker id "${dup}" is used twice`);
 }, p => CASE(p) || SIDE(p));
 
-// Client cases show real screens , sensitive data
-// blurred. Each screen sits inside the decision
-// it shows: under a Decisions h3, after its text. 2 to 3 per case, captions
-// of one plain line (≤ 100 characters, no em dash, no trailing period), and
-// at most one caption per page says what was blurred. Cases not listed here
-// have no screens yet.
-// Before/after composites (wider than 1600px) break out of the text
-// column on desktop and open full size on click; plain screens don't.
 test('wide screens break out of the column and zoom on click', async ({ page, vp }) => {
   const r = await page.$$eval('main figure.screen', fs => fs.map(f => {
     const body = f.closest('.body').getBoundingClientRect();
@@ -1602,10 +1556,7 @@ test('client case screens sit under the decision they show', async ({ page, path
   if (bad.length) throw new Error(bad.join('; '));
 }, CASE);
 
-// The stylesheet's side of the diagram contract, checked on a live side
-// page with the spec example dropped in: ink in both schemes, Inter labels,
-// 1.5px lines at any scale, the project's label knocked out, and on a phone
-// the diagram scrolls inside its figure instead of shrinking.
+// Dropped into a live side page so the real stylesheet applies.
 test('diagram styles: ink, Inter, 1.5px hairlines, knockout, no page overflow', async ({ page, vp }) => {
   const raw = await readFile(resolve(ROOT, 'tests/fixtures/contents/02-gallery/items/proj-a/diagram.svg'), 'utf8');
   const svg = raw.replace(/<\?xml[^>]*\?>/, '').replace(/<!--[\s\S]*?-->/g, '');
@@ -1642,10 +1593,8 @@ test('diagram styles: ink, Inter, 1.5px hairlines, knockout, no page overflow', 
   }
 }, p => p === '/work/murmur/');
 
-// The per-project goal: real screens where the
-// project has a UI; a diagram is optional and, when present, captioned.
-// SCREENS_PENDING holds projects with a UI whose real screens aren't
-// captured yet; a slug leaves it when its screens land (red → green).
+// Side projects with a UI but no screens yet. A slug here must have none,
+// so it leaves the list as soon as its screens land.
 const SCREENS_PENDING = ['airnod', 'figma-cdp', 'figma-plugins', 'subi'];
 test('side project shows its screens', async ({ page, path }) => {
   const slug = slugOf(path);
@@ -1668,17 +1617,13 @@ test('SCREENS_PENDING names only real side projects', async ({ vp }) => {
   if (unknown.length) throw new Error(`unknown slugs: ${unknown.join(', ')}`);
 }, p => p === '/works.html');
 
-// ── Motion (motion.js) ─────────────────────────────────────
-// Parity pull: near the pointer, the spec glyph's shapes drift apart on a
-// canvas that XORs them (globalCompositeOperation "xor"), so overlaps stay
-// holes in every frame. The <img> keeps its place and its transition name.
-// R, the reach of the pull, is 1.5 glyph widths from the glyph's centre.
+// ── Motion (motion.js) ────────────────────────────────────────
 async function parityProbe(page) {
   return page.evaluate(async () => {
     const g = document.querySelector('.spec .glyph'), img = g.querySelector('img'), c = g.querySelector('canvas.parity');
     if (!c) return { canvas: false, img: getComputedStyle(img).opacity };
     const shown = getComputedStyle(c).display !== 'none' && getComputedStyle(c).visibility !== 'hidden';
-    // The img drawn at the canvas's size and offset: at rest the two match.
+    // At rest the canvas must match the img drawn at its size and offset.
     const ref = document.createElement('canvas'); ref.width = c.width; ref.height = c.height;
     const box = g.getBoundingClientRect(), cb = c.getBoundingClientRect(), k = c.width / cb.width;
     const r = ref.getContext('2d');
@@ -1701,6 +1646,7 @@ test('parity pull: the glyph comes apart near the pointer and keeps its holes', 
   await page.evaluate(() => window.scrollTo(0, 0));
   const box = await page.locator('.spec .glyph').boundingBox();
   const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+  // Just inside the pull's reach, 1.5 glyph widths (REACH in motion.js).
   await page.mouse.move(cx + box.width * 1.47, cy);
   await page.waitForTimeout(300);
   let r = await parityProbe(page);
@@ -1726,7 +1672,6 @@ test('parity pull: the glyph comes apart near the pointer and keeps its holes', 
   await page.mouse.move(0, 0);
 }, p => ['/work/continental/', '/work/posta/', '/work/bancor/', '/work/topicflower/'].includes(p));
 
-// Pulled glyphs stay pure ink: no coloured outline around the pieces.
 test('parity pull draws no coloured outline', async ({ page, vp }) => {
   if (vp !== 'desktop') return;
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -1749,7 +1694,6 @@ test('parity pull inks white in dark mode', async ({ page, vp }) => {
     await page.waitForTimeout(400);
     const r = await parityProbe(page);
     if (!r.canvas) throw new Error('no parity canvas');
-    // Ink is white: no black pixels left.
     if (r.dark > 0.01) throw new Error(`${(r.dark * 100).toFixed(0)}% of the ink is black`);
   } finally {
     await page.mouse.move(0, 0);
@@ -1775,7 +1719,6 @@ test('parity pull stays off under reduced motion', async ({ page, vp }) => {
   }
 }, p => p === '/work/continental/');
 
-// No rope between hovered ledger rows: the round 7b tether was cut.
 test('hovering ledger rows draws no rope', async ({ page, vp }) => {
   if (vp !== 'desktop') return;
   const rows = page.locator('[aria-labelledby="g-client"] .row');

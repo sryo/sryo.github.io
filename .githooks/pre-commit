@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -u
+
+fail=0
+block() { printf 'pre-commit: %s\n' "$1" >&2; fail=1; }
+
+added() { git diff --cached -U0 --no-color -- "$@" | grep -E '^\+[^+]' ; }
+
+if added 'contents/*.md' 'contents/**/*.md' | grep -q '<!--'; then
+  block "HTML comment in contents/*.md"
+fi
+
+if added '*.css' | grep -q '/\*'; then
+  block "CSS comment in a .css file"
+fi
+
+for f in $(git diff --cached --name-only --diff-filter=ACM -- '*.html' 'gate/*.js'); do
+  if git show ":$f" | awk '/<style/{s=1} s&&/\/\*/{found=1} /<\/style>/{s=0} END{exit !found}'; then
+    block "CSS comment inside <style> in $f"
+  fi
+done
+
+terms="$(git rev-parse --show-toplevel)/.claude/private-terms"
+if [ -f "$terms" ]; then
+  hits=$(git diff --cached -U0 --no-color | grep -E '^\+[^+]' | grep -i -E -f <(grep -v '^\s*$' "$terms"))
+  [ -n "$hits" ] && block "private term in staged changes:
+$hits"
+fi
+
+exit $fail

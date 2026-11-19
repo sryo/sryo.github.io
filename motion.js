@@ -1,5 +1,4 @@
-// Motion for the portfolio pages: parity pull (case glyph), flow pulse (diagrams). Deferred;
-// every effect checks reduced motion itself and sleeps when idle.
+// Portfolio motion: parity pull on the spec glyph, flow pulse on diagrams.
 (function () {
     "use strict";
 
@@ -10,8 +9,7 @@
         return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#E94136";
     }
 
-    // Frame-rate independent spring step. x, v, target in any unit; dtn is
-    // elapsed time in 60 Hz frames.
+    // Frame-rate independent spring step.
     function spring(s, target, dtn, k, damp) {
         s.v += (target - s.x) * k * dtn;
         s.v *= Math.pow(damp, dtn);
@@ -19,21 +17,17 @@
     }
 
     // ── Parity pull ─────────────────────────────────────────────
-    // The spec glyph's shapes drift apart near the pointer. Each source
-    // primitive (data-parts, from the glyph's _.parts.svg) is its own piece,
-    // or, without parts, each subpath of the glyph. Pieces are filled on a
-    // canvas with globalCompositeOperation "xor" (alpha = a + b - 2ab), so
-    // wherever two pieces overlap there's a hole, exactly as
-    // fill-rule="evenodd" draws the glyph at rest. The canvas is
-    // laid over the <img> only after an arrival view transition ends, and is
-    // gone before the page swaps, so the glyph's flight never sees it.
+    // Pieces are filled with "xor" compositing so any overlap is a hole, as
+    // fill-rule="evenodd" draws the glyph at rest. The canvas waits for an
+    // arriving view transition to end and is gone before the page swaps, so
+    // the glyph's flight never shows it.
 
-    var REACH = 1.5;      // pull reaches 1.5 glyph widths from its centre
-    var PULL = 9;         // max drift, in the glyph's 100-unit viewBox
-    var PAD = 0.25;       // canvas margin around the glyph, as a share of it
+    var REACH = 1.5;
+    var PULL = 9;
+    var PAD = 0.25;
 
-    // One _.parts.svg primitive as path data. A <path> may hold several
-    // subpaths; they fill nonzero, so they stay one solid piece.
+    // A <path> primitive may hold several subpaths; they fill nonzero, so
+    // they stay one solid piece.
     function primitivePath(el) {
         function a(k) { return +el.getAttribute(k) || 0; }
         var rx, ry, cx = a("cx"), cy = a("cy");
@@ -54,10 +48,9 @@
         return "";
     }
 
-    // Glyph to pieces. With parts (base64 SVG), one piece per primitive.
-    // Without, the glyph SVG (a data: URI) gives one absolute subpath each;
-    // paths with relative commands or transforms stay one piece (still
-    // correct, just not pulled apart).
+    // Without parts, each absolute subpath of the glyph is a piece. A path
+    // with relative commands can't be split safely, so it stays one piece;
+    // a glyph with transforms gets no pull at all.
     function glyphPieces(img, parts) {
         var pieces = [], doc, svg;
         if (parts) {
@@ -85,7 +78,7 @@
         // A piece of several subpaths fills nonzero on its own; one-subpath
         // pieces may share a fill (see draw).
         pieces.forEach(function (pc) { pc.solo = (pc.d.match(/[Mm]/g) || []).length > 1; });
-        // Centroid and area of each piece, from a 64 px raster of it.
+        // Each piece's centroid and area, read from a small raster.
         var S = 64, c = document.createElement("canvas");
         c.width = c.height = S;
         var ctx = c.getContext("2d", { willReadFrequently: true });
@@ -224,7 +217,6 @@
             });
             var live = engaged || now < tapUntil;
             if (!busy && !live) {
-                // Home: the <img> takes over again.
                 canvas.style.display = "none";
                 img.style.opacity = "";
                 last = 0;
@@ -246,7 +238,6 @@
             }
         }
 
-        // Fine pointers: the pull follows the cursor within reach.
         window.addEventListener("pointermove", function (e) {
             if (e.pointerType !== "mouse" || !finePointer.matches || reduce.matches) return;
             var b = glyph.getBoundingClientRect();
@@ -261,7 +252,7 @@
             engaged = false;
         });
 
-        // Touch and pen: one tap, one out-and-back (about 0.9 s).
+        // Touch and pen have no hover, so a tap plays one out-and-back.
         glyph.addEventListener("pointerdown", function (e) {
             if (e.pointerType === "mouse" || reduce.matches) return;
             pointer = { x: e.clientX, y: e.clientY };
@@ -274,17 +265,13 @@
     }
 
     // ── Flow pulse ──────────────────────────────────────────────
-    // Diagrams are flows. When one comes into view, an accent pulse leaves
-    // its entry nodes, runs along the lines, splits at forks and flashes
-    // each box as it arrives, timed by distance; then the drawing rests in
-    // black. Hovering or tapping a node sends a pulse from there. The graph
-    // is read from the SVG (rects and circles are nodes, stroked paths are
-    // edges; a path that starts mid-line branches off that line). Drawn on
-    // a canvas over the SVG, in the SVG's user units; the SVG is untouched.
+    // The graph is read from the SVG: rects and circles are nodes, stroked
+    // paths are edges, and a path that starts mid-line branches off that
+    // line. The pulse draws on a canvas over it; the SVG is untouched.
 
-    var SPEED = 0.26;     // user units per ms
-    var TAIL = 28;        // pulse length, user units
-    var FLASH = 600;      // ms a node's outline stays lit
+    var SPEED = 0.26;
+    var TAIL = 28;
+    var FLASH = 600;
 
     function readGraph(svg) {
         var nodes = [], edges = [];
@@ -312,7 +299,6 @@
             e.to = nodeAt(e.b, 12);
             if (e.from === e.to) e.to = null;
         });
-        // Branches: an edge starting on another edge's line, not at a node.
         edges.forEach(function (e) {
             if (e.from) return;
             edges.some(function (o) {
@@ -328,7 +314,7 @@
         return { nodes: nodes, edges: edges };
     }
 
-    // Start and arrival times (ms) for a pulse leaving `sources` at 0.
+    // When each edge starts and each node is reached, from `sources` at 0.
     function schedule(graph, sources) {
         var t = new Map(), start = new Map(), changed = true, guard = 0;
         sources.forEach(function (n) { t.set(n, 0); });
@@ -396,8 +382,8 @@
             var vb = svg.viewBox.baseVal, w = svg.clientWidth, k = w / vb.width, dpr = Math.min(2, devicePixelRatio || 1);
             var px = Math.round(w * dpr), py = Math.round(svg.clientHeight * dpr);
             if (canvas.width !== px || canvas.height !== py) { canvas.width = px; canvas.height = py; }
-            // SVG elements have no offsetLeft/Top: place from the boxes, in the
-            // figure's scrolled coordinates (it scrolls sideways on phones).
+            // SVG elements have no offsetLeft/Top, so place the canvas from
+            // the boxes, adding the figure's scroll (it scrolls on phones).
             var sb = svg.getBoundingClientRect(), fb = fig.getBoundingClientRect();
             canvas.style.left = sb.left - fb.left + fig.scrollLeft + "px";
             canvas.style.top = sb.top - fb.top + fig.scrollTop + "px";

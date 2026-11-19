@@ -1,84 +1,53 @@
 #!/bin/bash
 
 # ◯┃ LineAndForm (L+F)
-# A Simple Portfolio Generator.
+# Builds a portfolio site from a folder of markdown.
 
-# What is LineAndForm?
-# LineAndForm is a simple, mostly self-contained bash script that generates an interactive
-# HTML portfolio from my content. It's designed for myself, but available to other
-# creators who want a quick way to showcase their work online.
+# Usage: ./build.sh [-d]
+#   -d deletes this script after the build (also SELF_DESTRUCT in config).
 
-# Why LineAndForm?
-# - Because updating my portfolio manually was tedious
-# - Because I can
+# Config (config.cfg):
+#   CONTENT_DIR, OUTPUT_FILE, TITLE, CSS_FILE, JS_FILE, INLINE_SVG, SELF_DESTRUCT.
+#   SITE_URL builds canonical and og: links; skipped when empty.
+#   AUTHOR signs page titles; defaults to TITLE.
+#   styles.css is required. script.js is inlined when non-empty.
+#   motion.js, when present, is linked deferred from every page.
 
-# What makes LineAndForm special:
-# 1. It's simple: Just organize your content in folders, run the script, and you have a portfolio.
-# 2. It's mostly self-contained: One bash script does it all (with a config file and assets).
+# Content:
+#   One folder per case under the content folder. The folder name is the
+#   slug and URL: lowercase letters, digits and dashes.
+#   _.md starts with frontmatter. Required: label, role, summary.
+#   Optional: title, date (YYYY-MM-DD), tags, client, link, order, and
+#   featured: N to head works.html, smallest N first. Field list below.
+#   _.svg, _.png or _.jpg is the glyph; without one the label's initial
+#   stands in. SVG glyphs use a 100x100 viewBox and black fills only, with
+#   no text, <style> or animation (the build warns). An optional
+#   _.parts.svg lists the shapes that XOR into the glyph, for motion.js.
+#   One folder with kind: profile is the About page. Its items/ folder
+#   holds side projects, one subfolder each, with their own pages.
 
-# How to use LineAndForm:
-# 1. Configure:
-#    - Edit 'config.cfg' to set your title, output filename, and other options.
-#    - SITE_URL builds canonical and og: links; AUTHOR signs page titles.
-#    - Ensure 'styles.css' is present. 'script.js' is optional: inlined when non-empty.
-#      'motion.js' is optional too: linked, deferred, from every page.
+# Body syntax:
+#   ## heading           starts a part of the page
+#   METRICS:             a list of "- **value** label" lines, the Impact band
+#   [text](url)          alone before the first heading: the spec's Link
+#   CTA: ...             the closing row above the pager
+#   EMBED: ...           raw HTML passed through (video, iframe)
+#   ![alt](f.png "cap")  alone on a line: a captioned screen
+#   DIAGRAM: f.svg "cap" an inlined, captioned SVG diagram
+#   TOY: name            right after a DIAGRAM line: mounts toys/name.js
+#   Paths resolve from the .md's folder.
 
-# 2. Set up your content:
-#    - Create a 'contents/' directory (or whatever you set in config).
-#    - Inside, make a folder for each case study. The folder name is its slug
-#      and URL, so keep it lowercase letters, digits and dashes.
-#    - In each folder:
-#      a) Add a _.md file that starts with frontmatter: title, date (YYYY-MM-DD),
-#         tags, and the required label (short name), role and summary (one
-#         plain line: the ledger line, the dek and the meta description).
-#         Optional: client, link, and featured: N (a positive number) to
-#         lift the case above the rest on works.html, smallest N first.
-#      b) Optionally, add a glyph: _.svg (or _.png / _.jpg). Without one, the
-#         label's initial stands in. Glyphs are one system: a 100×100 viewBox,
-#         black fills only, no text, <style> or animation (the build warns).
-#         An optional _.parts.svg beside it lists the source primitives, one
-#         element each, that XOR into the glyph; the case page's pull moves them.
-#    - Mark one folder 'kind: profile' for the About page. It heads the ledger,
-#      and its 'items/' folder holds side projects: one subfolder each, with
-#      a _.md (label, link and repo optional) and an optional glyph. Each
-#      gets its own page too.
-#    - In the body, '## ' headings become the page's parts, 'METRICS:' lists
-#      become the Impact band, a lone '[text](url)' line before the first
-#      heading becomes the Link, a 'CTA:' line becomes the closing row above
-#      the pager, and <!-- comments --> never render.
-#    - Optionally, add 'front.md' at the top of the content folder (not in a
-#      case folder): the front page's copy. A '# ' headline (the h1; the
-#      author's name in it links home), a scope paragraph, a '> ' thesis, an
-#      *italic* availability line, then '## What I can do' with one '### '
-#      kicker per offer, its line, and 'PROOF: slug, slug' naming the cases
-#      or side projects that prove it (an unknown slug stops the build),
-#      '## How I work' with one paragraph, and a 'CTA:' line: the ask of the
-#      signature footer. Format in full above front_part. Without it, the
-#      profile's first paragraph is the h1. With offers, works.html links
-#      'front.js' (deferred, when present), which animates the proof glyphs;
-#      with front.md and a profile, 'foot.js', which animates the signature.
-#    - To add a video or other embed, include a line starting with 'EMBED:' in your .md file.
-#    - A lone '![alt](screen.png "caption")' line is a captioned screen, and a
-#      'DIAGRAM: diagram.svg "caption"' line inlines a diagram; both resolve
-#      from the .md's folder. A 'TOY: name' line
-#      right after a DIAGRAM line mounts toys/name.js inside that figure.
+# Front page (optional): contents/front.md. Format above FRONT_FILE.
+#   Without it, the profile's first paragraph is the h1. works.html links
+#   front.js when front.md has offers, foot.js when there is a profile.
 
-# 3. Run the script:
-#    - Open a terminal in the folder containing this script.
-#    - Run the command: ./build.sh (or bash build.sh)
-#    - To use the self-destruct option (if enabled in config), run: ./build.sh -d
-
-# 4. View your portfolio:
-#    - 'works.html' opens with front.md (headline and site links, the
-#      thesis, then What I can do), then the ledger: featured client
-#      cases in featured: order,
-#      every other client case as one "Also" sentence, then side projects.
-#      Also and side projects run newest first. With no case featured,
-#      client work is one dated ledger. How I work (its line as the heading,
-#      front.md's scope beside it) and the signature (the CTA ask, email,
-#      links, availability and every case glyph) close the page.
-#    - 'work/<slug>/index.html' is one page per case study (and the About page),
-#      with prev/next in ledger order. The build rewrites 'work/' every run.
+# Output:
+#   works.html: the front page, featured cases, the rest of client work
+#   as one "Also" sentence (newest first), How I work and the signature.
+#   With no case featured, client work is one dated ledger. Side projects
+#   are listed on the About page, not here.
+#   work/<slug>/index.html: one page per case, side project and About,
+#   with prev/next in ledger order. work/ is rebuilt every run.
 
 # License:
 # THE UNRESTRICTED BUT RESPONSIBLY SHARED, ALTERED AND DISTRIBUTED SOFTWARE WITHOUT WARRANTIES AND WITH THE ABSENCE OF LIABILITY FOR ANY UNINTENDED CONSEQUENCES LICENSE (VERSION 1.0, AUGUST 4, 2023)
@@ -87,7 +56,7 @@
 
 
 # ─────────────────────────────────────────────────────────────
-# Config & CLI
+# Config and CLI
 # ─────────────────────────────────────────────────────────────
 
 # Bash 5.2+ treats "&" in ${var//pat/rep} as the match; keep it literal.
@@ -105,8 +74,6 @@ else
     SELF_DESTRUCT=false
 fi
 
-# Optional: SITE_URL builds canonical and og: URLs (skipped when empty);
-# AUTHOR signs page titles.
 SITE_URL=${SITE_URL%/}
 AUTHOR=${AUTHOR:-$TITLE}
 
@@ -116,7 +83,6 @@ DEFAULT_ORDER=9999
 # empty fields in place instead of collapsing them.
 FS=$'\037'
 
-# Case pages go to work/<slug>/index.html next to the output file.
 OUT_DIR=$(dirname "$OUTPUT_FILE")
 WORK_DIR="$OUT_DIR/work"
 
@@ -141,7 +107,7 @@ done
 
 
 # ─────────────────────────────────────────────────────────────
-# Read — frontmatter, content, escaping
+# Read: frontmatter, content, escaping
 # ─────────────────────────────────────────────────────────────
 
 html_escape() {
@@ -153,23 +119,24 @@ html_escape() {
     printf '%s' "$s"
 }
 
-# Frontmatter fields, in the order parse_frontmatter emits them.
-#   title, date, tags, order   the originals; order is a tie-break only
-#   label    short name for the ledger, prev/next and <title>
-#   client   organization, shown on the case page (defaults to label)
-#   role     my role; the ledger's last column
-#   summary  one plain-text line: ledger line, dek, meta and og:description
-#   link     the project's own site or repo
-#   kind     "profile" marks the About section; anything else is a case
-#   email    profile only, optional: a mailto link beside LinkedIn and GitHub
-#   glyph    "colour" keeps an original colour glyph (skips the glyph check)
-#   repo     side projects, optional: the source code, the spec's Code row
-#   featured client cases, optional: a positive number; featured cases head
-#            works.html in that order, the rest go to the Also index
-# Case studies must set label, role and summary (see require_fields).
+# Frontmatter fields, in the order parse_frontmatter emits them:
+#   title     page h1; label falls back to its text before ": "
+#   date      YYYY-MM-DD; sorts newest first
+#   tags      comma list; the spec's Scope row
+#   order     breaks date ties; side projects with one sort first
+#   label     short name for the ledger, prev/next and <title>
+#   client    shown on the case page; defaults to label
+#   role      the role on the project; the ledger's last column
+#   summary   one plain line: ledger line, dek and meta description
+#   link      the project's own site or repo
+#   kind      "profile" marks the About page; anything else is a case
+#   email     profile only: a mailto link in the site links and signature
+#   glyph     "colour" keeps a colour glyph and skips the glyph check
+#   repo      side projects: the spec's Code row
+#   featured  client cases: a positive number; the rest go to Also
+# Cases must set label, role and summary (see require_fields).
 
-# Single awk pass over the frontmatter block. Emits the fields above,
-# $FS-separated. Missing fields are empty strings.
+# Emits the fields above, $FS-separated; missing ones are empty.
 parse_frontmatter() {
     awk '
     BEGIN { n = split("title date tags order label client role summary link kind email glyph repo featured", keys, " ") }
@@ -192,8 +159,7 @@ parse_frontmatter() {
     ' "$1"
 }
 
-# Load a folder's frontmatter into fm_* globals, with the ledger fallbacks
-# filled in: label from the title's text before ": ", client from label.
+# Sets the fm_* globals from a folder's frontmatter, with fallbacks filled.
 load_fm() {
     local folder=$1
     IFS=$FS read -r fm_title fm_date fm_tags fm_order fm_label fm_client fm_role fm_summary fm_link fm_kind fm_email fm_glyph fm_repo fm_featured \
@@ -231,9 +197,8 @@ strip_frontmatter() {
     fi
 }
 
-# A slug is the folder's basename: it names the page (work/<slug>/) and the
-# row's #anchor. Prints it, or complains and returns 1 when it isn't a
-# plain lowercase URL segment.
+# The folder's basename becomes a URL and an #anchor, so only a plain
+# lowercase segment passes.
 slug_of() {
     local slug
     slug=$(basename "$1")
@@ -244,7 +209,6 @@ slug_of() {
     printf '%s' "$slug"
 }
 
-# Look for _.svg, then _.png, then _.jpg. Returns empty if none.
 find_item_image() {
     local folder=$1
     local ext
@@ -256,10 +220,8 @@ find_item_image() {
     done
 }
 
-# Glyphs are one system: black fills only (the dark-mode invert depends on
-# it), no <text>, <style> or animation. Anything else still renders, with
-# a warning naming the folder and the first offence. "glyph: colour" in the
-# frontmatter keeps an original colour glyph and skips the check.
+# Black fills only, because the dark-mode invert depends on it. An
+# off-system glyph still renders, with a warning.
 check_glyph() {
     local image_file=$1 slug=$2 kind=$3 fill why=""
     [ "$kind" = colour ] && return 0
@@ -294,8 +256,8 @@ insert_image() {
     fi
 }
 
-# Pixel size of a PNG, GIF or JPEG as "width height", read from its
-# header with od (no image tools needed). Prints nothing when unknown.
+# "width height" of a PNG, GIF or JPEG, read from its header with od so
+# no image tools are needed. Prints nothing when unknown.
 image_size() {
     local f=$1 off=2 i b
     [ -f "$f" ] || return 0
@@ -319,12 +281,9 @@ image_size() {
     return 0
 }
 
-# A lone "![alt](src "caption")" line: a screen, rendered as a figure with
-# its pixel size (so the page doesn't jump) and, when the line has a title,
-# a caption. A relative src resolves from the markdown file's folder. Warns
-# on an empty alt, a missing file, a file over 250KB and a screen past the cap
-#. Reads render_markdown_content's locals
-# (file, mode, screens: already counting this one), since it runs in $().
+# A screen figure carries its pixel size so the page doesn't jump while it
+# loads. Reads render_markdown_content's locals (file, mode, and screens,
+# already counting this one), since it runs in $().
 render_screen() {
     local alt=$1 src=$2 caption=$3 path size w h cls=screen bytes
     local warn=true
@@ -335,7 +294,6 @@ render_screen() {
     esac
     if $warn; then
         [ -n "$alt" ] || echo "warn: $file: image without alt ($src)" >&2
-        # Side projects (contents/*/items/) take 3 screens, client cases 5.
         local max=5
         [[ "$file" == */items/* ]] && max=3
         [ "$screens" = $((max + 1)) ] && echo "warn: $file: more than $max screens" >&2
@@ -350,23 +308,16 @@ render_screen() {
     fi
     read -r w h < <(image_size "$path")
     [ -n "$h" ] && [ "$h" -gt "$w" ] && cls="screen portrait"
-    # Before/after composites are exported at real size, wider than any
-    # single screen: they break out of the text column (styles.css).
+    # Composites exported wider than any single screen break out of the
+    # text column (styles.css).
     [ -n "$w" ] && [ "$w" -gt 1600 ] && cls="screen wide"
-    # A caption only when the line gives a title: a screen that explains
-    # itself goes without one.
     printf '<figure class="%s"><img src="%s" alt="%s" loading="lazy"%s>%s</figure>' \
         "$cls" "$(html_escape "$src")" "$(html_escape "$alt")" "${w:+ width=\"$w\" height=\"$h\"}" \
         "${caption:+<figcaption>$(html_escape "$caption")</figcaption>}"
 }
 
-# A "DIAGRAM: file.svg "caption"" line: the SVG inlined (so it inherits
-# the page's font and currentColor, and dark mode works) in a captioned
-# figure. The file resolves from the markdown file's folder. Drops the
-# XML prolog and comments, adds role="img", and warns when the file is
-# missing, the caption is, or the drawing is off-spec: no viewBox, a
-# <style>/<script>/<image>/<foreignObject>, or a fill or stroke other
-# than currentColor or none.
+# Diagrams are inlined, not linked, so they take the page's font and
+# currentColor and follow dark mode. Off-spec drawings warn.
 render_diagram() {
     local spec=$1 name caption path svg why=""
     local warn=true
@@ -410,7 +361,7 @@ render_diagram() {
 
 
 # ─────────────────────────────────────────────────────────────
-# Transform — markdown → HTML
+# Transform: markdown to HTML
 # ─────────────────────────────────────────────────────────────
 
 # Per-line inline rules. Block structure (paragraphs, lists, code, METRICS)
@@ -435,9 +386,7 @@ parse_markdown() {
         -e 's|^- (.*)|<li>\1</li>|'
 }
 
-# Page mode helper: wrap everything since $part_start in a part. The h2
-# hangs in the margin as its heading; content before the first h2 gets an unlabeled part.
-# A part left empty (say, a "Results" that only held METRICS) is dropped.
+# A part left empty (a "Results" that only held METRICS) is dropped.
 # Uses render_markdown_content's locals through bash's dynamic scope.
 flush_part() {
     local body=${content:$part_start}
@@ -450,9 +399,8 @@ flush_part() {
     fi
 }
 
-# A METRICS value earns big-number styling only when it's a quantity:
-# it starts with a digit or one of ~ < > + $ ±. "Real-time" or "Finalist"
-# are true, but they aren't figures.
+# Only quantities get big-number styling. "Real-time" or "Finalist" may
+# be true, but they aren't figures.
 is_quantity() {
     case "$1" in
         [0-9~\<\>+\$]*|±*) return 0 ;;
@@ -460,8 +408,8 @@ is_quantity() {
     return 1
 }
 
-# Close a METRICS block: end the figures grid, then list what wasn't a
-# quantity under it. Uses render_markdown_content's locals, like flush_part.
+# Non-quantities are listed under the figures grid. Uses
+# render_markdown_content's locals, like flush_part.
 close_metrics() {
     local open='<div class="metrics-grid">'
     if [[ "$metrics" == *"$open" ]]; then
@@ -476,9 +424,8 @@ close_metrics() {
 }
 
 # Modes: "" renders the body in place. "page" wraps each `## ` heading and
-# what follows in a part (see flush_part) and leaves METRICS out; "metrics"
-# renders only the METRICS blocks, for the figures band. HTML comments
-# (source notes) never render, in any mode.
+# what follows in a part and leaves METRICS out. "metrics" renders only
+# the METRICS blocks, for the figures band.
 render_markdown_content() {
     local file=$1
     local mode=${2:-}
@@ -494,7 +441,7 @@ render_markdown_content() {
     local idless_embed_re='src="[^"]*youtube(\.googleapis)?\.com/embed/?(\?|")'
 
     while IFS= read -r line || [ -n "$line" ]; do
-        # Inside a comment: skip until it closes, keep what follows.
+        # HTML comments never render, even across lines.
         if $in_comment; then
             [[ "$line" == *"-->"* ]] || continue
             line=${line#*-->}
@@ -502,7 +449,6 @@ render_markdown_content() {
             [[ "$line" =~ ^[[:space:]]*$ ]] && continue
         fi
 
-        # Fenced code block — toggle and escape contents.
         if [[ "$line" == '```'* ]]; then
             if $in_code_block; then
                 content+="</code></pre>"
@@ -524,8 +470,8 @@ render_markdown_content() {
             continue
         fi
 
-        # Strip comments that open on this line; a comment-only line is
-        # dropped without closing the paragraph around it.
+        # A comment-only line is dropped without closing the paragraph
+        # around it.
         if [[ "$line" == *"<!--"* ]]; then
             while [[ "$line" == *"<!--"* ]]; do
                 after=${line#*<!--}
@@ -547,9 +493,8 @@ render_markdown_content() {
             continue
         fi
 
-        # A Figma embed weighs megabytes and runs its own app, so it waits
-        # behind a one-line link to the prototype; script.js swaps the iframe in on
-        # click, and without JS the link opens Figma.
+        # A Figma embed weighs megabytes, so it waits behind a link that
+        # script.js swaps for the iframe on click. Without JS it opens Figma.
         if [[ "$line" == *"<iframe"* ]] && [[ "$line" =~ $figma_embed_re ]]; then
             if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
             if $in_list; then content+="</ul>"; in_list=false; fi
@@ -564,7 +509,6 @@ render_markdown_content() {
             continue
         fi
 
-        # METRICS block opener.
         if [[ "$line" == "METRICS:" ]]; then
             if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
             if $in_list; then content+="</ul>"; in_list=false; fi
@@ -573,9 +517,8 @@ render_markdown_content() {
             continue
         fi
 
-        # Inside a METRICS block, any non-`- ` line closes the block and
-        # falls through to normal processing (prevents content getting
-        # swallowed when the block isn't terminated by a blank line).
+        # Any non-list line closes the block and falls through, so content
+        # isn't swallowed when no blank line ends it.
         if $in_metrics; then
             if [[ "$line" == "- "* ]]; then
                 metric_line=${line#- }
@@ -607,7 +550,6 @@ render_markdown_content() {
             continue
         fi
 
-        # A DIAGRAM: line inlines its SVG in a captioned figure.
         if [[ "$line" == "DIAGRAM:"* ]]; then
             if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
             if $in_list; then content+="</ul>"; in_list=false; fi
@@ -619,9 +561,7 @@ render_markdown_content() {
             continue
         fi
 
-        # A TOY: line mounts toys/<name>.js inside the diagram right above
-        # it. The figure only gets a name; the
-        # page loads the script (see toy_scripts).
+        # The figure only gets the toy's name; toy_scripts loads the script.
         if [[ "$line" == "TOY:"* ]]; then
             toy=${line#TOY:}
             toy=${toy//[[:space:]]/}
@@ -637,7 +577,6 @@ render_markdown_content() {
             continue
         fi
 
-        # A lone image line is a screen: a captioned figure.
         if [[ "$line" =~ $screen_re ]]; then
             if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
             if $in_list; then content+="</ul>"; in_list=false; fi
@@ -661,7 +600,6 @@ render_markdown_content() {
             continue
         fi
 
-        # Page mode: a `## ` heading starts a new part.
         if [ "$mode" = "page" ] && [[ "$line" == "## "* ]]; then
             if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
             if $in_list; then content+="</ul>"; in_list=false; fi
@@ -685,8 +623,6 @@ render_markdown_content() {
             in_list=false
         fi
 
-        # Lines that start with a block-level HTML tag aren't paragraph
-        # content, so we don't wrap them in <p>...</p>.
         case "$parsed_line" in
             "<h"[1-6]*|"<div"*|"<iframe"*|"<svg"*|"<img"*|"<blockquote"*|"<figure"*|"<pre"*|"<hr"*|"<video"*|"<audio"*|"<table"*)
                 if $in_paragraph; then content+="</p>"; in_paragraph=false; fi
@@ -717,9 +653,8 @@ render_markdown_content() {
     fi
 }
 
-# The case's closing call to action: its first "CTA:" line, rendered as
-# one row above the pager. A LinkedIn link says where it goes to a screen
-# reader ("Let's talk on LinkedIn"). Prints nothing without a CTA line.
+# The first "CTA:" line. A LinkedIn link gets an aria-label so a screen
+# reader hears where it goes ("Let's talk on LinkedIn").
 case_cta() {
     local line text
     line=$(strip_frontmatter "$1" | grep -m 1 '^CTA:' || true)
@@ -729,8 +664,6 @@ case_cta() {
     printf '<p class="case-cta">%s</p>\n' "$text"
 }
 
-# One module script per toy the page names (TOY: lines), for toys whose
-# file exists under toys/. Prints nothing when the page has none.
 toy_scripts() {
     local name
     strip_frontmatter "$1" | strip_comments | awk '/^TOY:/ { sub(/^TOY:[[:space:]]*/, ""); sub(/[[:space:]]+$/, ""); if (!seen[$0]++) print }' \
@@ -753,7 +686,7 @@ rebase_paths() {
 
 
 # ─────────────────────────────────────────────────────────────
-# Emit — sections, galleries, final HTML
+# Emit: pages and the ledger
 # ─────────────────────────────────────────────────────────────
 
 # The Year row shows the year alone: a month reads as false precision on
@@ -763,8 +696,8 @@ format_year() {
     return 0
 }
 
-# A lone "[text](url)" line before the first ## heading is the project's
-# link ("Project Link", "View archive"). Prints text$FS url, or nothing.
+# The lone "[text](url)" line before the first ## heading. Prints
+# text$FS url, or nothing.
 lead_link() {
     strip_frontmatter "$1" | strip_comments | awk '
         /^## / { exit }
@@ -775,8 +708,8 @@ lead_link() {
         }'
 }
 
-# HTML comments (source notes) removed, even across lines, so a link
-# kept in a comment is never taken for the page's link.
+# Removes HTML comments, even across lines, so a link inside one is never
+# taken for the page's link.
 strip_comments() {
     awk '{
         line = $0; out = ""
@@ -794,18 +727,15 @@ strip_comments() {
     }'
 }
 
-# A URL as link text that says where it goes: no scheme, no "www.", no
-# trailing slash ("sryo.github.io/murmur").
+# A URL as readable link text: no scheme, "www." or trailing slash.
 display_url() {
     local u=${1#*://}
     u=${u#www.}
     printf '%s' "${u%/}"
 }
 
-# Case header: a spec column (glyph, then Client / Year / Role / Scope /
-# Link) beside the h1 and the summary as dek. Uses the fm_* globals.
-# A side project (kind "side") lists Year / Medium / Scope / Link / Code:
-# it has no client, and its links read as the address they open.
+# Uses the fm_* globals. A side project (kind "side") has no Client row,
+# shows Medium instead of Role, and its links read as the address they open.
 render_case_head() {
     local folder=$1
     local kind=${2:-case}
@@ -865,8 +795,7 @@ render_case_head() {
     echo "</header>"
 }
 
-# Print folders newest first: date descending, then order:, then slug.
-# Folders without a _.md are skipped. Undated ones sort last.
+# Newest first, then order:, then slug. Undated folders sort last.
 sort_folders() {
     local folder
     for folder in "$@"; do
@@ -889,11 +818,9 @@ sort_items() {
     done | LC_ALL=C sort -t'|' -k1,1n -k2,2r -k3,3 | cut -d'|' -f4-
 }
 
-# The glyph cell: the folder's image, or, when it has none, the label's
-# first letter set in type so the column never has holes. An optional
-# view-transition name lets the glyph fly from its row to its case page.
-# A fourth argument "parts" adds the _.parts.svg sidecar, base64, as
-# data-parts (the spec glyph only: motion.js pulls those primitives apart).
+# Without an image, the label's initial fills the cell so the column has
+# no holes. The view-transition name lets the glyph fly from its row to
+# its page. "parts" adds _.parts.svg for motion.js (spec glyph only).
 render_glyph() {
     local image_file=$1 label=$2 vt=${3:+ style=\"view-transition-name: $3\"} initial cls=glyph parts=""
     [ "$fm_glyph" = colour ] && cls="glyph colour"
@@ -908,7 +835,7 @@ render_glyph() {
     fi
 }
 
-# Fallbacks for items without a label: the text before ": " in the title.
+# A title "Label: line" splits at the first ": ".
 derive_label() {
     local title=$1
     if [[ "$title" == *": "* ]]; then printf '%s' "${title%%: *}"; else printf '%s' "$title"; fi
@@ -948,8 +875,7 @@ derive_medium() {
     done
 }
 
-# One <li> in the ledger: Year · Glyph · Name · Line · Role (or Medium).
-# A year equal to the row above's gets class="repeat" (hidden by CSS).
+# A year equal to the row above's gets class="repeat", hidden by CSS.
 render_ledger_row() {
     local folder=$1
     local href=$2
@@ -975,8 +901,7 @@ render_ledger_row() {
     printf '</a></li>\n'
 }
 
-# One featured <li>: Glyph · Name · Line (the summary). No role, no year:
-# featured rows run by strength, and the case page holds the facts.
+# No role or year on featured rows: the case page holds those facts.
 render_featured_row() {
     local folder=$1 slug image_file
     slug=$(basename "$folder")
@@ -990,7 +915,6 @@ render_featured_row() {
     printf '</a></li>\n'
 }
 
-# The featured client cases, in the order given, under the client heading.
 render_featured() {
     printf '<section class="group" aria-labelledby="g-client">\n'
     printf '<div class="group-head"><h2 id="g-client">Client work</h2></div>\n'
@@ -1003,10 +927,8 @@ render_featured() {
     echo '</section>'
 }
 
-# The Also glyph, inline so it takes the text colour and script.js can
-# fit its box to the ink: the SVG's inner markup under its own viewBox,
-# black fills as currentColor (colour glyphs keep theirs). A raster glyph
-# stays an <img>; no image gets the label's initial.
+# Inlined, not an <img>, so it takes the text colour and script.js can
+# fit its box to the ink. Colour glyphs keep their fills.
 render_also_glyph() {
     local image_file=$1 label=$2 vt=$3 svg vb inner
     if [[ "$image_file" == *.svg ]] && [ -f "$image_file" ]; then
@@ -1027,10 +949,8 @@ render_also_glyph() {
     fi
 }
 
-# Also: the other client cases as one sentence, newest first. Each item is
-# glyph, name and year in one link to its case, with the role inside the
-# link for screen readers (never shown on screen).
-# Commas between items, "and" before the last, a full stop after it.
+# The other client cases as one sentence. The role sits inside each link
+# for screen readers and is never shown on screen.
 render_also() {
     local n=$# i=0 folder slug label year role tail
     printf '<section class="group also" aria-labelledby="g-also">\n'
@@ -1060,8 +980,7 @@ render_also() {
     printf '</p>\n</section>\n'
 }
 
-# Oldest and newest year among the folders' dates, space-separated.
-# Undated folders are ignored; prints nothing when none is dated.
+# "oldest newest" year among the folders. Prints nothing when none is dated.
 year_span() {
     local folder year oldest="" newest=""
     for folder in "$@"; do
@@ -1075,8 +994,7 @@ year_span() {
     return 0
 }
 
-# One ledger group: a sentence-case heading, then rows. `key` is
-# "client" or "side"; every row opens its page at work/<slug>/.
+# `key` is "client" or "side".
 render_group() {
     local key=$1
     local heading=$2
@@ -1085,7 +1003,6 @@ render_group() {
 
     printf '<section class="group" aria-labelledby="g-%s">\n' "$key"
     if [ "$key" = "side" ]; then
-        # Side projects state their own span in the heading.
         local from to
         read -r from to < <(year_span "$@")
         [ -n "$from" ] && heading+=", $from"
@@ -1110,8 +1027,7 @@ render_group() {
     echo '</section>'
 }
 
-# One link from the profile's "Find me elsewhere" list, by its text
-# (LinkedIn, GitHub). Prints the URL, or nothing.
+# A URL from the profile's "Find me elsewhere" list, by its link text.
 profile_link() {
     local want=$1 text url
     [ -n "$profile" ] || return 0
@@ -1127,9 +1043,7 @@ profile_link() {
     return 0
 }
 
-# Contact links from the profile: LinkedIn and GitHub from its "Find me
-# elsewhere" list, plus email: from its frontmatter when set. Prints one
-# line of links separated by " &middot; ", or nothing.
+# LinkedIn and GitHub from the profile's list, plus its email: when set.
 contact_links() {
     local url out="" want
     [ -n "$profile" ] || return 0
@@ -1147,8 +1061,8 @@ contact_links() {
     printf '%s' "$out"
 }
 
-# The profile's first plain paragraph: the ledger's lead, and the
-# description the ledger and About share. Empty without a profile.
+# The profile's first plain paragraph: the ledger's lead and the
+# description the ledger and About share.
 profile_lead() {
     [ -n "$profile" ] || return 0
     strip_frontmatter "$profile/_.md" | awk '
@@ -1156,10 +1070,8 @@ profile_lead() {
         { print; exit }'
 }
 
-# The ledger's header without front.md: the profile's first paragraph as
-# the lead and its italic availability line. No masthead: where the h1
-# names the author, the name links home. The availability line ends on
-# About and the contact links.
+# The header when there is no front.md: the profile's lead as the h1 and
+# its italic availability line.
 render_intro() {
     local lead="" avail="" links name h1 link
     if [ -n "$profile" ]; then
@@ -1183,8 +1095,8 @@ render_intro() {
     echo '</header>'
 }
 
-# Closing footer: the same contact links, so the skim ends on a next step.
-# front.md's CTA: line, when there is one, is its heading; else "Get in touch".
+# The footer when there is no signature, so the page still ends on a way
+# to get in touch.
 render_contact_footer() {
     local links ask=""
     links=$(contact_links)
@@ -1193,25 +1105,17 @@ render_contact_footer() {
     printf '<footer class="contact">%s<p>%s</p></footer>\n' "${ask:-<h2>Get in touch</h2>}" "$links"
 }
 
-# ── Front page (contents/front.md) ──────────────────────────
-# Optional. The page's opening and its offers:
-#   # Headline                      the h1, beside the site links
-#   first plain paragraph           scope facts: open How I work
-#   > Thesis                        the poster under the h1; it breaks
-#                                   after its first comma, if any
-#   *Availability*                  follows the scope facts
-#   ## What I can do                one "### Kicker" per offer, its line
-#                                   below, then "PROOF: slug, slug": the
-#                                   cases (or side projects) that prove it.
-#                                   The first offer renders open; each
-#                                   proof's glyph (and _.parts.svg) rides
-#                                   along for front.js, which breaks the
-#                                   open offer's glyphs into their parts
-#   ## How I work                   one paragraph: it heads the section
-#   CTA: Ask? [Let's talk](url)     the signature footer's ask
-# Rendered: header, thesis and offers above the cases; How I work and the
-# signature footer below them. Comments never render. Each PROOF slug must
-# name a case or side project.
+# Front page: contents/front.md, optional.
+#   # Headline              the h1; the author's name in it links home
+#   first plain paragraph   scope, shown under How I work
+#   > Thesis                under the h1, split after its first comma
+#   *Availability*          shown in the signature
+#   ## What I can do        per offer: "### Kicker", one line, then
+#                           "PROOF: slug, slug" naming cases or side
+#                           projects; an unknown slug stops the build
+#   ## How I work           one paragraph, the section's heading
+#   CTA: Ask? [text](url)   the signature's ask
+# Offers sit above the cases; How I work and the signature below them.
 FRONT_FILE="${CONTENT_DIR}front.md"
 
 # One part of front.md, by name: h1, scope, thesis, avail or how.
@@ -1276,13 +1180,9 @@ check_front() {
     done < <(front_offers)
 }
 
-# The front page's opening, from front.md: the h1 beside the site links
-# (Cases, About, LinkedIn, email), the thesis as a poster in two lines,
-# then "What I can do". Each offer is a kicker, its line and the cases
-# that prove it; the first renders open. Without JS every offer reads
-# open (styles.css); front.js turns kickers into buttons and moves the
-# open offer's proof glyphs, built from the <template> sources: each
-# glyph and its _.parts.svg, base64, once per slug.
+# Without JS every offer reads open (styles.css). front.js builds the
+# proof glyphs from the <template>, which holds each glyph and its
+# _.parts.svg once per slug.
 render_front() {
     local h1 name link nav url thesis kicker line proof slug folder links n i k image_file src
     local -a offers=() srcs=()
@@ -1311,7 +1211,7 @@ render_front() {
 
     thesis=$(html_escape "$(front_part thesis)")
     if [ -n "$thesis" ]; then
-        # The last word stays with the one before it.
+        # No one-word last line.
         [[ "$thesis" == *" "* ]] && thesis="${thesis% *}&nbsp;${thesis##* }"
         if [[ "$thesis" == *", "* ]]; then
             thesis="<span class=\"l\">${thesis%%, *},</span> <span class=\"l\">${thesis#*, }</span>"
@@ -1371,8 +1271,7 @@ render_front() {
     echo '</div>'
 }
 
-# "How I work", below the cases: its paragraph is the heading, front.md's
-# scope paragraph sits under it. The availability line goes to the signature.
+# Its paragraph is the heading; front.md's scope paragraph sits under it.
 render_how() {
     local how line scope
     how=$(front_part how)
@@ -1386,13 +1285,10 @@ render_how() {
     printf '</div></section>\n'
 }
 
-# The signature: the page's last poster. front.md's CTA: line as the ask,
-# the profile's email big under it, LinkedIn and GitHub, then front.md's
-# availability. Under it, one glyph link per ledger row (featured client
-# cases, then side projects): each _.svg inline in currentColor, its
-# _.parts.svg (base64) for foot.js, which lands the client glyphs on the
-# ask and frames the poster with the rest. Without JS the glyphs read as
-# rows of links under the poster. Colour glyphs stay out.
+# The page's closing footer: front.md's CTA as the ask, then the
+# profile's contact links and the availability line. Featured and side
+# project glyphs ride along inline, with their parts, for foot.js.
+# Colour glyphs stay out.
 render_signature() {
     local ask url want email avail folder slug image_file svg parts more="" items=""
     ask=$(case_cta "$FRONT_FILE" | sed -e 's/^<p class="case-cta">//' -e 's|</p>$||')
@@ -1412,7 +1308,7 @@ render_signature() {
         svg=$(tr '\n' ' ' < "$image_file" | sed -E -e 's/[[:space:]]+/ /g' -e 's/fill="(black|#000|#000000)"/fill="currentColor"/g' -e 's/<svg /<svg aria-hidden="true" focusable="false" /' -e 's/[[:space:]]+$//')
         parts=""
         [ -f "${image_file%.svg}.parts.svg" ] && parts=" data-parts=\"$(base64 < "${image_file%.svg}.parts.svg" | tr -d '\n')\""
-        # Decorative: the ring is not a menu, so the glyphs don't link anywhere.
+        # Decorative, so the glyphs don't link.
         items+="<li><span class=\"sig-g$([[ " ${featured_folders[*]} " == *" $folder "* ]] && printf ' client')\" data-name=\"$(html_escape "$fm_label")\"$parts>$svg</span></li>"$'\n'
     done
     echo '<footer class="sig" aria-labelledby="sig-ask">'
@@ -1435,9 +1331,8 @@ render_signature() {
     echo '</footer>'
 }
 
-# Items (side projects on the profile) as a compact, anchored list: glyph,
-# name linking to the item's own page, year and question, its one line.
-# Screens, diagrams and the full body live on that page.
+# Side projects on the About page as a compact, anchored list. The full
+# body lives on each item's own page.
 render_items() {
     local dir=$1
     local heading=$2
@@ -1520,18 +1415,15 @@ EOF
     $css
     </style>
 EOF
-    # script.js is an optional enhancement: inlined only when it has
-    # content, in the head so the accent is set before first paint.
+    # Inlined in the head so its js class lands before first paint.
     if [ -s "$JS_FILE" ]; then
         printf '    <script>\n%s\n    </script>\n' "$(cat "$JS_FILE")"
     fi
-    # motion.js: the page's motion (parity pull, flow pulse), one
-    # deferred file for every page, so it stays out of the inlined head.
+    # Linked and deferred, so it stays out of the inlined head.
     if [ -f "$OUT_DIR/motion.js" ]; then
         echo "    <script src=\"${root}motion.js\" defer></script>"
     fi
-    # A page's own scripts (front.js and foot.js on the ledger),
-    # space-separated, deferred, each when present.
+    # page_js is space-separated; each loads only when present.
     local js
     for js in $page_js; do
         if [ -f "$OUT_DIR/$js" ]; then echo "    <script src=\"${root}$js\" defer></script>"; fi
@@ -1539,9 +1431,8 @@ EOF
     echo "</head>"
 }
 
-# Where a page's "back" leads: a side project goes to its entry on the
-# About page (works.html no longer lists side projects), everything else
-# to its row on works.html. Reads back_kind, set by write_case_page.
+# A side project leads back to its About entry, since works.html doesn't
+# list it. Reads back_kind, set by write_case_page.
 back_href() {
     if [ "${back_kind:-case}" = side ] && [ -n "$profile" ]; then
         printf '../%s/#%s' "$(basename "$profile")" "$1"
@@ -1553,10 +1444,8 @@ back_label() {
     if [ "${back_kind:-case}" = side ] && [ -n "$profile" ]; then printf 'Side projects'; else printf 'All work'; fi
 }
 
-# Pager for case pages. Follows the page's group in ledger order (the
-# pager_folders global: client work or side projects): prev is the row
-# above (newer), next the row below (older), each with its ledger line.
-# No wrap-around: an end slot leads back to the ledger instead.
+# Pages through the pager_folders global in ledger order. No wrap-around:
+# each end leads back to the list instead.
 render_prev_next() {
     local idx=$1
     local count=${#pager_folders[@]}
@@ -1585,9 +1474,8 @@ render_prev_next() {
     echo "</nav>"
 }
 
-# One standalone page per section or side project, at work/<slug>/index.html.
-# `idx` is its place in pager_folders; -1 for the profile, which gets no
-# pager. `kind` is "case" or "side" (see render_case_head).
+# `idx` is the page's place in pager_folders; -1 for the profile, which
+# gets no pager. `kind` is "case" or "side".
 write_case_page() {
     local folder=$1
     local idx=$2
@@ -1678,8 +1566,8 @@ rm -rf -- "$WORK_DIR"
 echo "Building sections..."
 
 # One sorted list per group feeds the ledger and the pager, so they can't
-# disagree. The first kind: profile section is About: it gets no row, it
-# heads the ledger, and its items are the side projects.
+# disagree. The first kind: profile folder is About: it gets no row, and
+# its items are the side projects.
 profile=""
 declare -a cases=()
 for folder in "$CONTENT_DIR"*/; do
@@ -1731,7 +1619,7 @@ done
 if [ -n "$profile" ]; then
     write_case_page "$profile" -1 "Side projects"
 fi
-# Every side project gets the same shell, with a pager of its own.
+# Side projects page among themselves.
 pager_folders=("${side_folders[@]}")
 i=0
 for folder in "${side_folders[@]}"; do
@@ -1760,8 +1648,7 @@ if [ ${#featured_folders[@]} -gt 0 ]; then
 else
     render_group client "Client work" "${sorted_folders[@]}"
 fi
-# Side projects are not listed here: the About page holds them, and the
-# offers above link the ones that prove a point.
+# Side projects are listed on the About page, not here.
 render_how
 if [ -f "$FRONT_FILE" ] && [ -n "$profile" ]; then
     render_signature "${featured_folders[@]}" "${side_folders[@]}"

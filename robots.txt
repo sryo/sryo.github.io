@@ -2,17 +2,5 @@
 
 User-agent: *
 Allow: /
-Disallow: /works
-Disallow: /work/bancor/
-Disallow: /work/continental/
-Disallow: /work/ey-helix/
-Disallow: /work/hometown/
-Disallow: /work/infoxel/
-Disallow: /work/lavoz/
-Disallow: /work/lede/
-Disallow: /work/omsnic/
-Disallow: /work/topicflower/
-Disallow: /work/valora/
-Disallow: /work/veng/
 
 Sitemap: https://yadarola.com.ar/sitemap.txt

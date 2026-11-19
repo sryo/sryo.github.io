@@ -6,7 +6,7 @@
 #
 # Usage:
 #   bash tests/run.sh            # verify
-#   bash tests/run.sh --update   # regenerate tests/expected/ after intentional changes
+#   bash tests/run.sh --update   # regenerate tests/expected/
 
 set -euo pipefail
 
@@ -20,7 +20,7 @@ MODE="${1:-verify}"
 pass() { printf '  ✓ %s\n' "$1"; }
 fail() { printf '  ✗ %s\n' "$1"; exit 1; }
 
-# Strict sentinel: literal substring match; fails loudly on miss.
+# Literal substring match in works.html.
 sentinel() {
     local desc=$1
     local pattern=$2
@@ -156,7 +156,6 @@ case "$BUILD_ERR" in
 esac
 
 echo "Sentinel checks..."
-# works.html is the ledger: no ring, no dialogs, no connectors.
 sentinel_in work/02-gallery/index.html "SVG glyph inlined as base64" 'data:image/svg+xml;base64,'
 absent_in   works.html "no checkbox buttons"         'type="checkbox"'
 absent_in   works.html "no ring"                     'class="clock"'
@@ -190,7 +189,7 @@ sentinel_in $P "og:url"          '<meta property="og:url" content="https://examp
 sentinel_in $P "og:image"        '<meta property="og:image" content="https://example.test/og.png">'
 sentinel_in $P "title escaped"   '<title>First &amp; &lt;Special&gt; / Test Author</title>'
 sentinel_in $P "og:title escaped" '<meta property="og:title" content="First &amp; &lt;Special&gt;">'
-sentinel_in $P "styles inlined"  '/* test stub */'
+sentinel_in $P "styles inlined"  '.test-stub{}'
 sentinel_in $P "script inlined on case pages" '/* script stub */'
 sentinel_in works.html "script inlined on the ledger" '/* script stub */'
 sentinel_in $P "og:image:alt is the page title" '<meta property="og:image:alt" content="First &amp; &lt;Special&gt;">'
@@ -234,7 +233,7 @@ sentinel_in work/01-tags/index.html "back link is plain"  '<nav class="mast"><a 
 # Case header: a spec column (glyph + dl) beside the h1 and the dek.
 P=work/01-tags/index.html
 sentinel_in $P "spec column holds the glyph" '<aside class="spec"><span class="glyph" '
-# _.parts.svg rides on the spec glyph only, base64, for the parity pull.
+# _.parts.svg rides on the spec glyph only.
 sentinel_in $P "spec glyph carries its parts" ' data-parts="PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMCAxMCI+PGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjUiLz48L3N2Zz4K"><img'
 # On works.html only the front page's glyph sources carry parts, not the rows.
 if grep -qE '<span class="glyph[^>]*data-parts=' "$ACTUAL"; then fail "ledger glyphs carry parts"; else pass "ledger glyphs carry no parts"; fi
@@ -261,8 +260,7 @@ sentinel_in work/01-tags/index.html "spec glyph shares the name"          '<asid
 absent_in   works.html              "no side rows on works.html"          'view-transition-name: g-proj-a">'
 sentinel_in work/proj-a/index.html  "side spec glyph shares the name"     '<aside class="spec"><span class="glyph" style="view-transition-name: g-proj-a">'
 
-# kind: profile: no client row, an About page, the ledger header, and
-# its items as the side-project group.
+# kind: profile: no client row, an About page, and its items as side projects.
 P=work/02-gallery/index.html
 absent_in   works.html "profile has no client row"     'class="row" href="work/02-gallery/"'
 absent_in   works.html "front.md replaces the profile lead" 'I make fixtures. Usually that means breaking things on purpose.</h1>'
@@ -272,7 +270,7 @@ sentinel_in works.html "masthead LinkedIn"             'href="https://linkedin.c
 sentinel_in works.html "masthead GitHub"               'href="https://github.com/test"'
 sentinel_in works.html "closing footer"                '<footer class="sig" aria-labelledby="sig-ask">'
 absent_in   works.html "no email without one on file"  'mailto:'
-# No tiny caps labels on works.html: no masthead, counts or column header.
+# No masthead, counts, column header or caps labels on works.html.
 absent_in   works.html "no masthead"                   '<p class="mast">'
 absent_in   works.html "no item counts"                'class="count"'
 absent_in   works.html "no column header row"          '<div class="cols"'
@@ -288,8 +286,7 @@ sentinel_in $P "About page keeps the full body"        "Open to what's next."
 sentinel_in $P "About page anchors each item"          'id="proj-a"'
 absent_in   $P "About page has no pager"               'rel="next"'
 
-# Side-project pages: the case shell, facts from frontmatter, a pager
-# over side projects only.
+# Side-project pages: the case shell, with a pager over side projects only.
 P=work/proj-a/index.html
 sentinel_in $P "side h1"                  '<div class="case-title"><h1>Project A</h1>'
 sentinel_in $P "side dek is the summary"  '<p class="dek">Project A in one line</p>'
@@ -309,8 +306,8 @@ sentinel_in work/proj-c/index.html "last side page leads back" '<a class="pn-all
 absent_in   work/proj-c/index.html "side pager stays in side projects" 'href="../01-tags/"'
 absent_in   work/05-twin-b/index.html "client pager stays in client work" 'href="../proj-a/"'
 
-# Link and Code: a link that is the repo
-# shows once, as Code; a link inside a comment is never the page link.
+# A link that is the repo shows once, as Code; a link inside a comment is
+# never the page link.
 sentinel_in work/proj-b/index.html "link equal to repo: shows as Code" '<dt>Code</dt><dd><a href="https://github.com/test/b">github.com/test/b</a></dd>'
 absent_in   work/proj-b/index.html "no Link row repeating the repo" '<dt>Link</dt>'
 absent_in   work/proj-c/index.html "commented-out link is not the page link" 'example.com/comment'
@@ -335,8 +332,7 @@ absent_in   $P "no XML prolog inlined"    '<?xml'
 absent_in   $P "no SVG comment inlined"   'diagram comment'
 absent_in   $P "DIAGRAM line not in the body" 'DIAGRAM:'
 
-# motion.js (parity pull, tether, flow pulse): one deferred file for every
-# page, linked from the head when it exists at the site root.
+# motion.js is linked deferred from every page when it exists.
 sentinel_in work/01-tags/index.html "motion.js deferred on case pages" '<script src="../../motion.js" defer></script>'
 sentinel_in works.html "motion.js deferred on the ledger" '<script src="motion.js" defer></script>'
 
@@ -406,7 +402,7 @@ else
 fi
 absent_in works.html "no Role column over featured rows" '<span>Role</span>'
 
-# Without any featured: the client group is one dated ledger, as before.
+# Without any featured: the client group is one dated ledger.
 build_shows() {
     local desc=$1 setup=$2 check=$3 tmp
     tmp=$(mktemp -d)
@@ -425,10 +421,8 @@ build_shows "no featured: one dated client ledger, no index" \
 build_warns "featured: that isn't a number flagged" "warn: 03-metrics featured: must be a positive number (top)" \
     'sed -i.bak "s/^featured: 2/featured: top/" contents/03-metrics/_.md'
 
-# contents/front.md: the opening (headline and site links, the thesis set
-# as a poster), "What I can do" offers that each link to the cases proving
-# them, then below the cases How I work (the scope and availability facts,
-# then its line) and the contact closer. Without it, the profile heads the page.
+# contents/front.md: headline, thesis and offers above the cases, How I
+# work and the signature below. Without it, the profile heads the page.
 echo "Front page..."
 sentinel_in works.html "front: headline is the h1, the name links home" '<h1 class="name"><a class="home" href="./">Test Author</a>, fixture designer &amp; lead. Ten years, most of them leading.</h1>'
 sentinel_in works.html "front: site links beside the name" '<nav class="site" aria-label="Site"><a href="#g-client">Cases</a> <a href="work/02-gallery/">About</a> <a href="https://linkedin.com/in/test">LinkedIn</a></nav>'

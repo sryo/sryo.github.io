@@ -37,8 +37,8 @@
   </script>
 
   <script>
-    // One saturated color per visit, set before first paint. Every swatch keeps
-    // white text above 4.5:1, so any pick is legible by construction.
+    // Set before first paint. Every swatch keeps white text above 4.5:1, so
+    // any random pick is legible.
     const PALETTE = {
       '#0064E6': 'chicago blue',
       '#CC3D33': 'rust',
@@ -94,7 +94,6 @@
       text-underline-offset: 4px;
     }
     a:hover { text-decoration-thickness: 4px; }
-
     a.captured {
       color: var(--bg);
       position: relative;
@@ -131,6 +130,42 @@
       margin-top: 1.5em;
     }
 
+    body { overflow-x: clip; }
+    .poster {
+      margin-inline: calc(50% - 50vw);
+      margin-top: calc(-1 * clamp(1.5rem, 6vw, 5rem) + 0.1em);
+      padding: 0 1.2vw;
+      font-size: clamp(40px, 10.9vw, 230px);
+      font-weight: 800;
+      line-height: 0.93;
+      letter-spacing: -0.045em;
+      word-break: break-all;
+    }
+    .poster h1, .poster .lead {
+      display: inline;
+      font: inherit;
+      letter-spacing: inherit;
+      margin: 0;
+      max-width: none;
+    }
+    .poster a { text-decoration-thickness: 0.05em; text-underline-offset: 0.08em; }
+    .poster .nb { white-space: nowrap; }
+    .glyph { text-decoration: none; }
+    .glyph svg {
+      display: inline-block;
+      width: 0.8em;
+      height: 0.8em;
+      margin: 0 0.12em;
+      vertical-align: -0.07em;
+      fill: currentColor;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .glyph.in svg { opacity: 1; }
+    @media (max-width: 700px) {
+      .poster { font-size: 14.6vw; padding: 0 2vw; }
+    }
+
     .intro { margin-bottom: 2em; }
 
     .links { margin-top: 2.5em; }
@@ -163,20 +198,21 @@
       html.js, html.js body, html.js a { cursor: none; }
       html.js .cursor { display: block; }
     }
-
     @media (pointer: coarse) {
       a.captured { background: #fff; box-shadow: 0 0 0 6px #fff; border-radius: 2px; }
     }
-</style>
+  </style>
 </head>
 
 <body>
   <div class="page">
 
     <header>
-      <h1>Mateo Yadarola</h1>
-      <p class="lead">I'm a designer. Usually that means asking uncomfortable questions until something gets simpler.</p>
-      <p class="lead">I've been making interfaces since before it was a job. Most of what's below exists to stay curious.</p>
+      <div class="poster">
+        <h1>Mateo Yadarola.</h1>
+        <p class="lead">I'm a designer. Usually that means asking uncomfortable questions until something gets simpler.</p>
+        <p class="lead">I've been <a href="/works">making interfaces</a> since before it was a job. Most of what's below exists to stay curious.</p>
+      </div>
       <nav class="links" aria-label="Contact">
         <ul>
           <li><a href="mailto:mateo@yadarola.com.ar">Email</a></li>
@@ -294,18 +330,74 @@
   <svg class="cursor" aria-hidden="true"><path fill="#fff" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>
 
   <script>
-    // Theme-color and favicon follow the visit's color.
+    const GLYPHS = [
+      ['airnod', 'AirNod', 'M16 36A24 24 0 1 0 64 36A24 24 0 1 0 16 36ZM41.21 51.69L54.79 48.31L65.92 92.94L52.34 96.33Z'],
+      ['avis', 'Avis', 'M12 12L62 12L62 62L12 62ZM40 40L40 94L78 74Z'],
+      ['chanchan', 'Chanchán', 'M15 68A21 21 0 1 0 57 68A21 21 0 1 0 15 68ZM46 14L58 14L58 72L46 72ZM58 14H84V40H58Z'],
+      ['dirpad', 'Dirpad', 'M10 26L74 26L74 66L10 66ZM30 50L90 50L60 90Z'],
+      ['figma-cdp', 'Figma-CDP', 'M10 26L58 26L58 74L10 74ZM38 50A26 26 0 1 0 90 50A26 26 0 1 0 38 50Z'],
+      ['figma-plugins', 'Figma Plugins', 'M84 52A34 34 0 0 1 16 52ZM30 18L40 18L40 72L30 72ZM60 18L70 18L70 72L60 72Z'],
+      ['fin', 'Fin', 'M12 12L88 12L88 88L12 88ZM56 12L64 12L64 88L56 88ZM12 50L56 50L56 58L12 58Z'],
+      ['murmur', 'Murmur', 'M10 14L60 14L60 58L10 58ZM12 58L38 58L12 84ZM38 58A26 26 0 1 0 90 58A26 26 0 1 0 38 58Z'],
+      ['posta', 'Posta', 'M10 30L90 30L90 80L10 80ZM10 14L90 14L50 58Z'],
+      ['subi', 'Subí', 'M10 22L90 22L90 74L10 74ZM18 30L82 30L82 46L18 46ZM19 74A11 11 0 1 0 41 74A11 11 0 1 0 19 74ZM59 74A11 11 0 1 0 81 74A11 11 0 1 0 59 74Z'],
+      ['trueframe', 'Trueframe', 'M16 8L60 8L60 68L16 68ZM28 20L72 20L72 80L28 80ZM40 32L84 32L84 92L40 92Z'],
+      ['va', 'Va', 'M75.5453 66.0658C88.6451 66.0658 99.2647 55.4464 99.2647 42.3466C99.2647 29.2469 88.6451 18.6275 75.5453 18.6275C65.2235 18.6275 56.4417 25.2205 53.1813 34.4249L0 65.1291L2.451 69.3743L51.8732 40.8404C51.842 41.3384 51.8262 41.8407 51.8262 42.3466C51.8262 45.8722 52.5954 49.218 53.9751 52.2257L20.2312 71.7076L22.6822 75.9529L56.4695 56.4458C58.8044 59.5995 61.9026 62.1538 65.4914 63.8358L43.2012 76.705L45.6522 80.9502L71.9118 65.7892C73.0964 65.9713 74.3098 66.0658 75.5453 66.0658ZM71.9118 65.7892L76.4643 63.1608L74.0133 58.9156L65.4914 63.8358C67.4945 64.7746 69.6505 65.4416 71.9118 65.7892ZM56.4695 56.4458L68.5579 49.4665L66.107 45.2213L53.9751 52.2257C54.6618 53.7226 55.4998 55.1359 56.4695 56.4458ZM51.8732 40.8404L60.6516 35.7722L58.2006 31.527L53.1813 34.4249C52.4635 36.4511 52.0133 38.6037 51.8732 40.8404Z'],
+      ['zentrate', 'ZenTrate', 'M8 69A42 17 0 1 0 92 69A42 17 0 1 0 8 69ZM19 44A31 14 0 1 0 81 44A31 14 0 1 0 19 44ZM31 25A19 11 0 1 0 69 25A19 11 0 1 0 31 25Z']
+    ];
+    {
+      const poster = document.querySelector('.poster');
+      const PUNCT = /[.,;:!?']/;
+      // No line may start with punctuation: glue each mark to the letter before it.
+      const texts = root => {
+        const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+          acceptNode: n => n.parentElement.closest('a, .nb') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+        });
+        const out = [];
+        while (w.nextNode()) out.push(w.currentNode);
+        return out;
+      };
+      for (const node of texts(poster)) {
+        const parts = node.nodeValue.split(/(\S[.,;:!?']+\S?)/);
+        if (parts.length < 2) continue;
+        const frag = document.createDocumentFragment();
+        parts.forEach((t, i) => {
+          if (i % 2) { const n = document.createElement('span'); n.className = 'nb'; n.textContent = t; frag.append(n); }
+          else if (t) frag.append(t);
+        });
+        node.replaceWith(frag);
+      }
+      const spots = [];
+      for (const n of texts(poster)) {
+        for (const m of n.nodeValue.matchAll(/\s+/g)) spots.push([n, m.index, m[0].length]);
+      }
+      const rand = Math.random;
+      const order = GLYPHS.slice().sort(() => rand() - 0.5), K = order.length;
+      const picks = order.map((it, k) => [Math.min(spots.length - 1, Math.round((k + 0.25 + rand() * 0.5) * spots.length / K)), it]);
+      picks.sort((a, b) => b[0] - a[0]); // split from the end so earlier offsets stay valid
+      const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const made = [];
+      for (const [idx, [slug, name, d]] of picks) {
+        const [node, i, len] = spots[idx];
+        const a = document.createElement('a');
+        a.className = 'glyph';
+        a.href = '/work/' + slug + '/';
+        a.setAttribute('aria-label', name);
+        a.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><path fill-rule="evenodd" d="' + d + '"/></svg>';
+        const gap = node.splitText(i);
+        gap.splitText(len);
+        gap.replaceWith(a);
+        made.unshift(a);
+      }
+      made.forEach((a, i) => setTimeout(() => a.classList.add('in'), calm ? 0 : 40 * i));
+    }
+
     document.querySelector('meta[name="theme-color"]').content = VISIT;
     const ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
       + '<rect width="64" height="64" rx="14" fill="' + VISIT + '"/>'
       + '<text x="32" y="43" font-family="Inter,system-ui,sans-serif" font-size="26" font-weight="700" fill="#fff" text-anchor="middle">MY</text></svg>';
     document.querySelector('link[rel="icon"]').href = 'data:image/svg+xml,' + encodeURIComponent(ICON);
 
-    // 1. Cache where every link lives, in page coordinates.
-    // 2. On every move, find the nearest link within reach.
-    // 3. Grow the arrow's eight points into a pill around it.
-    //    The link flips to the page color: it sits on white now.
-    // 4. While captured, a click anywhere belongs to the link.
     const REACH = 80;
     let anchors = [];
     const cacheRects = () => {
@@ -329,7 +421,6 @@
     const fine = matchMedia('(pointer: fine)').matches;
     const motion = matchMedia('(prefers-reduced-motion: no-preference)').matches;
 
-    // Both input modes read the same rect cache.
     if ((fine && motion) || !fine) {
       cacheRects();
       addEventListener('resize', cacheRects);
@@ -345,12 +436,12 @@
 
       const pos = { x: innerWidth / 2, y: innerHeight / 2 };
       let captured = null;
-      let morphing = false; // keep the pill lerp through both capture and release
+      let morphing = false;
       let lastD = '';
       let running = false;
 
-      // The arrow outline as 8 points, tip first. Captured links get the same
-      // 8 points laid out as their bounding box, so the shapes interpolate.
+      // Captured links get the arrow's 8 points laid out as their box, so the
+      // two shapes interpolate.
       const ARROW = [[0, 0], [0, 8.3], [0, 16.5], [4.4, 13.2], [7.5, 19.8], [10.3, 18.5], [7.2, 12.1], [12.6, 12.0]];
       const boxPoints = (x, y, w, h) => [
         [x, y], [x, y + h / 2], [x, y + h], [x + w / 2, y + h],
@@ -366,13 +457,12 @@
         if (captured) captured.a.classList.add('captured');
       };
 
-      // The loop sleeps once the shape settles; input stirs it awake.
       const frame = () => {
         const t = captured
           ? boxPoints(captured.x - scrollX - 6, captured.y - scrollY - 6, captured.w + 12, captured.h + 12)
           : ARROW.map(p => [p[0] + pos.x, p[1] + pos.y]);
-        // Free arrow snaps to the pointer (no trailing); the pill eases at 0.25, and
-        // the morph flag keeps that ease through a release so it slides back.
+        // The free arrow snaps to the pointer so it never trails; the morph flag
+        // keeps the pill's ease through a release so it slides back.
         const k = (captured || morphing) ? 0.25 : 1;
         let moving = false;
         for (let i = 0; i < 8; i++) {
@@ -411,16 +501,14 @@
         if (captured && captured.a === e.target) { setCaptured(null); stir(); }
       });
 
-      // The shape is the affordance: while a link is captured, a click anywhere acts on it.
       addEventListener('click', (e) => {
         if (!captured) return;
         if (e.target.closest && e.target.closest('a')) return;
         captured.a.click();
       });
     } else if (!fine) {
-      // Touch: a tap near (but not on) a link still catches it.
-      // A scroll or swipe also begins with a touchstart, so hold the candidate
-      // and only fire on touchend, cancelling if the finger moves past SLOP.
+      // A tap near a link catches it. A swipe also begins with touchstart, so
+      // hold the candidate and fire on touchend unless the finger moves past SLOP.
       const SLOP = 10;
       let pending = null;
       addEventListener('touchstart', (e) => {

@@ -71,7 +71,6 @@
   const fxGroup = document.getElementById('fx');
   const NS = 'http://www.w3.org/2000/svg';
 
-  // Drawn bubbles pull the next name off this queue.
   const LABELS = [
     'POSTA', 'FIGMA-CDP', 'TRUEFRAME', 'MURMUR', 'FONTE',
     'ANCHORIFY', 'WORD-HUGGER', 'STACKS', 'CHRONOMOUSE',
@@ -80,7 +79,6 @@
     'STACKD', 'PETRI', 'STOW', 'VA', 'LINEANDFORM',
     'TUNTUN', 'CLAK', 'CHANCHÁN', 'FUNES', 'MARROW',
   ];
-  // Shuffled per visit.
   for (let i = LABELS.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     [LABELS[i], LABELS[j]] = [LABELS[j], LABELS[i]];
@@ -90,7 +88,7 @@
     return labelCursor < LABELS.length ? LABELS[labelCursor++] : null;
   }
 
-  // Blurbs reuse the site's copy. A null url means the bubble never arms.
+  // A null url means the bubble never arms.
   const PROJECTS = {
     'POSTA': { url: 'https://sryo.github.io/Posta/', blurb: 'a desktop Gmail client built around cards: each card is a saved search, and the inbox becomes a board' },
     'FIGMA-CDP': { url: 'https://github.com/sryo/figma-cdp', blurb: 'a Claude Code skill that updates Figma to match your code, so the canvas stops describing what it used to be' },
@@ -160,7 +158,6 @@
     return armed;
   }
 
-  // Label arc constants; the geometry lives in labelGeometry/labelArcPath.
   const LABEL_ARC = 350 * Math.PI / 180;
   const LABEL_INSET = 30;
   const RIM_GRAB_BAND = 16;
@@ -170,8 +167,7 @@
   const SPRING_DURATION = 760;
   const AMBIENT_INTERVAL = 1000 / 30;
 
-  // One swatch dealt per visit; ?swatch=name pins one. Every pair holds
-  // at least ~4.4:1 ink on ground.
+  // Every pair holds at least ~4.4:1 ink on ground.
   const SWATCHES = [
     { name: 'eraser',    ground: '#666666', ink: '#FFEDED', accent: '#000000' },
     { name: 'bumblebee', ground: '#0A0A0A', ink: '#FDCB21', accent: '#D10566' },
@@ -195,7 +191,6 @@
   document.getElementById('panel').style.color = theme.ink;
   console.log('%c' + theme.name + '%c dealt this visit. Reload reshuffles.',
     'background:' + theme.ground + ';color:' + theme.ink + ';padding:2px 8px;border-radius:3px', '');
-  // Favicon follows the dealt swatch.
   const ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
     + '<rect width="64" height="64" rx="14" fill="' + theme.ground + '"/>'
     + '<circle cx="32" cy="32" r="16" fill="none" stroke="' + theme.ink + '" stroke-width="6"/></svg>';
@@ -228,7 +223,7 @@
     };
   }
 
-  // One droplet saying hello. Growing it plays TUTOR_STAGES.
+  // Growing it plays TUTOR_STAGES.
   shapes.push({
     id: nextId++,
     x: 855, y: 500, r: 58,
@@ -238,8 +233,6 @@
     drift: driftParams(0),
   });
 
-  // The corner is the signature: who this is, and the way out. Hints ride
-  // beneath until the visitor has learned the gestures.
   function updateHint() {
     const hint = drawnCount === 0
       ? 'drag anywhere to see a project'
@@ -265,7 +258,6 @@
     return Math.exp(-6.5 * s) * Math.sin(23 * s);
   }
 
-  // Damped-sine push on every neighbor within reach.
   function buildResponses(source) {
     const responses = new Map();
     for (const shape of shapes) {
@@ -308,7 +300,6 @@
       y += response.y * value;
       r *= Math.max(0.92, 1 + response.scale * value);
     }
-    // Radius overshoot after a growth gesture releases.
     if (shape.bounce) {
       const elapsed = now - shape.bounce.startedAt;
       if (elapsed < SPRING_DURATION) {
@@ -317,7 +308,6 @@
         shape.bounce = null;
       }
     }
-    // Tremble near the burst threshold while being grown; settles after.
     const strain = clamp((shape.r - (burstThreshold(shape) - 70)) / 70, 0, 1);
     if (strain > 0 && shape.lastGrownAt) {
       const sinceGrown = now - shape.lastGrownAt;
@@ -334,29 +324,25 @@
     bounceUntil = performance.now() + SPRING_DURATION;
   }
 
-  // Uniform physics: too big bursts. Pods give earlier, releasing children.
   function burstThreshold(shape) {
     const project = shape.label ? PROJECTS[shape.label] : null;
     return project && project.children ? 250 : 320;
   }
 
-  // Synthesized from the same numbers as the visuals. Browsers only start
-  // audio inside a gesture, so nothing plays until the first pointerdown.
+  // Browsers only start audio inside a gesture, so nothing plays until the
+  // first pointerdown.
   const sound = (() => {
     // Pairs read [at a droplet, at full size]. `over` is the radius that
     // counts as full size for that sound.
     const P = {
       // Entering a bubble. Frequent, so it stays tiny.
       tick: { hz: [880, 620], gain: 0.022, attack: 0.003, decay: 0.019, over: 260, floor: 0 },
-      // A drawn bubble becoming its own thing. Rises, where the pop falls.
       blip: { hz: [860, 390], rise: 1.5, riseTime: 0.08, gain: 0.11, attack: 0.008, decay: 0.13, over: 260, floor: 0.05 },
-      // A rupture over a cavity thump.
       pop: {
         band: [3200, 900], bandTail: [400, 140], q: 1.4, burstGain: 0.34,
         thump: [380, 80], thumpDrop: 0.5, thumpGain: 0.3, thumpAttack: 0.006,
         decay: [0.05, 0.19], over: 320, floor: 0.08,
       },
-      // Any bubble changing size, drawn, held or dragged.
       growth: {
         hz: [80, 195], gain: 0.028, fadeIn: 0.14, fadeOut: 0.09,
         lowpass: 520, q: 0.6, wobbleHz: [4, 9], wobbleDepth: 0.019, strainBand: 70,
@@ -403,7 +389,6 @@
       return g;
     }
 
-    // tick and blip differ only in their numbers.
     function tone(spec, radius, external, onlyIfPrimed) {
       const c = ctx(external, onlyIfPrimed);
       if (!c) return;
@@ -450,7 +435,6 @@
       thump.stop(t + decay + 0.02);
     }
 
-    // The one sustained voice.
     const growth = {
       // Linear on purpose: a curve here accelerates the pitch while the radius
       // is already accelerating, which reads as an engine revving.
@@ -578,8 +562,6 @@
     return entry;
   }
 
-  // Stamp-style labels: seam at the top, text centered at the bottom, climbing
-  // both sides as the bubble grows. Type scales with radius below full size.
   function labelGeometry(shape, v) {
     return {
       radius: v.r - LABEL_INSET,
@@ -622,7 +604,6 @@
     if (shape.tutor) {
       displayText = shape.label;
     } else if (project && project.children && shape.r > burstThreshold(shape) - 35) {
-      // Near its burst threshold a pod stops naming itself and begs.
       displayText = 'KEEP GROWING…';
     } else {
       // ↗ marks an armed bubble; labelFits reserves its width.
@@ -640,7 +621,6 @@
     if (entry.textPath.textContent !== displayText) entry.textPath.textContent = displayText;
   }
 
-  // Growing HI is meeting Mateo. Radius-gated lines; lessons live in the hint.
   const TUTOR_STAGES = [
     [0, 'HI'],
     [90, 'I’M MATEO'],
@@ -655,7 +635,6 @@
     return pick;
   }
 
-  // The radius where a full name fits and arms.
   function readingRadius(label) {
     return (nameWidth34(label) + 44) / LABEL_ARC + LABEL_INSET + 6;
   }
@@ -679,9 +658,8 @@
     return nameWidth34(shape.label) + 44 <= arcRadius * LABEL_ARC;
   }
 
-  // The focused bubble carries its blurb inside, wrapped to the circle.
-  // Each line rides a straight textPath: path-laid glyphs move sub-pixel,
-  // transform-laid text pixel-snaps.
+  // Each blurb line rides a straight textPath: path-laid glyphs move
+  // sub-pixel, transform-laid text pixel-snaps.
   const blurbGroup = document.createElementNS(NS, 'g');
   document.getElementById('blurbs').appendChild(blurbGroup);
   const blurbLines = [];
@@ -719,7 +697,7 @@
     return [{ text, y: 5, half: rIn }];
   }
 
-  // The last line is the destination: a real anchor for right-click and copy.
+  // The last line is a real anchor, so right-click and copy work.
   const blurbLink = (() => {
     const path = document.createElementNS(NS, 'path');
     path.setAttribute('id', 'blurbPathLink');
@@ -931,9 +909,8 @@
     springs.push({ responses: buildResponses(shape), startedAt: performance.now() });
   }
 
-  // A tap on an armed bubble springs it and opens the project immediately —
-  // with pop moved to press-and-hold, there is no double-click to wait for.
-  // New tab: the visitor's field survives the visit.
+  // Opens at once: popping is press-and-hold, so there is no double-click to
+  // wait for. A new tab keeps the visitor's field.
   function handleTap(id) {
     const shape = shapes.find((s) => s.id === id);
     if (!shape) return;
@@ -959,7 +936,6 @@
     pops.push({ ...source, particles: makeParticles(source), startedAt: now });
     sound.pop(source.r);
 
-    // A pod bursts into its members, scattered wherever there's room.
     if (project && project.children) {
       const room = Math.max(0, MAX_SHAPES - shapes.length);
       // One of each label on the field, so a second burst can't duplicate.
@@ -968,7 +944,6 @@
         .slice(0, room);
       const bounds = viewportBounds();
       spawned.forEach((childLabel, i) => {
-        // Sized by name length, readable at birth.
         const childR = clamp(readingRadius(childLabel) + 12, 58, 88);
         // Golden-angle rejection sampling; first clear on-screen spot wins.
         const startAngle = ((shape.id * 137.508) % 360) * Math.PI / 180 + i * 2.39996;
@@ -994,8 +969,6 @@
     }
   }
 
-  // A grab on a bubble's rim resizes it, on its interior holds it, anywhere
-  // else draws a new one. Presses that never travel fall through to taps.
   function findRimShape(point) {
     let match = null;
     const now = performance.now();
@@ -1009,7 +982,6 @@
   }
 
   let resizeGesture = null;
-  // Hold inflates until burst; quick release taps, later release keeps the size.
   let holdGesture = null;
 
   function startDrawGesture(pointerId, start, startClient, fromCenter) {
@@ -1066,7 +1038,6 @@
         event.clientX - holdGesture.startClient.x,
         event.clientY - holdGesture.startClient.y,
       );
-      // Moving before activation becomes a draw from the original point.
       if (travel > 8) {
         const h = holdGesture;
         holdGesture = null;
@@ -1095,7 +1066,6 @@
       const threshold = burstThreshold(shape);
       sound.growth.start(shape.r, threshold);
       sound.growth.update(shape.r, threshold);
-      // Too big bursts.
       if (shape.r >= threshold) {
         resizeGesture = null;
         sound.growth.stop();
@@ -1129,7 +1099,6 @@
       const hold = holdGesture;
       holdGesture = null;
       sound.growth.stop();
-      // Quick press taps; release after inflation keeps the size, with a bounce.
       if (!hold.activated) {
         handleTap(hold.shapeId);
       } else {
@@ -1195,8 +1164,7 @@
     sound.growth.stop();
   });
 
-  // Window-level tracking so the cursor keeps moving over links. The capsule
-  // wraps any hovered anchor, panel or in-bubble.
+  // Window-level tracking so the cursor keeps moving over links.
   let hoveredLink = null;
   document.addEventListener('pointerover', (event) => {
     hoveredLink = event.target.closest ? event.target.closest('a') : null;
@@ -1222,8 +1190,6 @@
 
   document.documentElement.addEventListener('mouseleave', () => { cursorSeen = false; });
 
-  // Cursor states: + over ground, radial arrows on rims, a rounded rect that
-  // wraps bubbles (circle) and the panel link (capsule). Reduced motion snaps.
   const cursorLayer = document.getElementById('cursorLayer');
   const cursorGlyph = document.getElementById('cursorGlyph');
   const cursorRing = document.getElementById('cursorRing');
@@ -1245,7 +1211,6 @@
     const arrowShapeId = resizeGesture ? resizeGesture.shapeId
       : (!gesture && !holdGesture && !hoveredLink ? findRimShape(pointerView) : null);
     if (hoveredLink) {
-      // A capsule snapped to the link. Fitts: the target comes to you.
       const rect = hoveredLink.getBoundingClientRect();
       const tl = toView(rect.left, rect.top);
       const br = toView(rect.right, rect.bottom);
@@ -1292,7 +1257,6 @@
       'translate(' + cursorSt.x.toFixed(1) + ' ' + cursorSt.y.toFixed(1) + ')'
       + ' rotate(' + (cursorSt.rot * 180 / Math.PI).toFixed(1) + ')');
 
-    // Geometry is visibility: too-short arms and too-small rings aren't drawn.
     const a = cursorSt.armR;
     const t = cursorSt.armT;
     const h = cursorSt.head;
@@ -1326,7 +1290,6 @@
     pops = pops.filter((p) => now - p.startedAt < 500 || p.particles.some((pt) => pt.el));
     const dt = Math.min(0.05, Math.max(0, (now - lastFrameAt) / 1000));
     lastFrameAt = now;
-    // After 300ms a held bubble inflates on its own until burst or release.
     if (holdGesture) {
       const hold = holdGesture;
       const shape = shapes.find((s) => s.id === hold.shapeId);
@@ -1340,7 +1303,6 @@
           sound.growth.start(shape.r, threshold);
         }
         if (hold.activated) {
-          // Compounding: the bigger it gets, the faster it swells.
           shape.r += (30 + shape.r * 1.15) * dt;
           shape.lastGrownAt = now;
           sound.growth.update(shape.r, threshold);
@@ -1366,7 +1328,6 @@
     requestAnimationFrame(frame);
   }
 
-  // Console aperture: list shapes, place a labeled bubble, pop by id.
   window.__bubblesDebug = Object.freeze({
     shapes: () => shapes.map((s) => ({ id: s.id, label: s.label, r: Math.round(s.r) })),
     place(label, x, y, r) {

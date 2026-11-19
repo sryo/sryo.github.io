@@ -1,4 +1,4 @@
-// Signature footer: when the ask scrolls in, two client glyphs land on it and XOR the type, then everything settles into a frame of big glyphs clear of the poster's text.
+// Signature footer: client glyphs land on the ask, then every glyph settles into a frame clear of the text.
 (function () {
     "use strict";
 
@@ -20,20 +20,20 @@
 
     var reduceMQ = matchMedia("(prefers-reduced-motion: reduce)");
     var reduce = reduceMQ.matches;
-    var PAD = 0.3;        // canvas overhang around a glyph's 100-unit box, matches the CSS inset
-    var PULL = 22;        // drift of a piece at full pull, in the glyph's 100-unit box
-    var CLIENT = 1.75;    // client glyphs' ink is this much bigger than a side project's
-    var CLEAR = 16;       // px between a resting glyph's ink box and any line of the poster
-    var STAG = 640;       // ms between landings: one lander on the type at a time
-    var POP = 260;        // ms to pop up to full size
-    var HOLD = 400;       // ms a landing glyph sits on the ask, pop included
-    var GLIDE = 760;      // ms from the ask to its place in the frame
-    var RING0 = 60;       // ms before the first glyph pops straight into the frame
-    var RSTAG = 32;       // ms between those pops, both sides of the frame at once
+    var PAD = 0.3;        // canvas overhang; must match the CSS inset
+    var PULL = 22;
+    var CLIENT = 1.75;    // client ink size over a side project's
+    var CLEAR = 16;       // gap between a resting glyph's ink and any line of the poster
+    var STAG = 640;       // one lander on the type at a time
+    var POP = 260;
+    var HOLD = 400;       // time a lander sits on the ask, pop included
+    var GLIDE = 760;
+    var RING0 = 60;
+    var RSTAG = 32;
     var LEAVE = 1.8;      // departure plays the arrival backwards, this much faster
-    var FOCUS_PULL = 0.45;   // focus pulls the pieces a little apart; the glyph stays recognisable
-    var FOCUS_ROOM = 40;  // px under a glyph's ink for its name on hover and focus: 10 gap, 22 line, 8 spare
-    var EDGE = 0.7;       // phone: share of a glyph's width on screen when it bleeds off a side, the same for all
+    var FOCUS_PULL = 0.45; // small enough that the glyph stays recognisable
+    var FOCUS_ROOM = 40;  // room for a glyph's name: 10 gap, 22 line, 8 spare
+    var EDGE = 0.7;       // share of a glyph's width left on screen when it bleeds off a side
 
     function spring(s, target, dtn, k, damp) {
         s.v += (target - s.x) * k * dtn;
@@ -46,7 +46,6 @@
     // Stable per-glyph noise in [-1, 1], so the frame's irregularity is the same on every visit.
     function noise(i, k) { var x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return (x - Math.floor(x)) * 2 - 1; }
 
-    // ── Glyph models: one Path2D per _.parts.svg primitive ────────
     function primitivePath(el) {
         function a(k) { return +el.getAttribute(k) || 0; }
         var rx, ry, cx = a("cx"), cy = a("cy");
@@ -67,7 +66,6 @@
         return "";
     }
 
-    // The primitives: _.parts.svg (base64, from the build), else the inline glyph's own shapes.
     function partsOf(a) {
         var src = a.dataset.parts, svg;
         if (src) {
@@ -84,7 +82,6 @@
     probe.width = probe.height = 64;
     var pctx = probe.getContext("2d", { willReadFrequently: true });
 
-    // Pieces with centroid and area, plus the whole glyph's ink box in its 100-unit frame.
     function model(els) {
         var pieces = [], ink = { l: 100, t: 100, r: 0, b: 0 };
         els.forEach(function (el) {
@@ -125,7 +122,7 @@
         var m = model(partsOf(a)), ink = m.ink;
         return {
             el: a, li: a.parentNode, canvas: c, ctx: c.getContext("2d"), pieces: m.pieces, i: i,
-            // Ink box in the 100-unit frame: sizes are set by ink, so a bell and a disc read the same size.
+            // Sizes are set by ink, not the box, so a bell and a disc read the same size.
             il: ink.l, ir: ink.r, ib: ink.b,
             iw: ink.r - ink.l, ih: ink.b - ink.t, icx: (ink.l + ink.r) / 2, icy: (ink.t + ink.b) / 2,
             ox: { x: 0, v: 0 }, oy: { x: 0, v: 0 }, pull: { x: 0, v: 0 },
@@ -146,8 +143,7 @@
     // Difference blend: white reads as ink on paper and as paper where glyphs overlap the type or each other.
     var INK = "#fff";
 
-    // ── Geometry ──────────────────────────────────────────────────
-    // Client rects of every text box under an element (a range over the element itself would add block boxes).
+    // Per text node: a range over the element itself would add block boxes.
     function textRects(el) {
         var out = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), r = document.createRange(), n;
         while ((n = w.nextNode())) {
@@ -157,7 +153,7 @@
         }
         return out;
     }
-    // Lines of a block, merged from its text rects (a link splits a line into two rects), in the footer's frame.
+    // Rects are merged into lines because a link splits a line into two rects.
     function lines(el, fr) {
         var out = [];
         textRects(el).forEach(function (q) {
@@ -175,7 +171,6 @@
 
     var geo = null;
 
-    // A glyph's ink half-extents at a given ink size (the bigger ink side equals `ink`).
     function half(g, ink) {
         var k = ink / Math.max(g.iw, g.ih);
         return [g.iw * k / 2, g.ih * k / 2];
@@ -183,24 +178,21 @@
     function setInk(g, ink) {
         g.ink = ink;
         g.base = ink * 100 / Math.max(g.iw, g.ih);
-        // Half extents of the turned ink box: what has to clear the text.
+        // The turned ink box is what has to clear the text.
         var h = half(g, ink), a = Math.abs(g.rot * Math.PI / 180), cs = Math.cos(a), sn = Math.sin(a);
         g.hw = h[0] * cs + h[1] * sn; g.hh = h[0] * sn + h[1] * cs;
     }
-    // Text in a horizontal band [y0, y1]: the leftmost and rightmost edges among lines touching it.
     function textSpan(ls, y0, y1) {
         var l = Infinity, r = -Infinity;
         ls.forEach(function (ln) { if (ln.b > y0 && ln.t < y1) { l = Math.min(l, ln.l); r = Math.max(r, ln.r); } });
         return [l, r];
     }
-    // Text in a vertical band [x0, x1]: the top of the highest and the bottom of the lowest line touching it.
     function textCol(ls, x0, x1) {
         var t = Infinity, b = -Infinity;
         ls.forEach(function (ln) { if (ln.r > x0 && ln.l < x1) { t = Math.min(t, ln.t); b = Math.max(b, ln.b); } });
         return [t, b];
     }
 
-    // Lays glyphs along a run between two points, spare length shared out unevenly.
     function run(list, axis, from, to, cross) {
         if (!list.length) return;
         var len = Math.abs(to - from), dir = to > from ? 1 : -1;
@@ -216,8 +208,7 @@
         });
     }
 
-    // Phone: as many glyphs as fit down one side, each bleeding off the edge by the same share and CLEAR off the text.
-    // Returns the ones that found no room.
+    // Returns the glyphs that found no room.
     function column(list, isL, y0, y1, ls, W) {
         var y = y0, out = [];
         while (list.length) {
@@ -234,8 +225,7 @@
         return out;
     }
 
-    // Moves a resting glyph's ink box off every (padded) line of the poster, by the shortest way out.
-    // On a phone a sideways move never pushes it more than (1 - EDGE) off screen.
+    // On a phone a sideways move never pushes a glyph more than (1 - EDGE) off screen.
     function clearText(q, rects, W, narrow, cx) {
         for (var pass = 0; pass < 8; pass++) {
             var hit = null;
@@ -270,7 +260,6 @@
         var tl = narrow ? C.bl : C.tl, tr = C.tr, br = C.br, bl = narrow ? C.tl : C.bl;
         if (narrow && bl) setInk(bl, side);
 
-        // The poster sits centred in one screen; the bands above and below hold the frame's top and bottom.
         var ph = poster.getBoundingClientRect().height;
         var top, bot;
         if (narrow) {
@@ -293,7 +282,6 @@
         var sq = sides.slice(), segs, order = [];
 
         if (!narrow) {
-            // The two top clients sit off the ask's first line, beside it; the bottom ones bleed off the corners.
             if (tl) { tl.rx = l1.l - c - tl.hw; tl.ry = Math.max(tl.hh + 8, l1.cy - tl.hh * 0.45); }
             if (tr) { tr.rx = l1.r + c + tr.hw; tr.ry = Math.max(tr.hh + 8, l1.cy - tr.hh * 0.45); }
             if (br) { br.rx = W - br.hw * 0.8; br.ry = H - br.hh * 0.78; }
@@ -305,13 +293,12 @@
                 { id: "bottom", axis: "x", from: br ? br.rx - br.hw * 0.85 : W, to: bl ? bl.rx + bl.hw * 0.85 : 0, corner: br },
                 { id: "left", axis: "y", from: bl ? bl.ry - bl.hh * 0.85 : H, to: tl && tl.rx - tl.hw < side * 1.3 ? tl.ry + tl.hh * 0.85 : side * 0.15, corner: bl }
             ];
-            // Share the side glyphs out by run length, largest remainders first.
             var tot = 0, left = sq.length;
             segs.forEach(function (s) { s.len = Math.max(0, Math.abs(s.to - s.from)); tot += s.len; });
             segs.forEach(function (s) { s.n = Math.floor(sq.length * s.len / (tot || 1)); left -= s.n; s.rem = sq.length * s.len / (tot || 1) - s.n; });
             segs.slice().sort(function (a, b) { return b.rem - a.rem; }).forEach(function (s) { if (left > 0) { s.n++; left--; } });
-            // Fewer, bigger: a run holds what fits with room between. Extras go where there is room left,
-            // the columns first; the bottom run, which can bleed, takes what is still over.
+            // Overflow goes where there is room left; the bottom run, which can
+            // bleed, takes what is still over.
             var bottomSeg = segs[2];
             segs.forEach(function (s) {
                 s.cap = Math.max(0, Math.floor(s.len / (side * (s.id === "top" ? 1.6 : s.id === "bottom" ? 1.15 : 1.3))));
@@ -334,14 +321,13 @@
                 run(list, s.axis, s.from, s.to, function (q, j) {
                     var jit = noise(q.i, 4);
                     if (s.id === "top") {
-                        // Between the footer's top and the poster, whole: a glyph bleeding off the top would show
-                        // the footer's edge as a flat cut while the page scrolls in.
+                        // A glyph bleeding off the top would show the footer's edge as a
+                        // flat cut while the page scrolls in.
                         var t = textCol(all, q.rx - q.hw - c, q.rx + q.hw + c)[0];
                         var lo = q.hh + 8, hi = (isFinite(t) ? t : l1.t) - c - FOCUS_ROOM - q.hh;
                         return hi < lo ? lo : lo + (hi - lo) * (0.6 + 0.35 * jit);
                     }
                     if (s.id === "bottom") {
-                        // Under the address block, bleeding off the page's end by up to a third.
                         var b = textCol(all, q.rx - q.hw - c, q.rx + q.hw + c)[1];
                         var lo2 = (isFinite(b) ? b : textBot) + c + q.hh, hi2 = H - q.hh * 0.7;
                         return hi2 < lo2 ? lo2 : lo2 + (hi2 - lo2) * (0.55 + 0.35 * jit);
@@ -349,7 +335,6 @@
                     return 0;
                 });
                 if (s.axis === "y") list.forEach(function (q) {
-                    // Columns: in the open paper between the text and the screen's edge, a little past it.
                     var sp = textSpan(obst, q.ry - q.hh - c, q.ry + q.hh + c), isL = s.id === "left";
                     var edge = isL ? q.hw * 0.7 : W - q.hw * 0.7;
                     var inner = isL ? (isFinite(sp[0]) ? sp[0] - c - q.hw : W / 2) : (isFinite(sp[1]) ? sp[1] + c + q.hw : W / 2);
@@ -358,9 +343,8 @@
                 });
             });
         } else {
-            // Phone: the footer is taller than the screen, so nothing bleeds off its top (a hard cut mid-scroll):
-            // two clients hold the top corners, one bleeds off the bottom right; the rest go down the sides
-            // where the text leaves room, then in staggered rows under the poster.
+            // The footer is taller than a phone screen, so nothing bleeds off its
+            // top: it would show as a hard cut mid-scroll.
             if (tl) { tl.rx = tl.hw * (2 * EDGE - 1); tl.ry = tl.hh + 4; }
             if (tr) { tr.rx = W - tr.hw * (2 * EDGE - 1); tr.ry = tr.hh + 8; }
             var topList = [];
@@ -370,7 +354,6 @@
             if (tl) order.push(tl);
             [].push.apply(order, topList);
             if (tr) order.push(tr);
-            // The round lander rests down the right side when there is room; the rest share both sides.
             var colTop = Math.max(tl ? tl.ry + tl.hh : 0, tr ? tr.ry + tr.hh : 0) + 14;
             var rightAll = (bl ? [bl] : []).concat(sq.filter(function (q, j) { return j % 2 === 1; }));
             var leftAll = sq.filter(function (q, j) { return j % 2 === 0; });
@@ -378,8 +361,6 @@
                 .concat(column(leftAll.slice(), true, colTop, textBot, all, W));
             var placed = function (q) { return rest.indexOf(q) < 0; };
             [].push.apply(order, rightAll.filter(placed));
-            // Rows under the poster, smaller glyphs: the bottom-right client and two, then four, three, four...
-            // A full row's ends bleed off the sides by the same share as the columns; the last row sits whole.
             var bottomList = (br ? [br] : []).concat(rest), rowsN = [], n = bottomList.length;
             rest.forEach(function (q) { setInk(q, side * 0.82 * (1 + 0.06 * noise(q.i, 1))); });
             for (var r0 = 0; n > 0; r0++) { var m = Math.min(n, r0 === 0 ? 3 : r0 % 2 ? 4 : 3); rowsN.push(m); n -= m; }
@@ -414,7 +395,6 @@
         var ol = G[0].li.parentNode, same = ORDER.every(function (q, j) { return ol.children[j] === q.li; });
         if (!same) ORDER.forEach(function (q) { ol.append(q.li); });
 
-        // Landers: two round clients, one after the other, on the ask's last line, then off to their places.
         var ln = askL[askL.length - 1];
         G.forEach(function (q) { q.lander = false; });
         (narrow ? [bl, tr] : [tl, tr]).filter(Boolean).forEach(function (q, k) {
@@ -452,7 +432,7 @@
         });
     }
 
-    // ── Drawing: XOR, so overlaps are holes, whole and mid-pull ────
+    // XOR, so overlaps are holes both at rest and mid-pull.
     function draw(g) {
         var key = g.pieces.map(function (p) { return Math.round(p.x.x * 10) + "," + Math.round(p.y.x * 10); }).join(";");
         if (key === g.drawn) return;
@@ -479,7 +459,6 @@
         });
     }
 
-    // Pieces drift away from the pointer (or out from the centre, for focus).
     function pieceTargets(g, f) {
         var px = 50, py = 50;
         if (pointer && (g.hover || g.near > 0)) {
@@ -497,7 +476,7 @@
         });
     }
 
-    // ── Timeline: t runs forward on arrival and backward on departure ──
+    // t runs forward on arrival and backward on departure.
     var t = 0, dir = 0, pointer = null;
     var raf = 0, last = 0, onScreen = false;
 
@@ -515,7 +494,6 @@
             if ((dir > 0 && t < END) || (dir < 0 && t > 0)) busy = true; else dir = 0;
         }
         G.forEach(function (g) {
-            // Positions are ink centres; the box centre is offset by where the ink sits in the glyph's frame.
             var x = g.rx, y = g.ry, size = g.base, rot = g.rot;
             var e = t - g.start, sc = 1;
             if (!g.lander) {
@@ -535,7 +513,6 @@
             }
             g.near = near;
             var goalPull = g.focus ? FOCUS_PULL : g.hover ? 1 : near * 0.55;
-            // Pointing nudges the glyph away a little, like a magnet of the same pole.
             var gx = 0, gy = 0;
             if (pointer && near > 0 && !g.hover && !reduce) {
                 var dx = x - pointer.x, dy = y - pointer.y, dl = Math.hypot(dx, dy) || 1;
@@ -560,7 +537,6 @@
             x += g.ox.x; y += g.oy.x;
             size *= Math.max(0, sc);
             g.cx = x; g.cy = y; g.size = Math.max(1, size);
-            // Box centre from the ink centre, the offset turned with the glyph.
             var a = rot * Math.PI / 180, ox = (50 - g.icx) / 100 * size, oy = (50 - g.icy) / 100 * size;
             var bx = x + ox * Math.cos(a) - oy * Math.sin(a), by = y + ox * Math.sin(a) + oy * Math.cos(a);
             var s = size / g.box;
@@ -585,7 +561,6 @@
         if (busy && !reduce) kick();
     }
 
-    // ── Input ───────────────────────────────────────────────────
     G.forEach(function (g) {
         g.el.addEventListener("pointerenter", function (e) {
             if (e.pointerType !== "mouse") return;
@@ -608,8 +583,8 @@
     });
     foot.addEventListener("pointerleave", function () { pointer = null; kick(); });
 
-    // Arrive when most of the ask is in view, or once it has passed above (a jump to the page's end);
-    // leave (backwards, into the ask) once it is nearly gone below.
+    // Also arrive when the ask has already passed above, after a jump to the
+    // page's end. Leave only once it is nearly gone below.
     new IntersectionObserver(function (es) {
         var en = es[0];
         var above = !en.isIntersecting && en.boundingClientRect.bottom <= 0;

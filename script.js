@@ -1,18 +1,14 @@
-// Scripts run: styles.css can lay out what they will drive (the front
-// page's offers) before first paint, so nothing jumps when they start.
-// If front.js never wires the offers up (blocked, failed), the page drops
-// back to the no-JS state once loaded: every offer open with its links.
+// Set before first paint so styles.css can lay out the offers front.js will
+// drive. If front.js never wires them up, drop back to the no-JS layout.
 document.documentElement.classList.add("js");
 window.addEventListener("load", function () {
     var offers = document.querySelector(".offers");
     if (offers && !offers.classList.contains("live")) document.documentElement.classList.remove("js");
 });
 
-// Also sentence: each glyph's box fits its ink across and is --gs tall.
-// Ink is scaled to one area (its bounding box's geometric mean), capped at
-// the box height, so flat glyphs (HometownLocal, VENG) weigh about the
-// same as square ones; no glyph runs wider than 1.25 boxes. Without JS
-// each glyph keeps its square 100 box.
+// Also sentence glyphs: ink is scaled to one area (the bounding box's
+// geometric mean, capped at the box height) so flat glyphs weigh about the
+// same as square ones, and no glyph runs wider than 1.25 boxes.
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".also .ag svg").forEach(function (svg) {
         var b = svg.getBBox();
@@ -56,8 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
     else fitSwell();
 });
 
-// Optional enhancement: a Figma facade loads its prototype in place on
-// click. Without JS the link simply opens Figma.
+// Without JS a facade stays a plain link to Figma.
 document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("a.embed-facade");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
@@ -66,7 +61,6 @@ document.addEventListener("click", function (e) {
     f.src = a.href;
     f.loading = "lazy";
     f.className = "embed-live";
-    // Named after its project: the page's h1 up to the colon.
     var h = document.querySelector(".case-title h1");
     var name = h ? h.textContent.split(": ")[0].trim() : "";
     f.title = name ? name + " prototype" : "Figma prototype";
@@ -83,8 +77,6 @@ window.addEventListener("pagereveal", function (e) {
     e.viewTransition.finished.finally(function () { root.removeAttribute("data-vt"); });
 });
 
-// Optional enhancement: a wide screen opens at its real size on click.
-// Fades in, and fades out before it's removed (Escape or any click).
 document.addEventListener("click", function (e) {
     var img = e.target.closest && e.target.closest("figure.wide img");
     if (!img) return;
@@ -101,6 +93,7 @@ document.addEventListener("click", function (e) {
     function close() {
         document.removeEventListener("keydown", onKey);
         z.classList.remove("open");
+        // Matches the .zoom fade in styles.css.
         setTimeout(function () { z.remove(); }, 200);
     }
     function onKey(k) { if (k.key === "Escape") close(); }
