@@ -11,7 +11,7 @@
 #   SITE_URL builds canonical and og: links; skipped when empty.
 #   AUTHOR signs page titles; defaults to TITLE.
 #   styles.css is required. script.js is inlined when non-empty.
-#   motion.js, when present, is linked deferred from every page.
+#   motion.js and egg.js, when present, are linked deferred from every page.
 
 # Content:
 #   One folder per case under the content folder. The folder name is the
@@ -1422,6 +1422,9 @@ EOF
     # Linked and deferred, so it stays out of the inlined head.
     if [ -f "$OUT_DIR/motion.js" ]; then
         echo "    <script src=\"${root}motion.js\" defer></script>"
+    fi
+    if [ -f "$OUT_DIR/egg.js" ]; then
+        echo "    <script src=\"${root}egg.js\" defer></script>"
     fi
     # page_js is space-separated; each loads only when present.
     local js
